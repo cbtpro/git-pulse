@@ -1,6 +1,7 @@
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 const repo = {id:1, name:'project',full_name:'octo/project',html_url:'https://github.com/octo/project',description:'Workspace smoke fixture',default_branch:'main',private:false,stargazers_count:12,forks_count:2,open_issues_count:1,owner:{login:'octo',avatar_url:'',html_url:'https://github.com/octo'}};
+const run={id:77,name:'Build',display_title:'Build app',run_number:3,run_attempt:1,head_branch:'main',head_sha:'abc1234567',event:'push',status:'completed',conclusion:'failure',created_at:'2026-11-21T00:00:00Z',html_url:'https://github.com/octo/project/actions/runs/77'};
 const issue = {id:7,number:7,title:'A useful issue',body:'Discussion fixture',state:'open',html_url:'https://github.com/octo/project/issues/7',user:{login:'tester'},labels:[],assignees:[],updated_at:'2026-11-21T00:00:00Z',comments:0};
 const browser = await chromium.launch({executablePath:process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
 try {
@@ -13,6 +14,11 @@ try {
    const url=new URL(route.request().url()); let data={};
    if(url.pathname==='/user') data={id:100,login:'fixture',name:'Fixture',avatar_url:'',html_url:'https://github.com/fixture',public_repos:1,followers:0,following:0};
    else if(url.pathname==='/repos/octo/project') data=repo;
+   else if(url.pathname==='/repos/octo/project/actions/runs') data={workflow_runs:[run],total_count:1};
+   else if(url.pathname==='/repos/octo/project/actions/runs/77') data=run;
+   else if(url.pathname.endsWith('/jobs')) data={jobs:[{id:88,name:'Build job',status:'completed',conclusion:'failure',html_url:run.html_url,steps:[{number:1,name:'Compile',status:'completed',conclusion:'failure'}]}]};
+   else if(url.pathname.endsWith('/artifacts')) data={artifacts:[{id:9,name:'Expired artifact',expired:true,size_in_bytes:1024,expires_at:'2026-01-01T00:00:00Z'}]};
+   else if(url.pathname.endsWith('/jobs/88/logs')) return route.fulfill({contentType:'text/plain',body:'Build log fixture'});
    else if(url.pathname.endsWith('/branches')) data=[{name:'main'},{name:'feature/ui'}];
    else if(url.pathname.endsWith('/readme')) data={name:'README.md',encoding:'base64',content:Buffer.from('# Project\nA readable README.').toString('base64'),size:30,html_url:repo.html_url+'/blob/main/README.md',download_url:'https://raw.githubusercontent.com/octo/project/main/README.md'};
    else if(url.pathname.endsWith('/contents/src/index.ts')) data={name:'index.ts',path:'src/index.ts',encoding:'base64',content:Buffer.from('export const value = 42;').toString('base64'),size:24,html_url:repo.html_url};
@@ -42,6 +48,14 @@ try {
   await expect(page.getByText('我的待办',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'分配给我',exact:true}).click();
   await expect(page.getByRole('link',{name:/A useful issue/})).toHaveAttribute('href',/#\/repo\/octo\/project\?account=100/);
+  await page.goto('http://localhost:1420/#/repo/octo/project?tab=actions');
+  await page.screenshot({path:`review-artifacts/business/actions-debug-${width}.png`,fullPage:true});
+  await page.getByRole('button',{name:/Build app/}).click();
+  await expect(page.getByText('Build job',{exact:false})).toBeVisible();
+  await page.getByRole('button',{name:'查看日志',exact:true}).click();
+  await expect(page.getByText('Build log fixture')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button',{name:'下载 Expired artifact'})).toBeDisabled();
   await page.screenshot({path:`review-artifacts/business/repository-${width}.png`,fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   expect(overflow,`Horizontal overflow at ${width}`).toBe(false);

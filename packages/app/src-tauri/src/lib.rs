@@ -1,6 +1,7 @@
 #[cfg(target_os = "android")]
 mod android_tls;
 mod github_oauth;
+mod github_downloads;
 mod contribution_widgets;
 mod safe_area;
 mod secure_storage;
@@ -22,6 +23,7 @@ pub fn run() {
             contribution_widgets::sync_contribution_widget,
             contribution_widgets::pin_contribution_widget,
             github_oauth::github_oauth_request,
+            github_downloads::github_download,
             github_oauth::open_github_authorization,
             safe_area::configure_safe_area,
             secure_storage::read_auth_vault,

@@ -15,3 +15,5 @@ import "@arco-design/web-react/es/Skeleton/style/css.js";
 import "@arco-design/web-react/es/Spin/style/css.js";
 import "@arco-design/web-react/es/Switch/style/css.js";
 import "@arco-design/web-react/es/Tag/style/css.js";
+import "@arco-design/web-react/es/Tabs/style/css.js";
+import "@arco-design/web-react/es/Popconfirm/style/css.js";
