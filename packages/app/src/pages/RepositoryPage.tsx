@@ -12,6 +12,7 @@ import { PageHeader } from "../components/common/PageHeader";
 import { EmptyState, RequestError } from "../components/common/ResourceState";
 import { RepositoryContext } from "../components/workspace/RepositoryContext";
 import "../styles/workspace.css";
+import { ReleasesWorkspace } from "../components/workspace/ReleasesWorkspace";
 import { ActionsWorkspace } from "../components/workspace/ActionsWorkspace";
 import { IssuesWorkspace } from "../components/workspace/IssuesWorkspace";
 
@@ -84,7 +85,7 @@ function RepositoryWorkspace({ repo, owner, name, onShowLogin }: { repo: Reposit
       </div>} />
       <div className="gp-work-toolbar"><Tag>{repo.private ? t("私有仓库") : t("公开仓库")}</Tag><Tag>{repo.stargazers_count} Stars</Tag>{repo.archived && <Tag>{t("已归档")}</Tag>}</div>
       {starred.error && <RequestError error={starred.error} retry={starred.reload} onLogin={onShowLogin} />}
-      <Tabs activeTab={tab} onChange={(value) => setParams(current => { const next = new URLSearchParams(current); next.set("tab", value); next.delete("number"); next.delete("run"); return next; })}><Tabs.TabPane key="code" title={t("代码与文档")}><RepositoryContent {...{ repo, owner, name, onShowLogin }} token={account.token} /></Tabs.TabPane><Tabs.TabPane key="issues" title="Issues"><IssuesWorkspace kind="issues" /></Tabs.TabPane><Tabs.TabPane key="pulls" title="Pull requests"><IssuesWorkspace kind="pulls" /></Tabs.TabPane><Tabs.TabPane key="actions" title="Actions"><ActionsWorkspace /></Tabs.TabPane></Tabs>
+      <Tabs activeTab={tab} onChange={(value) => setParams(current => { const next = new URLSearchParams(current); next.set("tab", value); next.delete("number"); next.delete("run"); return next; })}><Tabs.TabPane key="code" title={t("代码与文档")}><RepositoryContent {...{ repo, owner, name, onShowLogin }} token={account.token} /></Tabs.TabPane><Tabs.TabPane key="issues" title="Issues"><IssuesWorkspace kind="issues" /></Tabs.TabPane><Tabs.TabPane key="pulls" title="Pull requests"><IssuesWorkspace kind="pulls" /></Tabs.TabPane><Tabs.TabPane key="actions" title="Actions"><ActionsWorkspace /></Tabs.TabPane><Tabs.TabPane key="releases" title={t("版本发布")}><ReleasesWorkspace /></Tabs.TabPane></Tabs>
     </div>
   </RepositoryContext.Provider>;
 }

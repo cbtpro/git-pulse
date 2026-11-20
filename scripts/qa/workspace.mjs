@@ -20,6 +20,7 @@ try {
    else if(url.pathname.endsWith('/jobs')) data={jobs:[{id:88,name:'Build job',status:'completed',conclusion:'failure',html_url:run.html_url,steps:[{number:1,name:'Compile',status:'completed',conclusion:'failure'}]}]};
    else if(url.pathname.endsWith('/artifacts')) data={artifacts:[{id:9,name:'Expired artifact',expired:true,size_in_bytes:1024,expires_at:'2026-01-01T00:00:00Z'}]};
    else if(url.pathname.endsWith('/jobs/88/logs')) return route.fulfill({contentType:'text/plain',body:'Build log fixture'});
+   else if(url.pathname.endsWith('/releases')) data=[{id:6,name:'Release fixture',tag_name:'v1.0',body:'Release notes fixture',draft:false,prerelease:false,published_at:'2026-11-21T00:00:00Z',html_url:'https://github.com/octo/project/releases/tag/v1.0',assets:[]}];
    else if(url.pathname.endsWith('/branches')) data=[{name:'main'},{name:'feature/ui'}];
    else if(url.pathname.endsWith('/readme')) data={name:'README.md',encoding:'base64',content:Buffer.from('# Project\nA readable README.').toString('base64'),size:30,html_url:repo.html_url+'/blob/main/README.md',download_url:'https://raw.githubusercontent.com/octo/project/main/README.md'};
    else if(url.pathname.endsWith('/contents/src/index.ts')) data={name:'index.ts',path:'src/index.ts',encoding:'base64',content:Buffer.from('export const value = 42;').toString('base64'),size:24,html_url:repo.html_url};
@@ -65,6 +66,13 @@ try {
   await page.reload();
   await expect(page.locator('.gp-work-note')).toHaveText('Encrypted browser fixture note');
   await page.screenshot({path:`review-artifacts/business/collections-${width}.png`,fullPage:true});
+  await page.goto('http://localhost:1420/#/profile/releases');
+  await page.getByLabel('订阅仓库',{exact:true}).fill('octo/project');
+  await page.getByRole('button',{name:'添加订阅',exact:true}).click();
+  await expect(page.getByText('Release fixture',{exact:true})).toBeVisible();
+  await page.getByText('更新说明',{exact:true}).click();
+  await expect(page.getByText('Release notes fixture',{exact:true})).toBeVisible();
+  await page.screenshot({path:`review-artifacts/business/releases-${width}.png`,fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   expect(overflow,`Horizontal overflow at ${width}`).toBe(false);
   expect(errors).toEqual([]);
