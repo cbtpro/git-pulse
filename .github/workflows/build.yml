@@ -160,6 +160,8 @@ jobs:
           distribution: temurin
           java-version: "21"
       - uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
       - name: Install NDK
         run: |
           sdkmanager "ndk;$NDK_VERSION" "build-tools;36.0.0"
@@ -266,6 +268,10 @@ jobs:
             signing=signed
           else
             args+=(--no-sign)
+          fi
+          # An absent optional team is valid for unsigned builds; an empty value is not.
+          if [[ -z "$APPLE_DEVELOPMENT_TEAM" ]]; then
+            unset APPLE_DEVELOPMENT_TEAM
           fi
           pnpm -F @gitpulse/app tauri ios build "${args[@]}"
           echo "signing=$signing" >> "$GITHUB_OUTPUT"
