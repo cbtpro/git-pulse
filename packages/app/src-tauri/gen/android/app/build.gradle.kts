@@ -99,3 +99,5 @@ android {
 // End GitPulse configuration
 
 apply(from = file("../../../android/rustls.gradle.kts"))
+
+apply(from = file("../../../widgets/android/widgets.gradle.kts"))

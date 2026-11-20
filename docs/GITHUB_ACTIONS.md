@@ -43,17 +43,18 @@
 
 ## iOS 签名
 
-默认真机产物为 **unsigned IPA**，不能直接安装到普通 iPhone；模拟器产物只用于模拟器。真机签名使用 Tauri 的证书导入流程，需配置：
+默认真机产物为 **unsigned IPA**，不能直接安装到普通 iPhone；模拟器产物标记为 **simulator-local**，保留 Xcode 本地签名和 App Groups / Keychain 权限，只用于模拟器，不使用发行证书。真机签名使用 Tauri 的证书导入流程，需配置：
 
 | 类型 | 名称 | 内容 |
 | --- | --- | --- |
 | Secret | `IOS_CERTIFICATE` | 包含私钥的 `.p12` 证书 Base64 |
 | Secret | `IOS_CERTIFICATE_PASSWORD` | 导出证书时设置的密码 |
 | Secret | `IOS_MOBILE_PROVISION` | `.mobileprovision` 描述文件 Base64 |
+| Secret | `IOS_WIDGET_MOBILE_PROVISION` | 小组件扩展的 `.mobileprovision` 描述文件 Base64 |
 | Variable | `APPLE_DEVELOPMENT_TEAM` | Apple 开发团队 ID |
 | Variable | `IOS_EXPORT_METHOD` | `debugging`（默认）、`release-testing` 或 `app-store-connect` |
 
-描述文件必须匹配 `com.pe7er.gitpulse`、团队、证书及导出方式。`debugging` 使用开发证书和开发描述文件；App Store 分发使用对应发行证书和描述文件。证书配置不完整会失败，不会自动降级成未签名包。模拟器任务不接收签名证书。
+两个描述文件分别匹配 `com.pe7er.gitpulse` 与 `com.pe7er.gitpulse.widgets`，团队、证书及导出方式保持一致，且均启用 `group.com.pe7er.gitpulse`。`debugging` 使用开发证书和开发描述文件；App Store 分发使用对应发行证书和描述文件。证书配置不完整会失败，不会自动降级成未签名包。模拟器任务不接收签名证书。小组件签名配置由 `scripts/ci/prepare-ios-widgets.mjs` 校验并生成；真机签名流程尚未用小组件描述文件完成实机验证，见 [桌面小组件](HOME_SCREEN_WIDGETS.md)。
 
 参考：[Tauri GitHub 构建流程](https://v2.tauri.app/distribute/pipelines/github/)、[Android 签名](https://v2.tauri.app/distribute/sign/android/)、[iOS 签名](https://v2.tauri.app/distribute/sign/ios/)。
 

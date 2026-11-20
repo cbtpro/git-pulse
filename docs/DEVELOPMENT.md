@@ -59,7 +59,7 @@ pnpm build:windows --dry-run
 pnpm build:android --help
 ```
 
-额外目标需要先 `rustup target add <Rust目标>`。`--dry-run` 仅显示调用计划，不检查或构建；`--help` 查看锁定 CLI 的参数。iOS 构建默认 `--no-sign`；Android release 没有签名变量时输出未签名包。可安装包与发行签名见各平台指南。
+额外目标需要先 `rustup target add <Rust目标>`。`--dry-run` 仅显示调用计划，不检查或构建；`--help` 查看锁定 CLI 的参数。iOS 真机构建默认 `--no-sign`，模拟器保留 Xcode 本地签名以支持 Keychain 和小组件共享数据；Android release 没有签名变量时输出未签名包。可安装包与发行签名见各平台指南，小组件使用与验证见 [贡献活动桌面小组件](HOME_SCREEN_WIDGETS.md)。
 
 原有包级别命令仍可使用，例如 `pnpm -F @gitpulse/app tauri:ios`、`tauri:android:init`、`tauri:windows:build`。底层 `pnpm -F @gitpulse/app tauri ...` 保留给 Actions 和 Xcode；它绕过本地环境检查及默认参数。
 
@@ -89,6 +89,8 @@ pnpm test:scripts
 自动测试使用虚拟凭证与模拟响应，不需要真实 GitHub Token。原生运行还应人工检查浏览器授权、账号切换、系统安全存储、安全区、外链跳转，以及屏幕阅读器和软键盘行为。Web 测试通过不能替代各系统上的安装验证。
 
 ## 产物与清理
+
+应用图标使用站立木乃伊猫原稿，执行 `pnpm icons:generate` 可重新生成所有平台尺寸及 PNG、ICO、ICNS、WebP 导出。移动工程会自动同步图标，细节见[应用图标](APP_ICONS.md)。
 
 | 平台 | 默认输出位置（相对仓库） |
 | --- | --- |

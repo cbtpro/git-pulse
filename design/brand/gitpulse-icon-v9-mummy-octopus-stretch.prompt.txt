@@ -1,0 +1,26 @@
+Generated with the built-in image generation tool.
+Primary edit target: /Users/pe7er/Desktop/cat_mummy_1024.png
+Secondary anatomy reference: gitpulse-icon-v8-mummy-octopus.png
+
+Edit the supplied images to satisfy the user's correction: "动作要保持和图片一样" — preserve the pose of the ORIGINAL CAT image.
+
+REFERENCE ROLES:
+Image 1, cat_mummy_1024.png, is the PRIMARY EDIT TARGET and the absolute reference for the action, silhouette, framing, camera angle, color palette and illustration style.
+Image 2, gitpulse-icon-v8-mummy-octopus.png, is a SECONDARY reference ONLY for the octopus species and bandaged tentacle anatomy. Its upright, centered, sitting pose was rejected. Do not copy Image 2's pose or radial composition.
+
+Primary task: transform the mummy CAT in Image 1 into a mummy OCTOPUS while keeping the cat's exact playful forward-stretch / low crouching action. This is a localized species transformation of Image 1, not a new octopus portrait.
+
+POSE MUST MATCH IMAGE 1:
+- The character is oriented diagonally toward the LOWER RIGHT, in the same slightly elevated three-quarter view.
+- Preserve the large high ARCHED rear mass on the LEFT, the LOW face/head near the LOWER RIGHT, and the forward-extended front limbs resting on the ground.
+- Preserve the steep slope from the high left rear to the low right face, the grounded stretching tension and the asymmetrical horizontal silhouette.
+- The bandaged appendage arching up and over the top from left toward upper-right should remain in the SAME arc and location, but become one raised flexible OCTOPUS ARM, NOT a cat tail.
+- Keep the yellow half-lidded eyes low on the front/right of the creature, looking toward the viewer at the same angle and position as the source. Do not move the eyes to the middle of an upright head.
+
+ANATOMICAL TRANSLATION:
+Make the high arched left/rear body into the octopus's broad rounded, flexible mantle, hunched up as it stretches forward. The front of the octopus flows into the low rounded bandaged face at the same spot where the cat's face was. Remove both cat ears completely, remove cat paws and mammalian joints. Replace the two front paws with two flattened bandage-wrapped tentacles extending forward on the ground, following their original directions and footprints, with gently curled tapered tips instead of paws. Replace the visible rear leg contours with folded or curled tentacles supporting the stretch near the left side. There should be eight octopus arms in total including the raised arched arm; some may be naturally occluded behind the mantle. Do NOT fan out all eight arms around the character: preserve the compact cat-like stretching silhouette and only expose arms where the original pose has room. The arms emerge around the low front/head region and can curl back alongside the mantle.
+
+STYLE INVARIANTS:
+Keep the original illustration's broad overlapping ivory mummy bandages, muted warm taupe thick outlines, flat beige highlights/shadows, sleepy golden-yellow eyes in a dark horizontal bandage opening, pale gray background, and low soft gray ground shadow. Retain the source's proportions and scale as closely as the species transformation allows. Cute, lazy, relaxed personality, no anger. No cat ears, whiskers, paws, separate mammal tail or upright octopus dome. No black app-icon background, green nodes, branding, text, props or extra decorations.
+
+The final picture must instantly read as the SAME STRETCHING ACTION and composition as Image 1, with octopus anatomy substituted. Pose fidelity has higher priority than displaying every arm. A single square finished image only.

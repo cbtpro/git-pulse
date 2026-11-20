@@ -1,0 +1,15 @@
+Generated with the built-in image generation tool.
+
+Use case: logo-brand.
+Create a striking bespoke app icon for GitPulse with a strong memorable silhouette. Prior iterations were rejected because they looked like generic Git branch/ECG diagrams or meaningless metallic letterforms. This design must retain Git + activity meaning while looking like a distinctive brand mark.
+
+ONE tightly resolved concept: "The jumping commit".
+The outer silhouette is a compact, bold, softly rounded DIAMOND, deliberately interrupted at the upper-right shoulder. A small vivid jade lozenge, matching the diamond's angle, has advanced slightly outward from that interruption. This displaced terminal is the signature: a single commit moving forward. It should feel inevitable and integrated, not an arbitrary status badge. The lozenge has gently rounded corners, not a circle.
+
+Build the main diamond from substantial porcelain-white geometry with generous BLACK NEGATIVE SPACE, almost as if it was a custom die-cut symbol. Inside, a concise branching incision connects two rounded commit apertures and rises toward the detached jade terminal. One deliberate sharp zigzag in the incision is the pulse. The result is one compact emblem: Git's branching history, a pulse-shaped cut, and the active commit escaping the frame. Make the diamond open naturally at the point where the branch exits. The cutout must be broad enough to read at app-icon scale. The ratio between the solid body, circular apertures, diagonal cut and floating green terminal is the core of the design.
+
+Extremely important: this is NOT a thin outline diamond containing a tiny diagram, NOT the existing orange Git logo, NOT a generic share or USB icon, NOT a stock ECG icon, NOT a letter G, NOT a chat bubble. Integrate the branch into the mass of the symbol through negative space. Do not add an unrelated line chart. The silhouette should be distinctive even with all colors replaced by one ink. Use just TWO or THREE large simple shapes, no decorative micro-details. Get the optical centering, calm spacing, thick-to-thin balance and negative-space flow exactly right.
+
+Art direction: premium contemporary identity design, flat almost-vector graphic, crisp edges, rounded geometry with one precise angular intervention. Warm porcelain white main body, one deep bright jade active terminal, pure soft graphite-black background. No material texture, no metal, no bevel, no 3D extrusion, no gradients, no glow. Prestige through original form and exceptional proportions.
+
+Square opaque full-bleed background, no pre-rounded outside corners or border. Mark centered optically and about 60 percent of canvas width, with ample safe space around the displaced terminal for circular app masks. Single final icon artwork only, frontal view. No text, labels, wordmark, mockups, grids, multiple versions or presentation composition.

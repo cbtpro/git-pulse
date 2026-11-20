@@ -91,3 +91,6 @@ pnpm build:android --apk --target aarch64 --debug
 脚本只引用环境变量，不把密码写进 Gradle；缺少部分变量或文件不存在会停止。CI 使用 `ANDROID_KEYSTORE_BASE64` 解码临时文件，与本地路径变量不同，见 [Actions 签名](GITHUB_ACTIONS.md#android-签名)。签名材料不要提交到仓库。
 
 Android 当前使用 Web Crypto 非导出密钥加密本地账号数据；它与桌面/iOS 的系统安全存储实现不同。清除应用数据会清除本地账号与设置。
+## 贡献活动桌面小组件
+
+应用包含 2D/3D 两种原生小组件，添加方式、同步规则及验证范围见 [桌面小组件](HOME_SCREEN_WIDGETS.md)。本地初始化和 CI 会自动接入 `src-tauri/widgets/android/`，重新生成 Android 工程后无需手动复制源码。

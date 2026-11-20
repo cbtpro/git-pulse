@@ -1,4 +1,3 @@
-import { GitBranch } from "lucide-react";
 import { useTranslation } from "../../i18n";
 
 export function Brand() {
@@ -6,7 +5,12 @@ export function Brand() {
   return (
     <div className="gp-brand">
       <span className="gp-brand-mark">
-        <GitBranch size={22} aria-hidden="true" />
+        <img
+          src={`${import.meta.env.BASE_URL}icons/brand.webp`}
+          width={38}
+          height={38}
+          alt=""
+        />
       </span>
       <span className="gp-brand-name">
         GitPulse<span>{t("YOUR GITHUB WORKSPACE")}</span>

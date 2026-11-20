@@ -1,3 +1,4 @@
+import { WidgetSettingsCard } from "../components/contributions/WidgetSettingsCard";
 import { APP_VERSION } from "../version";
 import { useTranslation } from "../i18n";
 import { Button, Card, Radio, Select, Switch } from "@arco-design/web-react";
@@ -69,6 +70,7 @@ export function SettingsPage({ onShowLogin }: { onShowLogin: () => void }) {
       <div className="gp-settings-layout">
         <div className="gp-settings-main">
           <AccountSettingsCard onShowLogin={onShowLogin} />
+          <WidgetSettingsCard />
           <Card className="gp-settings-card">
             <div className="gp-card-title">
               <Palette size={20} />

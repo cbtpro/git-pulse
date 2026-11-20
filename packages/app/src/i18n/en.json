@@ -423,5 +423,21 @@
   "未能标记为已读，请重试。": "Could not mark as read. Please retry.",
   "通知按最近更新时间排列。点击通知前往 GitHub，并自动标记为已读。": "Notifications are sorted by recent updates. Opening a notification on GitHub also marks it as read.",
   "顶部毛玻璃效果": "Frosted header",
-  "让顶部栏呈现柔和的背景模糊效果。关闭后使用不透明背景。": "Give the header a softly blurred background. Turn off for an opaque background."
+  "让顶部栏呈现柔和的背景模糊效果。关闭后使用不透明背景。": "Give the header a softly blurred background. Turn off for an opaque background.",
+  "桌面贡献小组件": "Home screen contribution widgets",
+  "提供二维热力图和三维贡献图，支持不同尺寸，跟随当前登录账号。": "Add a 2D heatmap or 3D contribution chart in different sizes, following your active account.",
+  "与应用同步": "Sync with the app",
+  "打开应用、切换账号或刷新贡献图时更新；退出账号后清空小组件。不共享 GitHub Token。": "Updates when you open the app, switch accounts, or refresh contributions. Signing out clears the widget. GitHub tokens are never shared.",
+  "最近同步：{{time}}": "Last synced: {{time}}",
+  "立即同步": "Sync now",
+  "当前版本未启用桌面小组件，请安装支持小组件的版本。": "Widgets are unavailable in this build. Install a version with widget support.",
+  "登录后，贡献活动会同步到桌面。": "Sign in to sync your contributions to the home screen.",
+  "暂时无法获取贡献数据，已保留上次同步内容，请稍后重试。": "Could not fetch contributions. The previous snapshot is kept; please try again later.",
+  "小组件同步失败，请稍后重试。": "Widget sync failed. Please try again later.",
+  "长按桌面，在小组件列表中找到 GitPulse，选择 2D 或 3D。点击小组件可打开应用。": "Long-press the home screen, find GitPulse in the widget gallery, and choose 2D or 3D. Tap a widget to open the app.",
+  "添加 2D 小组件": "Add 2D widget",
+  "添加 3D 小组件": "Add 3D widget",
+  "请在系统面板中确认添加小组件。": "Confirm adding the widget in the system panel.",
+  "请长按桌面，在小组件列表中找到 GitPulse。": "Long-press the home screen and find GitPulse in the widget gallery.",
+  "无法添加小组件，请从桌面的小组件列表添加。": "Could not add the widget. Please use the home screen widget gallery."
 }

@@ -24,7 +24,9 @@
     "build:web": "pnpm -F @gitpulse/app build:web",
     "build:desktop": "node scripts/dev/platform.mjs build desktop",
     "doctor": "node scripts/dev/doctor.mjs",
-    "test:scripts": "node --test scripts/ci/scripts.test.mjs scripts/dev/scripts.test.mjs",
+    "test:scripts": "node --test scripts/ci/scripts.test.mjs scripts/dev/*.test.mjs",
+    "icons:generate": "node scripts/dev/icons.mjs",
+    "icons:sync": "node scripts/dev/sync-icons.mjs",
     "check": "pnpm -F @gitpulse/app type-check && pnpm -F @gitpulse/app test && pnpm test:scripts",
     "preview:web": "pnpm -F @gitpulse/app preview",
     "dev:macos": "node scripts/dev/platform.mjs dev macos",
@@ -42,7 +44,8 @@
     "build:ios:simulator": "node scripts/dev/platform.mjs build ios:simulator"
   },
   "devDependencies": {
-    "pnpm": "^10.34.9"
+    "pnpm": "^10.34.9",
+    "sharp": "^0.35.5"
   },
   "engines": {
     "node": ">=20.0.0",

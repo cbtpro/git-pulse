@@ -5,7 +5,7 @@ import { parseEnv } from "node:util";
 export function iosEnvironment(env = process.env, localFile = "") {
   const local = parseEnv(localFile);
   const result = { ...env };
-  for (const name of ["APPLE_DEVELOPMENT_TEAM", "GITPULSE_IOS_DEVICE"]) {
+  for (const name of ["APPLE_DEVELOPMENT_TEAM", "GITPULSE_IOS_DEVICE", "GITPULSE_IOS_WIDGETS"]) {
     const value = env[name] ?? local[name];
     if (value?.trim()) result[name] = value.trim();
     else delete result[name];
@@ -17,6 +17,8 @@ export function iosEnvironment(env = process.env, localFile = "") {
     throw new Error(
       "APPLE_DEVELOPMENT_TEAM 应为 Apple 开发团队的 10 位 Team ID，请检查 .env.ios.local 或终端环境变量。",
     );
+  if (result.GITPULSE_IOS_WIDGETS && !["auto", "enabled", "disabled"].includes(result.GITPULSE_IOS_WIDGETS))
+    throw new Error("GITPULSE_IOS_WIDGETS 应为 auto、enabled 或 disabled。");
   return result;
 }
 

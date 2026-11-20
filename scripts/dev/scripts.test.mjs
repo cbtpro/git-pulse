@@ -143,14 +143,12 @@ test("mobile plans distinguish simulator, unsigned device and explicit signing",
     "build",
     "--target",
     "aarch64-sim",
-    "--no-sign",
   ]);
   assert.deepEqual(plan("build", "ios:simulator", [], "darwin", "x64").args, [
     "ios",
     "build",
     "--target",
     "x86_64",
-    "--no-sign",
   ]);
   assert(
     !plan(

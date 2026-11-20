@@ -1,0 +1,20 @@
+Generated with the built-in image generation tool.
+Source image: /Users/pe7er/Desktop/cat_mummy_1024.png
+
+Initial edit:
+Edit the supplied image directly. The user requests: "用这张图片，把形象换成章鱼" — use this exact image and change the character into an octopus.
+
+Preserve the source image's recognizable visual language: a cute cartoon MUMMY wrapped in broad overlapping pale ivory / cream linen bandages, thick muted warm taupe outlines, understated beige fold shadows, two visible golden-yellow eyes in a dark horizontal gap between facial bandages, a languid sleepy unimpressed but friendly personality, a plain very light gray background, and the soft gray grounding shadow underneath. Match the simple flat hand-drawn sticker illustration, its restrained muted palette, stroke thickness and soft edges. Keep the character alone and large within a square image.
+
+Transform the ANATOMY completely from cat to OCTOPUS. Replace the cat's arched torso and separate feline head with one charming rounded bulbous octopus mantle/head, slightly squishy and leaning forward. NO cat ears, NO tail, NO paws, NO whiskers. Put the familiar two sleepy yellow eyes on the front of the bandaged octopus head, keeping their half-lidded relaxed expression; do not make angry slanted brows. The bandages still cover the mouth.
+
+Give the octopus EIGHT distinct, readable, short-to-medium soft arms emerging naturally from beneath the single head. Arrange them in a balanced low fan: some arms curl gently up at the left and right sides, two front arms rest forward, and the rear arms are partially overlapped but still understandable. Make each arm taper and curl like an octopus tentacle, not cat legs or a mammal tail. Wrap each arm in the same broad ivory bandages following its curves. Separate arms with clear negative spaces; avoid spaghetti-like tangles or merged extra appendages. Rounded tips, adorable cartoon proportions, no realistic skin or individually drawn suckers. Allow a small loose bandage end if it helps retain the mummy charm, but no extra accessories.
+
+Composition: retain the source's gently elevated three-quarter perspective, soft shadow on the ground, and cozy compact silhouette. Keep the entire octopus including all curling arm tips inside the square canvas with a small breathing margin. Keep the original very pale gray background opaque. Do not introduce the previous GitPulse black background, green nodes, ECG graphics or any logo motifs. No text, no logo, no frames, no presentation layout, no watermarks, no other objects. The result must feel like the OCTOPUS member of exactly the same cartoon mummy character family as the supplied cat.
+
+Anatomy refinement:
+Edit this mummy octopus image with one precise anatomical correction only. Keep the current head, sleepy yellow eyes, ivory bandages, taupe outlines, shadows, pale gray background, style, camera angle and all existing tentacles exactly as close as possible.
+
+The current drawing has FOUR clearly visible tentacle tips on the viewer's LEFT but only THREE on the viewer's RIGHT. Add the missing eighth arm on the viewer's RIGHT, between the existing middle-right curling arm and the long front-right arm. The added arm should emerge naturally from beneath the lower-right edge of the head, curve toward the lower-right at roughly the four-o'clock direction, and end in a soft inward curl in the open gap, visually mirroring the short lower-left arm. Wrap it with matching broad ivory bandages and taupe outlines. It must have its own clearly visible tip and dark negative-space separation. Keep it inside the image. Do NOT remove, fuse, duplicate or relocate any of the existing seven arm tips.
+
+Final anatomy: FOUR clearly distinguishable arms with separate visible tips on EACH side of the rounded head, EIGHT tips in total. Preserve the friendly sleepy cartoon mummy character; no cat ears, tail, paws, extra objects, text, logo or color changes. Only fix the missing arm and the nearby overlapping outline/shadow needed to make it coherent.

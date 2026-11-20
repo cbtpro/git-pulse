@@ -49,7 +49,7 @@ jobs:
         run: |
           echo 'Publishing requires platform=all.' >&2
           exit 1
-      - run: node --test scripts/ci/scripts.test.mjs scripts/dev/scripts.test.mjs
+      - run: node --test scripts/ci/scripts.test.mjs scripts/dev/*.test.mjs
       - run: pnpm -F @gitpulse/app type-check
       - run: pnpm -F @gitpulse/app test
       - run: pnpm -F @gitpulse/app build:web
@@ -176,6 +176,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Initialize Android project
         run: pnpm -F @gitpulse/app tauri android init --ci --skip-targets-install
+      - name: Restore Android app icons
+        run: node scripts/dev/sync-icons.mjs android
       - name: Configure generated project and optional signing
         id: prepare
         run: node scripts/ci/prepare-android.mjs
@@ -242,10 +244,20 @@ jobs:
         run: |
           if [[ -f packages/app/src-tauri/gen/apple/project.yml ]]; then
             mkdir -p packages/app/src-tauri/gen/apple/Externals packages/app/src-tauri/gen/apple/assets
+            # The host CLI applies --build-number only to its own target.
+            # Set the shared value so the embedded widget has the same version.
+            node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const path = 'packages/app/src-tauri/gen/apple/project.yml';
+          const { version } = JSON.parse(readFileSync('packages/app/package.json', 'utf8'));
+          const build = `${version}.${process.env.GITHUB_RUN_NUMBER}`;
+          writeFileSync(path, readFileSync(path, 'utf8').replace(/CURRENT_PROJECT_VERSION: "[^"]+"/, `CURRENT_PROJECT_VERSION: "${build}"`));
+          NODE
             xcodegen generate --spec packages/app/src-tauri/gen/apple/project.yml
           else
             pnpm -F @gitpulse/app tauri ios init --ci --skip-targets-install
           fi
+          node scripts/dev/sync-icons.mjs ios
       - name: Package iOS app
         id: package
         shell: bash
@@ -254,20 +266,27 @@ jobs:
           IOS_CERTIFICATE: ${{ matrix.target == 'aarch64' && secrets.IOS_CERTIFICATE || '' }}
           IOS_CERTIFICATE_PASSWORD: ${{ matrix.target == 'aarch64' && secrets.IOS_CERTIFICATE_PASSWORD || '' }}
           IOS_MOBILE_PROVISION: ${{ matrix.target == 'aarch64' && secrets.IOS_MOBILE_PROVISION || '' }}
+          IOS_WIDGET_MOBILE_PROVISION: ${{ matrix.target == 'aarch64' && secrets.IOS_WIDGET_MOBILE_PROVISION || '' }}
           APPLE_DEVELOPMENT_TEAM: ${{ vars.APPLE_DEVELOPMENT_TEAM }}
           IOS_EXPORT_METHOD: ${{ vars.IOS_EXPORT_METHOD || 'debugging' }}
         run: |
           args=(--ci --target "$IOS_TARGET" --build-number "$GITHUB_RUN_NUMBER")
           signing=unsigned
-          if [[ -n "$IOS_CERTIFICATE$IOS_CERTIFICATE_PASSWORD$IOS_MOBILE_PROVISION" ]]; then
-            if [[ -z "$IOS_CERTIFICATE" || -z "$IOS_CERTIFICATE_PASSWORD" || -z "$IOS_MOBILE_PROVISION" || -z "$APPLE_DEVELOPMENT_TEAM" ]]; then
+          if [[ -n "$IOS_CERTIFICATE$IOS_CERTIFICATE_PASSWORD$IOS_MOBILE_PROVISION$IOS_WIDGET_MOBILE_PROVISION" ]]; then
+            if [[ -z "$IOS_CERTIFICATE" || -z "$IOS_CERTIFICATE_PASSWORD" || -z "$IOS_MOBILE_PROVISION" || -z "$IOS_WIDGET_MOBILE_PROVISION" || -z "$APPLE_DEVELOPMENT_TEAM" ]]; then
               echo 'Configure all iOS signing secrets and APPLE_DEVELOPMENT_TEAM together.' >&2
               exit 1
             fi
+            node scripts/ci/prepare-ios-widgets.mjs
             args+=(--export-method "$IOS_EXPORT_METHOD")
             signing=signed
           else
-            args+=(--no-sign)
+            if [[ "$IOS_TARGET" == 'aarch64' ]]; then
+              args+=(--no-sign)
+            else
+              # Keep Xcode's local simulator signature for App Groups/Keychain.
+              signing=simulator-local
+            fi
             unset IOS_CERTIFICATE IOS_CERTIFICATE_PASSWORD IOS_MOBILE_PROVISION
           fi
           # An absent optional team is valid for unsigned builds; an empty value is not.

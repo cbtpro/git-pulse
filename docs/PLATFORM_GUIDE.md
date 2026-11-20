@@ -14,7 +14,7 @@
 
 Node.js 22、pnpm 10.34.9；Tauri CLI、前端依赖以 `pnpm-lock.yaml` 为准，Rust 依赖以 `Cargo.lock` 为准。Android 使用 JDK 21、NDK 27.2.12479018、Build Tools 36.0.0，平台 SDK 按生成工程的 `compileSdk` 安装。
 
-iOS 应用最低支持 **18.7.8**，真机和模拟器均遵循此要求；Tauri CLI 的两段版本兼容配置见 [iOS 开发文档](iOS_DEVELOPMENT.md)。
+iOS 应用最低支持 **17.4**，真机和模拟器均遵循此要求；主应用与小组件的版本配置见 [iOS 开发文档](iOS_DEVELOPMENT.md)。
 
 桌面通过 Tauri 的 `dev` / `build` 命令运行，没有 `tauri macos dev` 这样的子命令。iOS 和 Android 才使用移动端子命令。`gen/apple` 是 iOS 工程，macOS 桌面不使用该 Xcode 工程。所有平台共用 React 页面和主要 Rust 入口，系统能力采用条件编译。
 

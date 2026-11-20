@@ -1,3 +1,4 @@
+import { startContributionWidgetSync } from "./services/widgets/WidgetService";
 import { useTranslation } from "./i18n";
 import { useEffect, useState } from "react";
 import { ConfigProvider, Spin } from "@arco-design/web-react";
@@ -45,6 +46,9 @@ export function App() {
       document.removeEventListener("visibilitychange", resume);
       window.removeEventListener("pageshow", resume);
     };
+  }, [ready]);
+  useEffect(() => {
+    if (ready) return startContributionWidgetSync();
   }, [ready]);
   return (
     <ConfigProvider

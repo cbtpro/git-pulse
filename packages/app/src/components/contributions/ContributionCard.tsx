@@ -1,4 +1,5 @@
-import { useCallback, useState } from "react";
+import { publishContributionCalendar } from "../../services/widgets/WidgetService";
+import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Radio, Skeleton } from "@arco-design/web-react";
 import { Boxes, Grid2X2, RefreshCw } from "lucide-react";
 import { useTranslation } from "../../i18n";
@@ -21,6 +22,10 @@ export function ContributionCard({
   const resource = useGitHubResource(
     useCallback((signal) => github.contributions(token, signal), [token]),
   );
+  useEffect(() => {
+    if (resource.data && !resource.loading && !resource.error)
+      void publishContributionCalendar(resource.data, token);
+  }, [resource.data, resource.loading, resource.error, token]);
   return (
     <Card className="gp-contribution-card">
       <div className="gp-contribution-heading">

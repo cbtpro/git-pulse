@@ -1,3 +1,4 @@
+import { prepareAndroidWidgets } from "../lib/widgets.mjs";
 import { androidConfiguration } from "../lib/android.mjs";
 import {
   androidPlatformPackage,
@@ -34,6 +35,7 @@ if (signed) {
   appendFileSync(process.env.GITHUB_ENV, `ANDROID_KEYSTORE_PATH=${keyPath}\n`);
 }
 writeFileSync(gradlePath, configuration.source);
+prepareAndroidWidgets("packages/app/src-tauri/gen/android");
 appendFileSync(
   process.env.GITHUB_OUTPUT,
   `compile-sdk=${sdk}\nplatform-packages=${platforms}\nsigning=${signed ? "signed" : "unsigned"}\n`,

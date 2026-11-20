@@ -1,0 +1,5 @@
+<resources>
+    <string name="widget_2d_name">贡献活动 · 2D</string>
+    <string name="widget_3d_name">贡献活动 · 3D</string>
+    <string name="widget_description">打开 GitPulse 时同步当前账号的贡献活动。</string>
+</resources>

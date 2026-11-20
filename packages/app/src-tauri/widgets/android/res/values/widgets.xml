@@ -1,0 +1,5 @@
+<resources>
+    <string name="widget_2d_name">Contributions · 2D</string>
+    <string name="widget_3d_name">Contributions · 3D</string>
+    <string name="widget_description">GitHub contributions, synced when you open GitPulse.</string>
+</resources>

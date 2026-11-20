@@ -1,0 +1,12 @@
+Generated with the built-in image generation tool.
+
+Use case: logo-brand.
+Design a single exceptional luxury-grade app icon for GitPulse. The user wants a commanding, elegant, substantial brand identity: 高档、大气、上档次. This is a completely new design, not an iteration on a purple folded ribbon.
+
+Creative concept: "The carved monogram". One bold bespoke G-shaped emblem, sculpted as a single substantial piece of satin platinum. Its design feels architectural and timeless. The silhouette is compact and nearly square: a generous left arc flowing into strong horizontal top and bottom planes, a carefully placed open cut at upper-right, and a crisp diagonal interior return. Let the negative space hint at a forward path / branching route without any literal coding symbol. The distinctive proportions and disciplined cut should make it unmistakable in silhouette. Avoid the appearance of a standard typeset G: make it a custom integrated emblem with a memorable angled inner opening. Use one tiny recessed graphite seam or notch as the only secondary detail. No separate ornaments.
+
+Visual execution: orthographic straight-on view, very shallow extruded relief, convincingly refined brushed platinum or pale warm silver. Broad quiet highlights, precisely chamfered edges, subdued dark metal side faces, extremely fine material finish. Think a beautifully machined mark on premium industrial hardware. The emblem must have strong, weighty presence, not a thin line logo and not a soft inflatable 3D object. Minimal realistic lighting from upper left, a restrained contact shadow, no flares or glow. Keep the massing and negative space legible at 32px.
+
+Background: near-black graphite with a nearly imperceptible tonal variation, no surface pattern. Square full-bleed opaque canvas, no pre-rounded outside corners, no external margin. Center the emblem optically, occupying about 63 percent of canvas width, with generous balanced breathing room suitable for circular and squircle app masks. Strong silvery-white versus charcoal contrast, very low saturation.
+
+Single final application icon only. No text or brand name printed, no captions, no presentation board, no extra variants, no border, no enclosing ring, no crowns, no gemstones, no laurels, no black-and-gold luxury cliches, no ribbon, no infinity loop, no shiny chrome, no bevel piled on bevel, no rainbow, no purple gradient, no neon. Convey prestige through the originality of the geometry, immaculate proportions and restrained material treatment.

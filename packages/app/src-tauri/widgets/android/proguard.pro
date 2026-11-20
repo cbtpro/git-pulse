@@ -1,0 +1,3 @@
+-keep class com.pe7er.gitpulse.widgets.ContributionWidgetPlugin { *; }
+-keep class com.pe7er.gitpulse.widgets.WidgetUpdateArgs { *; }
+-keep class com.pe7er.gitpulse.widgets.WidgetPinArgs { *; }

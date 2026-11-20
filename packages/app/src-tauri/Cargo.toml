@@ -43,6 +43,7 @@ keyring = { version = "3.6.3", default-features = false, features = ["sync-secre
 
 [target.'cfg(target_os = "ios")'.dependencies]
 objc2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSString"] }
 objc2-ui-kit = { version = "0.3", default-features = false, features = ["UIView", "UIWindow", "UIScrollView", "UIGeometry"] }
 tokio = { version = "1", features = ["sync"] }
 

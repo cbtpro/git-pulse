@@ -31,6 +31,10 @@ export function androidConfiguration(source) {
     'apply(from = file("../../../android/rustls.gradle.kts"))';
   if (!configured.includes(tlsConfiguration))
     configured += `\n${tlsConfiguration}\n`;
+  const widgetsConfiguration =
+    'apply(from = file("../../../widgets/android/widgets.gradle.kts"))';
+  if (!configured.includes(widgetsConfiguration))
+    configured += `\n${widgetsConfiguration}\n`;
   return {
     sdk,
     source: configured,

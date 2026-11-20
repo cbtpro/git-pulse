@@ -1,0 +1,5 @@
+<resources>
+    <string name="widget_2d_name">貢献活動 · 2D</string>
+    <string name="widget_3d_name">貢献活動 · 3D</string>
+    <string name="widget_description">GitPulse を開くと現在のアカウントの貢献を同期します。</string>
+</resources>

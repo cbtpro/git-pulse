@@ -1,0 +1,12 @@
+Generated with the built-in image generation tool.
+Edit source: gitpulse-icon-v6-octopus.png
+
+Edit the supplied GitPulse octopus app icon. The user finds the octopus evil-looking and wants a friendly cartoon character instead.
+
+Preserve the core identity: an unmistakable eight-armed octopus, the pale porcelain-white body against the dark graphite background, the asymmetrical raised upper-right arm with its green active signal terminal and simple pulse kink, and the two circular commit-node apertures on the lower arms. Retain the square full-bleed background, generous app-icon safe area, balanced composition, and crisp graphic style.
+
+Redesign its personality decisively. Replace BOTH sharp diagonal black eyes with TWO small rounded upright dark oval eyes, spaced generously, with a tiny white highlight in each. No slanted eyebrows or pointed eye corners. Add a very small relaxed curved smile centered beneath them. Give the head a softer rounded, slightly broad dome and full gently rounded cheeks. Make the overall expression curious, cheerful, welcoming and quietly clever, like a friendly little software companion. Aim for an approachable tasteful cartoon mascot, not a villain, alien, skull or aggressive esports logo. Keep the face simple enough to be clear at small sizes. No huge anime eyes, no teeth, no horns.
+
+Round off all the sharp hooked tentacle tips into soft curling rounded ends; the tentacles should feel supple, playful and slightly bouncy while remaining cleanly separated by generous dark negative spaces. Keep the branch/commit symbolism readable and the raised green signal arm distinctive. Avoid suckers and tiny ornamental details. Keep eight arms and avoid adding detached limbs.
+
+Rendering: polished minimal flat cartoon brand mark, smooth substantial shapes, precise clean edges, almost no shading. White octopus with the same fresh jade-green signal tip. No added colors, no glossy 3D, no heavy texture, no glow, no text, no wordmark, no mockup, no decorative underwater background or additional objects. Deliver only the revised single icon.

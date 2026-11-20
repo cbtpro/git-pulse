@@ -28,7 +28,11 @@ function run(cwd, script, args = [], env = {}) {
 test("Android setup detects SDK, is repeatable, and never puts signing passwords in Gradle", (t) => {
   const cwd = fixture(t);
   const dir = join(cwd, "packages/app/src-tauri/gen/android/app");
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(join(dir, "src/main"), { recursive: true });
+  writeFileSync(
+    join(dir, "src/main/AndroidManifest.xml"),
+    "<manifest><application></application></manifest>",
+  );
   const path = join(dir, "build.gradle.kts");
   writeFileSync(path, "android { compileSdk = 37 }\n");
   const env = {
@@ -58,7 +62,11 @@ test("Android setup detects SDK, is repeatable, and never puts signing passwords
 test("partial signing fails and missing signing produces explicitly unsigned configuration", (t) => {
   const cwd = fixture(t);
   const dir = join(cwd, "packages/app/src-tauri/gen/android/app");
-  mkdirSync(dir, { recursive: true });
+  mkdirSync(join(dir, "src/main"), { recursive: true });
+  writeFileSync(
+    join(dir, "src/main/AndroidManifest.xml"),
+    "<manifest><application></application></manifest>",
+  );
   writeFileSync(join(dir, "build.gradle.kts"), "android { compileSdk = 37 }");
   const env = {
     RUNNER_TEMP: cwd,

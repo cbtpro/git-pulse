@@ -1,9 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { prepareAndroidWidgets } from "../lib/widgets.mjs";
+import { syncMobileIcons } from "../lib/icons.mjs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { app, root, packageBin, isMain } from "../lib/paths.mjs";
 import { run, probe } from "../lib/process.mjs";
 import { androidConfiguration } from "../lib/android.mjs";
 import { iosEnvironment, preferredIOSDeviceArgs } from "../lib/ios.mjs";
+import { prepareLocalIOSProject } from "../lib/ios-project.mjs";
 import {
   androidPlatformPackage,
   androidPlatformRequirements,
@@ -81,7 +84,19 @@ export function plan(
               : "x86_64"
             : "aarch64",
         );
-      if (!signed && !has("--no-sign")) base.push("--no-sign");
+      const targets = [...base, ...args];
+      const simulator =
+        !targets.includes("aarch64") &&
+        targets.some((arg) =>
+          [
+            "aarch64-sim",
+            "x86_64",
+            "--target=aarch64-sim",
+            "--target=x86_64",
+          ].includes(arg),
+        );
+      // Xcode's local simulator signature embeds App Group and Keychain entitlements.
+      if (!simulator && !signed && !has("--no-sign")) base.push("--no-sign");
     }
     return { platform: "ios", args: [...base, ...args], env: {} };
   }
@@ -171,30 +186,15 @@ export async function execute(mode, platform, extra = []) {
       "请先补齐上述环境，再运行相同命令。详见 docs/DEVELOPMENT.md。",
     );
   if (command.platform === "android") env = androidEnvironment(env);
+  if (["ios", "android"].includes(command.platform))
+    syncMobileIcons(command.platform);
   if (
     mode === "init" &&
     command.platform === "ios" &&
     existsSync(join(app, "src-tauri/gen/apple/project.yml"))
   ) {
-    for (const directory of ["assets", "Externals"])
-      mkdirSync(join(app, "src-tauri/gen/apple", directory), {
-        recursive: true,
-      });
-    return run(
-      "xcodegen",
-      ["generate", "--spec", join(app, "src-tauri/gen/apple/project.yml")],
-      { cwd: app, env },
-    );
-  }
-  if (mode !== "init" && command.platform === "ios") {
-    const scheme = join(
-      app,
-      "src-tauri/gen/apple/gitpulse.xcodeproj/xcshareddata/xcschemes/gitpulse_iOS.xcscheme",
-    );
-    if (!existsSync(scheme))
-      throw new Error(
-        "缺少 gitpulse_iOS scheme。先运行 pnpm init:ios 生成，再重试。",
-      );
+    await prepareLocalIOSProject(command.args, env, mode);
+    return 0;
   }
   if (command.platform === "android" && mode !== "init") {
     const path = join(app, "src-tauri/gen/android/app/build.gradle.kts");
@@ -203,6 +203,7 @@ export async function execute(mode, platform, extra = []) {
         "先运行 pnpm init:android，再安装生成工程要求的 Android SDK。",
       );
     if (mode === "build") androidSigning(env);
+    prepareAndroidWidgets(join(app, "src-tauri/gen/android"));
     writeFileSync(
       path,
       androidConfiguration(readFileSync(path, "utf8")).source,
@@ -229,7 +230,7 @@ export async function execute(mode, platform, extra = []) {
         );
         const booted = compatibleBootedIOSSimulator(
           JSON.parse(devices.text).devices,
-          // The CLI accepts only major.minor; XcodeGen retains the exact patch.
+          // XcodeGen is the source for the native deployment target.
           readFileSync(
             join(app, "src-tauri/gen/apple/project.yml"),
             "utf8",
@@ -243,13 +244,18 @@ export async function execute(mode, platform, extra = []) {
       }
     }
   }
+  if (command.platform === "ios" && mode !== "init")
+    await prepareLocalIOSProject(command.args, env, mode);
   const code = await run(
     process.execPath,
     [packageBin("@tauri-apps/cli", "tauri"), ...command.args],
     { cwd: app, env },
   );
   if (code) return code;
+  if (mode === "init" && ["ios", "android"].includes(command.platform))
+    syncMobileIcons(command.platform);
   if (mode === "init" && command.platform === "android") {
+    prepareAndroidWidgets(join(app, "src-tauri/gen/android"));
     const path = join(app, "src-tauri/gen/android/app/build.gradle.kts");
     const config = androidConfiguration(readFileSync(path, "utf8"));
     writeFileSync(path, config.source);

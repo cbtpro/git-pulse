@@ -1,7 +1,7 @@
 # Uncomment the next line to define a global platform for your project
 
 target 'gitpulse_iOS' do
-platform :ios, '18.7.8'
+platform :ios, '17.4'
   # Pods for gitpulse_iOS
 end
 

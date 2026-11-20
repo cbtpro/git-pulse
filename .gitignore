@@ -54,3 +54,8 @@ Thumbs.db
 packages/app/src-tauri/gen/apple/*.xcodeproj/
 packages/app/src-tauri/gen/apple/*.xcworkspace/
 packages/app/src-tauri/gen/apple/.tauri/
+# Generated per-machine/CI signing configuration; never commit provisioning details.
+packages/app/src-tauri/gen/apple/widgets.signing.local.json
+packages/app/src-tauri/gen/apple/project.local.json
+packages/app/src-tauri/gen/apple/gitpulse_iOS/PersonalTeam.local.entitlements
+packages/app/src-tauri/gen/apple/ExportOptions.plist

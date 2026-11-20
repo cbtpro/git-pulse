@@ -1,6 +1,7 @@
 #[cfg(target_os = "android")]
 mod android_tls;
 mod github_oauth;
+mod contribution_widgets;
 mod safe_area;
 mod secure_storage;
 
@@ -14,8 +15,12 @@ fn greet(name: &str) -> String {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(contribution_widgets::init())
         .invoke_handler(tauri::generate_handler![
             greet,
+            contribution_widgets::contribution_widget_status,
+            contribution_widgets::sync_contribution_widget,
+            contribution_widgets::pin_contribution_widget,
             github_oauth::github_oauth_request,
             github_oauth::open_github_authorization,
             safe_area::configure_safe_area,
