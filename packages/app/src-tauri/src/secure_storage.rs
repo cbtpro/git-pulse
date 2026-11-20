@@ -6,7 +6,8 @@ use zeroize::Zeroizing;
 static VAULT_LOCK: Mutex<()> = Mutex::new(());
 const AAD: &[u8] = b"gitpulse/auth-vault/v1";
 const MAGIC: &[u8] = b"GPV1";
-const MAX_SIZE: usize = 1_048_576;
+// Credentials and account-scoped workspace data share the encrypted vault.
+const MAX_SIZE: usize = 16 * 1_048_576;
 
 fn entry() -> Result<keyring::Entry, String> {
     if !cfg!(any(target_os = "ios", target_os = "macos", target_os = "windows", target_os = "linux")) {

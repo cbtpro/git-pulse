@@ -7,6 +7,7 @@ import {
   MapPin,
   RefreshCw,
   Settings2,
+  FolderHeart,
   UsersRound,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -190,6 +191,7 @@ export function ProfilePage({ onShowLogin }: { onShowLogin: () => void }) {
               />
             </Suspense>
           )}
+          <div className="gp-work-toolbar"><Button icon={<FolderHeart size={16}/>} onClick={()=>navigate("/profile/collections")}>{t("Star 收藏管理")}</Button></div>
           <ContributionCard token={token} onShowLogin={onShowLogin} />
           {showGitHubPages && (
             <GitHubPages token={token} onShowLogin={onShowLogin} />

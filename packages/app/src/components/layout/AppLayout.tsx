@@ -24,6 +24,7 @@ import { InboxPage } from "../../pages/InboxPage";
 import { ProfilePage } from "../../pages/ProfilePage";
 import { GlobalSearch } from "../search/GlobalSearch";
 import { SettingsPage } from "../../pages/SettingsPage";
+import { StarCollectionsPage } from "../../pages/StarCollectionsPage";
 import { RepositoryPage } from "../../pages/RepositoryPage";
 
 export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
@@ -104,6 +105,7 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
         </header>
         <main id="main-content" className="gp-main" tabIndex={-1}>
           <Routes key={activeAccountId || "guest"}>
+            <Route path="/profile/collections" element={<StarCollectionsPage onShowLogin={onShowLogin} />} />
             <Route path="/repo/:owner/:name" element={<RepositoryPage onShowLogin={onShowLogin} />} />
             <Route path="/" element={<HomePage onShowLogin={onShowLogin} />} />
             <Route

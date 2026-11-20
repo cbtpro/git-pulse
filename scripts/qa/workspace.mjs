@@ -13,6 +13,7 @@ try {
   await page.route('https://api.github.com/**', async route => {
    const url=new URL(route.request().url()); let data={};
    if(url.pathname==='/user') data={id:100,login:'fixture',name:'Fixture',avatar_url:'',html_url:'https://github.com/fixture',public_repos:1,followers:0,following:0};
+   else if(url.pathname==='/user/starred') data=[repo];
    else if(url.pathname==='/repos/octo/project') data=repo;
    else if(url.pathname==='/repos/octo/project/actions/runs') data={workflow_runs:[run],total_count:1};
    else if(url.pathname==='/repos/octo/project/actions/runs/77') data=run;
@@ -56,7 +57,14 @@ try {
   await expect(page.getByText('Build log fixture')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('button',{name:'下载 Expired artifact'})).toBeDisabled();
-  await page.screenshot({path:`review-artifacts/business/repository-${width}.png`,fullPage:true});
+  await page.goto('http://localhost:1420/#/profile/collections');
+  await page.getByRole('button',{name:'整理收藏',exact:true}).click();
+  await page.getByLabel('私人笔记',{exact:true}).fill('Encrypted browser fixture note');
+  await page.getByRole('button',{name:'保存修改',exact:true}).click();
+  await expect(page.locator('.gp-work-note')).toHaveText('Encrypted browser fixture note');
+  await page.reload();
+  await expect(page.locator('.gp-work-note')).toHaveText('Encrypted browser fixture note');
+  await page.screenshot({path:`review-artifacts/business/collections-${width}.png`,fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   expect(overflow,`Horizontal overflow at ${width}`).toBe(false);
   expect(errors).toEqual([]);
