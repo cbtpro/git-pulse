@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InboxPage } from "../src/pages/InboxPage";
+import {TokenManager} from "../src/services/auth/TokenManager";
 import { useAuthStore } from "../src/stores/authStore";
 import {
   github,
@@ -34,9 +35,11 @@ const notification: Notification = {
     },
   },
 };
-beforeEach(() =>
-  useAuthStore.setState({ isLoggedIn: true, token: "inbox-test-token" }),
-);
+beforeEach(async () => {
+  await TokenManager.clearAll();
+  await TokenManager.saveSession("inbox-test-token", "inbox-fixture", "token");
+  useAuthStore.setState({ isLoggedIn:true, token:"inbox-test-token",activeAccountId:"legacy:inbox-fixture",username:"inbox-fixture",accounts:TokenManager.getAccounts() });
+});
 afterEach(() => {
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
@@ -80,9 +83,9 @@ it("keeps the destination usable, deduplicates clicks, and only removes unread i
   render(<InboxPage onShowLogin={vi.fn()} />);
   const link = await screen.findByRole("link", { name: /Review notification/ });
   expect(link.getAttribute("href")).toBe(
-    "https://github.com/test/repo/pull/42",
+    "#/repo/test/repo?account=legacy%3Ainbox-fixture&tab=pulls&number=42",
   );
-  expect(link.getAttribute("target")).toBe("_blank");
+  expect(link.getAttribute("target")).toBeNull();
   // Cancel navigation only in the test; the component must leave the anchor default intact.
   link.addEventListener("click", (event) => event.preventDefault());
   fireEvent.click(link);
@@ -149,8 +152,9 @@ it("does not apply a previous account's completed read to the newly selected acc
   const link = await screen.findByRole("link", { name: /Review notification/ });
   link.addEventListener("click", (event) => event.preventDefault());
   fireEvent.click(link);
-  act(() => useAuthStore.setState({ token: "other-account-token" }));
-  await screen.findByRole("link", { name: /Review notification/ });
+  await TokenManager.saveSession("other-account-token","other","token");
+  act(() => useAuthStore.setState({ token: "other-account-token",activeAccountId:"legacy:other",accounts:TokenManager.getAccounts() }));
+  await screen.findByRole("link", { name: /Review notification.*@other/ });
   await act(async () => finish());
   expect(screen.getByText("未读")).toBeTruthy();
 });

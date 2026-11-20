@@ -16,6 +16,7 @@ import {
 } from "../src/services/github/GitHubService";
 import { useGitHubResource } from "../src/hooks/useGitHubResource";
 import { InboxPage } from "../src/pages/InboxPage";
+import {TokenManager} from "../src/services/auth/TokenManager";
 import { useAuthStore } from "../src/stores/authStore";
 import { MemoryRouter } from "react-router-dom";
 import { ExplorePage } from "../src/pages/ExplorePage";
@@ -152,7 +153,8 @@ it("prompts signed-out users to connect without requesting private notifications
 });
 
 it("shows a failed inbox request with retry, then shows genuine empty results after recovery", async () => {
-  useAuthStore.setState({ isLoggedIn: true, token: "test-token" });
+  await TokenManager.saveSession("test-token","test","token");
+  useAuthStore.setState({ isLoggedIn: true, token: "test-token",accounts:TokenManager.getAccounts(),activeAccountId:"legacy:test" });
   const fetchMock = vi
     .fn()
     .mockResolvedValueOnce(new Response("{}", { status: 500 }))

@@ -8,12 +8,14 @@ try {
  await mkdir('review-artifacts/business', {recursive:true});
  for (const width of [390,1280]) {
   const context = await browser.newContext({viewport:{width,height:844},locale:'zh-CN'});
-  const page = await context.newPage(); const errors=[]; let commentWrites=0;
+  const page = await context.newPage(); const errors=[]; let commentWrites=0; const commentAccounts=[]; const readAccounts=[];
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('https://api.github.com/**', async route => {
    const url=new URL(route.request().url()); let data={};
-   if(url.pathname.endsWith('/issues/7/comments') && route.request().method()==='POST'){commentWrites++;data={id:9,body:'Offline draft fixture',html_url:issue.html_url,user:{login:'fixture'}};}
-   else if(url.pathname==='/user') data={id:100,login:'fixture',name:'Fixture',avatar_url:'',html_url:'https://github.com/fixture',public_repos:1,followers:0,following:0};
+   if(url.pathname.endsWith('/issues/7/comments') && route.request().method()==='POST'){commentWrites++;commentAccounts.push(route.request().headers().authorization);data={id:9,body:'Offline draft fixture',html_url:issue.html_url,user:{login:'fixture'}};}
+   else if(url.pathname==='/notifications') data=[{id:'42',unread:!readAccounts.includes(route.request().headers().authorization),reason:'mention',updated_at:'2026-11-21T00:00:00Z',subject:{title:'Account notification',type:'Issue',url:'https://api.github.com/repos/octo/project/issues/7'},repository:repo}];
+   else if(url.pathname==='/notifications/threads/42'){readAccounts.push(route.request().headers().authorization);return route.fulfill({status:205,body:''});}
+   else if(url.pathname==='/user') data={id:route.request().headers().authorization==='Bearer second-smoke-token'?101:100,login:route.request().headers().authorization==='Bearer second-smoke-token'?'second':'fixture',name:'Fixture',avatar_url:'',html_url:'https://github.com/fixture',public_repos:1,followers:0,following:0};
    else if(url.pathname==='/user/starred') data=[repo];
    else if(url.pathname==='/repos/octo/project') data=repo;
    else if(url.pathname==='/repos/octo/project/actions/runs') data={workflow_runs:[run],total_count:1};
@@ -92,10 +94,22 @@ try {
   expect(commentWrites).toBe(1);
   await expect(page.getByText('暂无评论草稿',{exact:true})).toBeVisible();
   await page.screenshot({path:`review-artifacts/business/offline-${width}.png`,fullPage:true});
+  await page.evaluate(async()=>{const {TokenManager}=await import('/src/services/auth/TokenManager.ts');await TokenManager.loadSession();await TokenManager.saveSession('second-smoke-token','second','token',{id:101,login:'second',name:'Second'});});
+  await page.goto('http://localhost:1420/#/inbox');await page.reload();
+  await expect(page.getByRole('link',{name:/Account notification/})).toHaveCount(2);
+  const sourceLink=page.getByRole('link',{name:/Account notification.*@fixture/});
+  await expect(sourceLink).toHaveAttribute('href',/#\/repo\/octo\/project\?account=100&tab=issues&number=7/);
+  await page.screenshot({path:`review-artifacts/business/inbox-${width}.png`,fullPage:true});
+  await sourceLink.click();
+  await page.getByRole('textbox',{name:'添加评论',exact:true}).fill('Reply as source account');
+  await page.getByRole('button',{name:'发送评论',exact:true}).click();
+  await expect(page.getByText('评论已发送',{exact:true})).toBeVisible();
+  expect(readAccounts).toEqual(['Bearer isolated-smoke-token']);
+  expect(commentAccounts.at(-1)).toBe('Bearer isolated-smoke-token');
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   expect(overflow,`Horizontal overflow at ${width}`).toBe(false);
   expect(errors).toEqual([]);
-  console.log(`Repository ${width}px: README, file navigation, Issue list, discussion and account-scoped dashboard, no overflow or page errors`);
+  console.log(`Repository ${width}px: all 8 workspaces, encrypted restore, offline explicit send and source-account reply passed`);
   await context.close();
  }
 } finally {await browser.close();}

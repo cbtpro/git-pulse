@@ -622,5 +622,8 @@
   "暂无评论草稿": "No comment drafts",
   "删除这份草稿？": "Delete this draft?",
   "删除草稿": "Delete draft",
-  "已缓存的讨论（前 20 条）": "Cached discussion (first 20 comments)"
+  "已缓存的讨论（前 20 条）": "Cached discussion (first 20 comments)",
+  "通知来源账号": "Notification source account",
+  "所有账号": "All accounts",
+  "通知按最近更新时间排列，点击后使用来源账号标为已读并打开讨论。": "Notifications are sorted by latest update. Opening one marks it read using its source account."
 }
