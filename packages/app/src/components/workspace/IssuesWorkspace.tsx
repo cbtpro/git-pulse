@@ -1,13 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Alert, Button, Card, Input, Modal, Popconfirm, Select, Spin, Tabs, Tag } from '@arco-design/web-react';
 import { ArrowLeft, ExternalLink, MessageSquare, Plus } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import { useGitHubResource } from '../../hooks/useGitHubResource';
 import { useWorkspaceAction } from '../../hooks/useWorkspaceAction';
-import { collaboration, workRoute, type WorkKind, type WorkItem } from '../../services/github/CollaborationService';
+import { collaboration, workRoute, type WorkKind, type WorkItem, type Discussion } from '../../services/github/CollaborationService';
 import { RequestError, EmptyState } from '../common/ResourceState';
 import { useRepository } from './RepositoryContext';
+import { CommentComposer } from "./CommentComposer";
+import { useOfflineSnapshot } from "../../hooks/useOfflineWorkspace";
+import { documentKey } from "../../services/auth/OfflineWorkspace";
 import { MarkdownBody, WorkPager } from './WorkShared';
 
 export function IssuesWorkspace({kind}:{kind:WorkKind}) {
@@ -56,11 +59,12 @@ function IssueDetail({kind,number,back}:{kind:WorkKind;number:number;back:()=>vo
 }
 function IssueBody({item,kind,reload}:{item:WorkItem;kind:WorkKind;reload:()=>void}) {
   const c=useRepository(),{t}=useTranslation(),action=useWorkspaceAction();
-  const [comment,setComment]=useState(''),[section,setSection]=useState('comments'),[revision,setRevision]=useState(0);
+  const [section,setSection]=useState('comments'),[revision,setRevision]=useState(0);
+  const [cachedComments,setCachedComments]=useState<Discussion[]|undefined>();
+  const cacheError=useOfflineSnapshot(c.accountId,{key:documentKey(c.repo.full_name,kind==='pulls'?'pull':'issue',item.number),repository:c.repo.full_name,kind:kind==='pulls'?'pull':'issue',number:item.number,title:item.title,body:item.body||'',url:item.html_url,comments:cachedComments?.map(comment=>({author:comment.user?.login||'',body:comment.body,url:comment.html_url}))});
   const [labels,setLabels]=useState(item.labels.map(l=>l.name).join(', ')),[assignees,setAssignees]=useState(item.assignees.map(a=>a.login).join(', '));
   const canManage=Boolean(c.repo.permissions?.push||c.repo.permissions?.triage||c.repo.permissions?.admin);
   const canEdit=canManage || item.user.login.toLowerCase()===c.username?.toLowerCase();
-  const sendComment=()=>void action.run(async()=>{await collaboration.comment(c.owner,c.name,item.number,comment,c.token);setComment('');setRevision(r=>r+1);});
   return <article>
     <div className="gp-work-toolbar"><Tag color={item.merged?'purple':item.state==='open'?'green':'gray'}>{item.merged?t('已合并'):t(item.state==='open'?'进行中':'已关闭')}</Tag><span>#{item.number} · {item.user.login}</span><a className="gp-quiet-link" href={item.html_url} target="_blank" rel="noreferrer">GitHub <ExternalLink size={14}/></a></div>
     <h2 className="gp-work-break">{item.title}</h2>
@@ -72,18 +76,21 @@ function IssueBody({item,kind,reload}:{item:WorkItem;kind:WorkKind;reload:()=>vo
     </form></details>}
     {canEdit&&!item.merged&&<Popconfirm title={t(item.state==='open'?'确认关闭此讨论？':'确认重新打开此讨论？')} onOk={()=>action.run(async()=>{await collaboration.update(c.owner,c.name,kind,item.number,{state:item.state==='open'?'closed':'open'},c.token);reload();})}><Button loading={action.busy}>{t(item.state==='open'?'关闭讨论':'重新打开')}</Button></Popconfirm>}
     <Tabs activeTab={section} onChange={setSection} className="gp-work-content">
-      <Tabs.TabPane key="comments" title={t('讨论')}><DiscussionList key={`comments/${revision}`} number={item.number} section="comments"/></Tabs.TabPane>
+      <Tabs.TabPane key="comments" title={t('讨论')}><DiscussionList key={`comments/${revision}`} number={item.number} section="comments" onLoaded={setCachedComments}/></Tabs.TabPane>
       {kind==='pulls'&&<Tabs.TabPane key="reviews" title={t('评审记录')}><DiscussionList key={`reviews/${revision}`} number={item.number} section="reviews"/></Tabs.TabPane>}
       {kind==='pulls'&&<Tabs.TabPane key="review-comments" title={t('代码评论')}><DiscussionList number={item.number} section="review-comments"/></Tabs.TabPane>}
       {kind==='pulls'&&<Tabs.TabPane key="files" title={t('文件改动')}><ChangedFiles number={item.number}/></Tabs.TabPane>}
     </Tabs>
-    {c.token&&!item.locked?<form className="gp-work-form" onSubmit={event=>{event.preventDefault();sendComment();}}><label>{t('添加评论')}<Input.TextArea value={comment} onChange={setComment} maxLength={65536} autoSize={{minRows:4,maxRows:14}}/></label><Button type="primary" htmlType="submit" disabled={!comment.trim()} loading={action.busy}>{t('发送评论')}</Button></form>:!c.token?<Button onClick={c.onShowLogin}>{t('登录后参与讨论')}</Button>:<Alert content={t('讨论已锁定')}/>}
+    {cacheError&&<Alert type="warning" content={t(cacheError)}/>}
+    {c.token&&!item.locked?<CommentComposer repository={c.repo.full_name} kind={kind==='pulls'?'pull':'issue'} number={item.number} accountId={c.accountId} token={c.token} onSent={()=>setRevision(r=>r+1)}/>:!c.token?<Button onClick={c.onShowLogin}>{t('登录后参与讨论')}</Button>:<Alert content={t('讨论已锁定')}/>}
+
     {kind==='pulls'&&<PullControls item={item} onUpdated={()=>{setRevision(r=>r+1);reload();}}/>}
   </article>;
 }
-function DiscussionList({number,section}:{number:number;section:'comments'|'reviews'|'review-comments'}) {
+function DiscussionList({number,section,onLoaded}:{number:number;section:'comments'|'reviews'|'review-comments';onLoaded?:(comments:Discussion[])=>void}) {
   const c=useRepository(),{t}=useTranslation();const [page,setPage]=useState(1);
   const resource=useGitHubResource(useCallback(signal=>collaboration.discussion(c.owner,c.name,number,section,page,c.token,signal),[c.owner,c.name,number,section,page,c.token]));
+  useEffect(()=>{if(page===1&&resource.data)onLoaded?.(resource.data.data);},[resource.data,page,onLoaded]);
   return resource.loading?<Spin/>:resource.error?<RequestError error={resource.error} retry={resource.reload}/>:<>
     {!resource.data?.data.length&&<p>{t('暂无讨论')}</p>}
     {resource.data?.data.map(comment=><Card key={comment.id} className="gp-work-content" title={<span className="gp-work-break">{comment.user?.login} {comment.state&&<Tag>{comment.state}</Tag>}</span>} extra={<a href={comment.html_url} target="_blank" rel="noreferrer">{t('查看原文')}</a>}>{comment.path&&<p className="gp-work-break">{comment.path}:{comment.line}</p>}<MarkdownBody body={comment.body} url={comment.html_url}/></Card>)}

@@ -8,11 +8,12 @@ try {
  await mkdir('review-artifacts/business', {recursive:true});
  for (const width of [390,1280]) {
   const context = await browser.newContext({viewport:{width,height:844},locale:'zh-CN'});
-  const page = await context.newPage(); const errors=[];
+  const page = await context.newPage(); const errors=[]; let commentWrites=0;
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('https://api.github.com/**', async route => {
    const url=new URL(route.request().url()); let data={};
-   if(url.pathname==='/user') data={id:100,login:'fixture',name:'Fixture',avatar_url:'',html_url:'https://github.com/fixture',public_repos:1,followers:0,following:0};
+   if(url.pathname.endsWith('/issues/7/comments') && route.request().method()==='POST'){commentWrites++;data={id:9,body:'Offline draft fixture',html_url:issue.html_url,user:{login:'fixture'}};}
+   else if(url.pathname==='/user') data={id:100,login:'fixture',name:'Fixture',avatar_url:'',html_url:'https://github.com/fixture',public_repos:1,followers:0,following:0};
    else if(url.pathname==='/user/starred') data=[repo];
    else if(url.pathname==='/repos/octo/project') data=repo;
    else if(url.pathname==='/repos/octo/project/actions/runs') data={workflow_runs:[run],total_count:1};
@@ -73,6 +74,24 @@ try {
   await page.getByText('更新说明',{exact:true}).click();
   await expect(page.getByText('Release notes fixture',{exact:true})).toBeVisible();
   await page.screenshot({path:`review-artifacts/business/releases-${width}.png`,fullPage:true});
+  await page.goto('http://localhost:1420/#/repo/octo/project?tab=issues&number=7');
+  await page.getByRole('textbox',{name:'添加评论',exact:true}).fill('Offline draft fixture');
+  await expect(page.getByText('草稿已在本机加密保存',{exact:true})).toBeVisible();
+  await page.waitForTimeout(500);
+  await context.setOffline(true);
+  await page.evaluate(()=>{location.hash='/profile/offline';});
+  await page.getByRole('button',{name:/^A useful issue/}).click();
+  await expect(page.getByText('Discussion fixture',{exact:true})).toBeVisible();
+  await expect(page.getByRole('textbox',{name:'添加评论',exact:true})).toHaveValue('Offline draft fixture');
+  await expect(page.getByRole('button',{name:'发送评论',exact:true})).toBeDisabled();
+  await context.setOffline(false);
+  await expect(page.getByRole('button',{name:'发送评论',exact:true})).toBeEnabled();
+  expect(commentWrites).toBe(0);
+  await page.getByRole('button',{name:'发送评论',exact:true}).click();
+  await expect(page.getByText('评论已发送',{exact:true})).toBeVisible();
+  expect(commentWrites).toBe(1);
+  await expect(page.getByText('暂无评论草稿',{exact:true})).toBeVisible();
+  await page.screenshot({path:`review-artifacts/business/offline-${width}.png`,fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   expect(overflow,`Horizontal overflow at ${width}`).toBe(false);
   expect(errors).toEqual([]);

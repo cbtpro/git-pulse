@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowUpRight, FileCode, Folder, GitBranch, Star } from "luci
 import { useTranslation } from "../i18n";
 import { useGitHubResource } from "../hooks/useGitHubResource";
 import { useWorkspaceAccount } from "../hooks/useWorkspaceAccount";
+import { useOfflineSnapshot } from "../hooks/useOfflineWorkspace";
+import { documentKey } from "../services/auth/OfflineWorkspace";
 import { useWorkspaceAction } from "../hooks/useWorkspaceAction";
 import { repositories, decodeRepoText, type RepositoryDetails } from "../services/github/RepositoryService";
 import { ProfileMarkdown } from "../components/profile/ProfileReadmeCard";
@@ -20,6 +22,7 @@ function RepositoryContent({ repo, owner, name, token, onShowLogin }: {
   repo: RepositoryDetails; owner: string; name: string; token: string | null; onShowLogin: () => void;
 }) {
   const { t } = useTranslation();
+  const account=useWorkspaceAccount();
   const [params, setParams] = useSearchParams();
   const ref = params.get("ref") || repo.default_branch;
   const path = params.get("path") || "";
@@ -36,6 +39,7 @@ function RepositoryContent({ repo, owner, name, token, onShowLogin }: {
   useEffect(() => { if (branches.data) setBranchOptions((old) => [...new Set([...old, ...branches.data!.data.map((branch) => branch.name)])]); }, [branches.data]);
   const files = useGitHubResource(useCallback((signal) => repositories.contents(owner, name, ref, path, token, signal), [owner, name, ref, path, token]));
   const readme = useGitHubResource(useCallback((signal) => path ? Promise.resolve(null) : repositories.readme(owner, name, ref, token, signal), [owner, name, ref, path, token]));
+  const cacheError=useOfflineSnapshot(account.id,!path&&readme.data?{key:documentKey(repo.full_name,'readme',ref),repository:repo.full_name,kind:'readme',ref,title:`${repo.full_name} · README · ${ref}`,body:readme.data.markdown,url:readme.data.htmlUrl}:null);
   const file = files.data && !Array.isArray(files.data) ? files.data : null;
   const text = file ? decodeRepoText(file) : null;
   return <>
@@ -63,6 +67,7 @@ function RepositoryContent({ repo, owner, name, token, onShowLogin }: {
       ) : file && text !== null ? <pre className="gp-code" tabIndex={0} aria-label={file.name}><code>{text}</code></pre> : file ? <p>{t("此文件暂不支持预览，请在 GitHub 查看。")}</p> : <EmptyState title={t("暂无文件")} description="" />}
       {file && <a className="gp-quiet-link" href={file.html_url} target="_blank" rel="noreferrer">{t("在 GitHub 查看")}<ArrowUpRight size={14} /></a>}
     </Card>
+    {cacheError&&<Alert type="warning" content={t(cacheError)}/>}
     {!path && <Card title="README" className="gp-work-content">{readme.loading ? <Spin /> : readme.error ? <RequestError error={readme.error} retry={readme.reload} onLogin={onShowLogin} /> : readme.data ? <ProfileMarkdown readme={readme.data} /> : <p>{t("该分支没有可预览的 README。")}</p>}</Card>}
   </>;
 }
@@ -99,6 +104,6 @@ export function RepositoryPage({ onShowLogin }: { onShowLogin: () => void }) {
     return repositories.get(owner, name, account.token, signal);
   }, [owner, name, account.token, account.missing]));
   if (resource.loading) return <div className="gp-page"><Spin tip={t("加载中…")} /></div>;
-  if (resource.error) return <div className="gp-page"><RequestError error={resource.error} retry={resource.reload} onLogin={onShowLogin} /></div>;
+  if (resource.error) return <div className="gp-page"><RequestError error={resource.error} retry={resource.reload} onLogin={onShowLogin} /><a className="gp-quiet-link" href="#/profile/offline">{t("查看离线阅读与草稿")}</a></div>;
   return resource.data ? <RepositoryWorkspace key={`${owner}/${name}/${account.id}`} repo={resource.data} {...{ owner, name, onShowLogin }} /> : null;
 }

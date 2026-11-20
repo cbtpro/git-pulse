@@ -4,14 +4,16 @@ import { MemoryRouter } from 'react-router-dom';
 import { RepositoryContext } from '../src/components/workspace/RepositoryContext';
 import { IssuesWorkspace } from '../src/components/workspace/IssuesWorkspace';
 import { collaboration, type WorkItem } from '../src/services/github/CollaborationService';
+import {TokenManager} from '../src/services/auth/TokenManager';
 import type { RepositoryDetails } from '../src/services/github/RepositoryService';
 afterEach(()=>vi.restoreAllMocks());
 it('retains a failed comment and retries using the source account without duplicate writes',async()=>{
+ await TokenManager.saveSession('source-b','b','token');
  const item={id:1,number:42,title:'Fix navigation',body:'Discussion body',state:'open',html_url:'https://github.com/a/b/issues/42',user:{login:'author'},labels:[],assignees:[]} as unknown as WorkItem;
  vi.spyOn(collaboration,'get').mockResolvedValue(item);
  vi.spyOn(collaboration,'discussion').mockResolvedValue({data:[],hasNext:false});
  const comment=vi.spyOn(collaboration,'comment').mockRejectedValueOnce(new Error('Network unavailable')).mockResolvedValue({id:8,body:'Keep this draft'} as never);
- render(<MemoryRouter initialEntries={['/?number=42']}><RepositoryContext.Provider value={{owner:'a',name:'b',repo:{full_name:'a/b'} as RepositoryDetails,token:'source-b',accountId:'b',username:'reader',onShowLogin:vi.fn()}}><IssuesWorkspace kind="issues"/></RepositoryContext.Provider></MemoryRouter>);
+ render(<MemoryRouter initialEntries={['/?number=42']}><RepositoryContext.Provider value={{owner:'a',name:'b',repo:{full_name:'a/b'} as RepositoryDetails,token:'source-b',accountId:'legacy:b',username:'reader',onShowLogin:vi.fn()}}><IssuesWorkspace kind="issues"/></RepositoryContext.Provider></MemoryRouter>);
  const input=await screen.findByLabelText('添加评论');
  fireEvent.change(input,{target:{value:'Keep this draft'}});
  fireEvent.click(screen.getByRole('button',{name:'发送评论'}));

@@ -9,6 +9,7 @@ import {
   Settings2,
   FolderHeart,
   Bell,
+  BookOpen,
   UsersRound,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -192,7 +193,7 @@ export function ProfilePage({ onShowLogin }: { onShowLogin: () => void }) {
               />
             </Suspense>
           )}
-          <div className="gp-work-toolbar"><Button icon={<FolderHeart size={16}/>} onClick={()=>navigate("/profile/collections")}>{t("Star 收藏管理")}</Button><Button icon={<Bell size={16}/>} onClick={()=>navigate("/profile/releases")}>{t("版本更新中心")}</Button></div>
+          <div className="gp-work-toolbar"><Button icon={<FolderHeart size={16}/>} onClick={()=>navigate("/profile/collections")}>{t("Star 收藏管理")}</Button><Button icon={<Bell size={16}/>} onClick={()=>navigate("/profile/releases")}>{t("版本更新中心")}</Button><Button icon={<BookOpen size={16}/>} onClick={()=>navigate("/profile/offline")}>{t("离线阅读与草稿")}</Button></div>
           <ContributionCard token={token} onShowLogin={onShowLogin} />
           {showGitHubPages && (
             <GitHubPages token={token} onShowLogin={onShowLogin} />
