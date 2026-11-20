@@ -42,7 +42,16 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
           location.pathname.startsWith(`${pagePath(item.id)}/`)),
     ) || NAVIGATION_ITEMS[0];
   const isProfileSettings = location.pathname === PROFILE_SETTINGS_PATH;
-  const pageTitle = isProfileSettings ? t("账号与外观") : t(page.label);
+  const workspaceTitles: Record<string, string> = {
+    "/profile/collections": "Star 收藏管理",
+    "/profile/releases": "版本更新中心",
+    "/profile/offline": "离线阅读与草稿",
+  };
+  const pageTitle = isProfileSettings
+    ? t("账号与外观")
+    : location.pathname.startsWith("/repo/")
+      ? t("仓库详情")
+      : t(workspaceTitles[location.pathname] || page.label);
   useEffect(() => {
     document.title = `${pageTitle} · GitPulse`;
   }, [pageTitle]);
@@ -107,10 +116,22 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
         </header>
         <main id="main-content" className="gp-main" tabIndex={-1}>
           <Routes key={activeAccountId || "guest"}>
-            <Route path="/profile/offline" element={<OfflineWorkspacePage onShowLogin={onShowLogin} />} />
-            <Route path="/profile/releases" element={<ReleaseCenterPage onShowLogin={onShowLogin} />} />
-            <Route path="/profile/collections" element={<StarCollectionsPage onShowLogin={onShowLogin} />} />
-            <Route path="/repo/:owner/:name" element={<RepositoryPage onShowLogin={onShowLogin} />} />
+            <Route
+              path="/profile/offline"
+              element={<OfflineWorkspacePage onShowLogin={onShowLogin} />}
+            />
+            <Route
+              path="/profile/releases"
+              element={<ReleaseCenterPage onShowLogin={onShowLogin} />}
+            />
+            <Route
+              path="/profile/collections"
+              element={<StarCollectionsPage onShowLogin={onShowLogin} />}
+            />
+            <Route
+              path="/repo/:owner/:name"
+              element={<RepositoryPage onShowLogin={onShowLogin} />}
+            />
             <Route path="/" element={<HomePage onShowLogin={onShowLogin} />} />
             <Route
               path="/explore"

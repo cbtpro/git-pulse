@@ -11,7 +11,8 @@ export function useWorkspaceAccount() {
   return {
     id,
     token: saved?.token || (id === auth.activeAccountId ? auth.token : null),
-    username: saved?.username || (id === auth.activeAccountId ? auth.username : null),
+    username:
+      saved?.username || (id === auth.activeAccountId ? auth.username : null),
     missing: Boolean(params.get("account") && !saved),
   };
 }

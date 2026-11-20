@@ -82,7 +82,10 @@ export async function requestGitHub<T>(
   path: string,
   token: string | null,
   signal: AbortSignal,
-  options: Pick<RequestInit, "method" | "body"> & { responseType?: "text" | "blob"; accept?: string } = {},
+  options: Pick<RequestInit, "method" | "body"> & {
+    responseType?: "text" | "blob";
+    accept?: string;
+  } = {},
 ): Promise<{ data: T; hasNext: boolean }> {
   if (!path.startsWith("/") || path.startsWith("//"))
     throw new Error("Invalid GitHub API path");
@@ -164,7 +167,10 @@ export async function requestGitHub<T>(
           : "GitHub 拒绝了请求，请检查当前账号的访问权限。";
       }
       if (response.status === 422)
-        message = "搜索条件无效，请调整关键词或筛选条件";
+        message =
+          options.method && options.method !== "GET"
+            ? "GitHub 未接受此操作，请检查内容和权限。"
+            : "搜索条件无效，请调整关键词或筛选条件";
       throw new GitHubRequestError(
         message,
         response.status,
@@ -177,7 +183,9 @@ export async function requestGitHub<T>(
     const data =
       response.status === 204 || response.status === 205
         ? undefined
-        : options.responseType ? await readDownloadResponse(response, options.responseType) : await response.json();
+        : options.responseType
+          ? await readDownloadResponse(response, options.responseType)
+          : await response.json();
     if (
       path === "/graphql" &&
       data.errors?.some(
@@ -197,7 +205,8 @@ export async function requestGitHub<T>(
         queryCache.delete(queryCache.keys().next().value!);
       queryCache.set(path, { ...result, expires: Date.now() + 60_000 });
     }
-    if (options.method && options.method !== "GET" && cacheToken === token) queryCache.clear();
+    if (options.method && options.method !== "GET" && cacheToken === token)
+      queryCache.clear();
     return result;
   } catch (error) {
     if (controller.signal.aborted) throw controller.signal.reason;
@@ -366,27 +375,46 @@ export function notificationUrl(notification: Notification): string {
 }
 
 /** Explicit refresh invalidates query results without removing rate-limit cooldowns. */
-export function invalidateGitHubQueryCache() { queryCache.clear(); }
+export function invalidateGitHubQueryCache() {
+  queryCache.clear();
+}
 
-async function readDownloadResponse(response:Response,type:"text"|"blob") {
-  const limit=type==="text"?2_000_000:100_000_000;
-  const reader=response.body?.getReader();
-  if(!reader)throw new Error("下载内容不可用");
-  const chunks:Uint8Array<ArrayBuffer>[]=[];let size=0,truncated=false;
+async function readDownloadResponse(response: Response, type: "text" | "blob") {
+  const limit = type === "text" ? 2_000_000 : 100_000_000;
+  const reader = response.body?.getReader();
+  if (!reader) throw new Error("下载内容不可用");
+  const chunks: Uint8Array<ArrayBuffer>[] = [];
+  let size = 0,
+    truncated = false;
   try {
-    while(true) { const {value,done}=await reader.read();if(done)break;
-      const remaining=limit-size;
-      if(value.length>remaining) {
-        if(type==="blob")throw new Error("下载文件过大，请在 GitHub 下载");
-        chunks.push(new Uint8Array(value.slice(0,remaining)));truncated=true;break;
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      const remaining = limit - size;
+      if (value.length > remaining) {
+        if (type === "blob") throw new Error("下载文件过大，请在 GitHub 下载");
+        chunks.push(new Uint8Array(value.slice(0, remaining)));
+        truncated = true;
+        break;
       }
-      size+=value.length;chunks.push(new Uint8Array(value));
+      size += value.length;
+      chunks.push(new Uint8Array(value));
     }
-  } finally {await reader.cancel();}
-  if(type==="text") {
-    const bytes=new Uint8Array(chunks.reduce((sum,chunk)=>sum+chunk.length,0));let offset=0;
-    for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.length;}
-    return {text:new TextDecoder().decode(bytes),truncated};
+  } finally {
+    await reader.cancel();
   }
-  return new Blob(chunks,{type:response.headers.get("content-type")||"application/octet-stream"});
+  if (type === "text") {
+    const bytes = new Uint8Array(
+      chunks.reduce((sum, chunk) => sum + chunk.length, 0),
+    );
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.length;
+    }
+    return { text: new TextDecoder().decode(bytes), truncated };
+  }
+  return new Blob(chunks, {
+    type: response.headers.get("content-type") || "application/octet-stream",
+  });
 }

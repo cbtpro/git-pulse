@@ -25,13 +25,17 @@ import {
 } from "../components/common/ResourceState";
 import { TokenManager } from "../services/auth/TokenManager";
 import { internalWorkUrl } from "../services/github/CollaborationService";
-import { UnifiedInboxFeed, markSourceNotificationRead, notificationKey, type AccountNotification, type InboxSource } from "../services/github/UnifiedInboxService";
+import {
+  UnifiedInboxFeed,
+  markSourceNotificationRead,
+  notificationKey,
+  type AccountNotification,
+  type InboxSource,
+} from "../services/github/UnifiedInboxService";
 import { ListPager } from "../components/common/ListPager";
 import { useGitHubResource } from "../hooks/useGitHubResource";
 import { useAuthStore } from "../stores/authStore";
-import {
-  notificationUrl,
-} from "../services/github/GitHubService";
+import { notificationUrl } from "../services/github/GitHubService";
 import { formatDate } from "../utils/format";
 
 const reasons: Record<string, string> = {
@@ -57,8 +61,8 @@ function NotificationList({
 }) {
   const { t } = useTranslation();
   const [all, setAll] = useState(false);
-  const [accountFilter,setAccountFilter]=useState("all");
-  const [refresh,setRefresh]=useState(0);
+  const [accountFilter, setAccountFilter] = useState("all");
+  const [refresh, setRefresh] = useState(0);
   const [participating, setParticipating] = useState(false);
   const [page, setPage] = useState(1);
   const [read, setRead] = useState<Record<string, string>>({});
@@ -76,7 +80,7 @@ function NotificationList({
     };
   }, []);
   const markRead = async (notification: AccountNotification) => {
-    const key=notificationKey(notification);
+    const key = notificationKey(notification);
     if (
       !notification.unread ||
       read[notificationKey(notification)] === notification.updated_at ||
@@ -107,11 +111,35 @@ function NotificationList({
       pending.current.delete(key);
     }
   };
-  const sourceSignature=JSON.stringify(sources);
-  useEffect(()=>{if(accountFilter!=="all"&&!sources.some(source=>source.id===accountFilter)){setAccountFilter("all");setPage(1);}},[sourceSignature,accountFilter]);
-  const feed=useMemo(()=>new UnifiedInboxFeed((JSON.parse(sourceSignature) as InboxSource[]).filter(source=>accountFilter==="all"||source.id===accountFilter),all,participating),[sourceSignature,accountFilter,all,participating,refresh]);
-  const resource=useGitHubResource(useCallback(signal=>feed.load(page,signal),[feed,page]));
-  const reload=()=>{setRead({});setPage(1);setRefresh(value=>value+1);};
+  const sourceSignature = JSON.stringify(sources);
+  useEffect(() => {
+    if (
+      accountFilter !== "all" &&
+      !sources.some((source) => source.id === accountFilter)
+    ) {
+      setAccountFilter("all");
+      setPage(1);
+    }
+  }, [sourceSignature, accountFilter]);
+  const feed = useMemo(
+    () =>
+      new UnifiedInboxFeed(
+        (JSON.parse(sourceSignature) as InboxSource[]).filter(
+          (source) => accountFilter === "all" || source.id === accountFilter,
+        ),
+        all,
+        participating,
+      ),
+    [sourceSignature, accountFilter, all, participating, refresh],
+  );
+  const resource = useGitHubResource(
+    useCallback((signal) => feed.load(page, signal), [feed, page]),
+  );
+  const reload = () => {
+    setRead({});
+    setPage(1);
+    setRefresh((value) => value + 1);
+  };
   const notifications =
     resource.data?.data
       .map((notification) => ({
@@ -127,7 +155,22 @@ function NotificationList({
         {announcement}
       </span>
       <div className="gp-inbox-toolbar">
-        <Select aria-label={t("通知来源账号")} value={accountFilter} style={{minWidth:160}} options={[{value:"all",label:t("所有账号")},...sources.map(source=>({value:source.id,label:`@${source.username}`}))]} onChange={value=>{setAccountFilter(value);setPage(1);}}/>
+        <Select
+          aria-label={t("通知来源账号")}
+          value={accountFilter}
+          style={{ minWidth: 160 }}
+          options={[
+            { value: "all", label: t("所有账号") },
+            ...sources.map((source) => ({
+              value: source.id,
+              label: `@${source.username}`,
+            })),
+          ]}
+          onChange={(value) => {
+            setAccountFilter(value);
+            setPage(1);
+          }}
+        />
         <Radio.Group
           type="button"
           value={all ? "all" : "unread"}
@@ -175,7 +218,16 @@ function NotificationList({
           }
         />
       )}
-      {resource.data?.errors.map(failure=><section className="gp-work-content" key={failure.accountId}><h3>@{failure.accountName}</h3><RequestError error={failure.error} retry={reload} onLogin={onShowLogin}/></section>)}
+      {resource.data?.errors.map((failure) => (
+        <section className="gp-work-content" key={failure.accountId}>
+          <h3>@{failure.accountName}</h3>
+          <RequestError
+            error={failure.error}
+            retry={reload}
+            onLogin={onShowLogin}
+          />
+        </section>
+      ))}
       {resource.loading ? (
         <LoadingCards />
       ) : resource.error ? (
@@ -193,13 +245,16 @@ function NotificationList({
                 : notification.subject.type === "Issue"
                   ? CircleDot
                   : MessageSquare;
-            const destination=internalWorkUrl(notificationUrl(notification),notification.accountId);
+            const destination = internalWorkUrl(
+              notificationUrl(notification),
+              notification.accountId,
+            );
             return (
               <a
                 className={`gp-notification ${notification.unread ? "is-unread" : ""}`}
                 key={notificationKey(notification)}
-                href={destination||notificationUrl(notification)}
-                target={destination?undefined:"_blank"}
+                href={destination || notificationUrl(notification)}
+                target={destination ? undefined : "_blank"}
                 rel="noreferrer"
                 onClick={() => void markRead(notification)}
                 onAuxClick={(event) => {
@@ -230,7 +285,10 @@ function NotificationList({
             );
           })}
         </Card>
-      ) : resource.data?.errors.length===sources.filter(source=>accountFilter==="all"||source.id===accountFilter).length && resource.data?.errors.length ? null : (
+      ) : resource.data?.errors.length ===
+          sources.filter(
+            (source) => accountFilter === "all" || source.id === accountFilter,
+          ).length && resource.data?.errors.length ? null : (
         <EmptyState
           title={all ? t("这里暂时没有通知") : t("目前没有未读通知")}
           description={
@@ -258,7 +316,11 @@ function NotificationList({
 export function InboxPage({ onShowLogin }: { onShowLogin: () => void }) {
   const { t } = useTranslation();
   const { accounts } = useAuthStore();
-  const sources=accounts.map(account=>({id:account.id,username:account.username,token:TokenManager.getAccount(account.id)?.token||""}));
+  const sources = accounts.map((account) => ({
+    id: account.id,
+    username: account.username,
+    token: TokenManager.getAccount(account.id)?.token || "",
+  }));
   return (
     <div className="gp-page">
       <PageHeader

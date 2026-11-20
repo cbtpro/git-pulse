@@ -10,7 +10,9 @@ export interface RepositoryContextValue {
   username: string | null;
   onShowLogin: () => void;
 }
-export const RepositoryContext = createContext<RepositoryContextValue | null>(null);
+export const RepositoryContext = createContext<RepositoryContextValue | null>(
+  null,
+);
 export function useRepository() {
   const context = useContext(RepositoryContext);
   if (!context) throw new Error("Repository context missing");

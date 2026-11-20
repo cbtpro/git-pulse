@@ -8,7 +8,7 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InboxPage } from "../src/pages/InboxPage";
-import {TokenManager} from "../src/services/auth/TokenManager";
+import { TokenManager } from "../src/services/auth/TokenManager";
 import { useAuthStore } from "../src/stores/authStore";
 import {
   github,
@@ -38,7 +38,13 @@ const notification: Notification = {
 beforeEach(async () => {
   await TokenManager.clearAll();
   await TokenManager.saveSession("inbox-test-token", "inbox-fixture", "token");
-  useAuthStore.setState({ isLoggedIn:true, token:"inbox-test-token",activeAccountId:"legacy:inbox-fixture",username:"inbox-fixture",accounts:TokenManager.getAccounts() });
+  useAuthStore.setState({
+    isLoggedIn: true,
+    token: "inbox-test-token",
+    activeAccountId: "legacy:inbox-fixture",
+    username: "inbox-fixture",
+    accounts: TokenManager.getAccounts(),
+  });
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -152,8 +158,14 @@ it("does not apply a previous account's completed read to the newly selected acc
   const link = await screen.findByRole("link", { name: /Review notification/ });
   link.addEventListener("click", (event) => event.preventDefault());
   fireEvent.click(link);
-  await TokenManager.saveSession("other-account-token","other","token");
-  act(() => useAuthStore.setState({ token: "other-account-token",activeAccountId:"legacy:other",accounts:TokenManager.getAccounts() }));
+  await TokenManager.saveSession("other-account-token", "other", "token");
+  act(() =>
+    useAuthStore.setState({
+      token: "other-account-token",
+      activeAccountId: "legacy:other",
+      accounts: TokenManager.getAccounts(),
+    }),
+  );
   await screen.findByRole("link", { name: /Review notification.*@other/ });
   await act(async () => finish());
   expect(screen.getByText("未读")).toBeTruthy();

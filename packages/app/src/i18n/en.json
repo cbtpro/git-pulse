@@ -625,5 +625,8 @@
   "已缓存的讨论（前 20 条）": "Cached discussion (first 20 comments)",
   "通知来源账号": "Notification source account",
   "所有账号": "All accounts",
-  "通知按最近更新时间排列，点击后使用来源账号标为已读并打开讨论。": "Notifications are sorted by latest update. Opening one marks it read using its source account."
+  "通知按最近更新时间排列，点击后使用来源账号标为已读并打开讨论。": "Notifications are sorted by latest update. Opening one marks it read using its source account.",
+  "仓库详情": "Repository details",
+  "文件路径无效": "Invalid file path",
+  "GitHub 未接受此操作，请检查内容和权限。": "GitHub rejected this action. Check its content and your permissions."
 }

@@ -1,4 +1,7 @@
-import { normalizeWorkspace, type AccountWorkspace } from "../../types/workspace";
+import {
+  normalizeWorkspace,
+  type AccountWorkspace,
+} from "../../types/workspace";
 import { searchIntent } from "../../utils/searchIntent";
 import { SEARCH_CATEGORIES, type SearchHistoryEntry } from "../../types/search";
 import type { UserProfile, PendingAuthorization } from "../../types/auth";
@@ -100,7 +103,9 @@ export class TokenManager {
     return this.vault.accounts.find((account) => account.id === id) ?? null;
   }
   static getAccounts(): AccountSummary[] {
-    return this.vault.accounts.map(({ token: _token, workspace: _workspace, ...account }) => account);
+    return this.vault.accounts.map(
+      ({ token: _token, workspace: _workspace, ...account }) => account,
+    );
   }
 
   static getPendingAuthorization(): PendingAuthorization | null {
@@ -348,18 +353,31 @@ export class TokenManager {
   static getWorkspace(id: string | null): AccountWorkspace {
     return normalizeWorkspace(id ? this.getAccount(id)?.workspace : undefined);
   }
-  static updateWorkspace(id: string, update: (current: AccountWorkspace) => AccountWorkspace): Promise<void> {
+  static updateWorkspace(
+    id: string,
+    update: (current: AccountWorkspace) => AccountWorkspace,
+  ): Promise<void> {
     const revision = this.revision;
     return this.serialize(async () => {
-      if (revision !== this.revision || !this.getAccount(id)) throw new Error("来源账号已移除，请重新添加账号。");
+      if (revision !== this.revision || !this.getAccount(id))
+        throw new Error("来源账号已移除，请重新添加账号。");
       const workspace = normalizeWorkspace(update(this.getWorkspace(id)));
-      const next = {...this.vault, accounts: this.vault.accounts.map(account => account.id === id ? {...account, workspace} : account)};
+      const next = {
+        ...this.vault,
+        accounts: this.vault.accounts.map((account) =>
+          account.id === id ? { ...account, workspace } : account,
+        ),
+      };
       const serialized = JSON.stringify(next);
-      if (new TextEncoder().encode(serialized).byteLength > 12 * 1024 * 1024) throw new Error("本地工作区已满，请清理部分缓存或笔记。");
+      if (new TextEncoder().encode(serialized).byteLength > 12 * 1024 * 1024)
+        throw new Error("本地工作区已满，请清理部分缓存或笔记。");
       await SecureStorage.write(serialized);
-      if (revision !== this.revision) throw new Error("来源账号已移除，请重新添加账号。");
+      if (revision !== this.revision)
+        throw new Error("来源账号已移除，请重新添加账号。");
       this.vault = next;
-      window.dispatchEvent(new CustomEvent("gitpulse:workspace", {detail:id}));
+      window.dispatchEvent(
+        new CustomEvent("gitpulse:workspace", { detail: id }),
+      );
     });
   }
   static clearAll(): Promise<void> {

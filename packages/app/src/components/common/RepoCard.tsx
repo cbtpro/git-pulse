@@ -23,10 +23,7 @@ export function RepoCard({
     <Card className="gp-repo-card">
       <div className="gp-repo-heading">
         <BookOpen size={18} className="gp-muted" aria-hidden="true" />
-        <a
-          href={`#${repoRoute(repo.full_name)}`}
-          title={repo.full_name}
-        >
+        <a href={`#${repoRoute(repo.full_name)}`} title={repo.full_name}>
           <span>{repo.owner.login} / </span>
           <strong>{repo.name}</strong>
         </a>

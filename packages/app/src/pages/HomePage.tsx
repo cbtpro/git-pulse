@@ -137,7 +137,11 @@ export function HomePage({ onShowLogin }: { onShowLogin: () => void }) {
       <PageHeader
         eyebrow={t("OVERVIEW")}
         title={t(isLoggedIn ? "你的开源工作台" : "发现值得关注的开源")}
-        description={t(isLoggedIn ? "先处理协作，再发现新的项目。" : "项目、开发者和灵感，让每一次探索都有收获。")}
+        description={t(
+          isLoggedIn
+            ? "先处理协作，再发现新的项目。"
+            : "项目、开发者和灵感，让每一次探索都有收获。",
+        )}
         actions={
           <span className="gp-date">
             <CalendarDays size={16} />
@@ -150,39 +154,43 @@ export function HomePage({ onShowLogin }: { onShowLogin: () => void }) {
         }
       />
       {isLoggedIn && <MyWorkDashboard onShowLogin={onShowLogin} />}
-      {!isLoggedIn && <section className="gp-hero">
-        <div>
-          <span className="gp-hero-kicker">
-            <span /> {t("CONNECT TO OPEN SOURCE")}
-          </span>
-          <h2>
-            {t("下一个好想法，")}
-            <br />
-            {t("从这里开始。")}
-          </h2>
-          <p>{t("探索新项目，追踪你的协作，把 GitHub 变成更专注的工作台。")}</p>
-          <Button size="large" onClick={() => navigate("/explore")}>
-            {t("探索仓库")}
-            <ArrowRight size={17} />
-          </Button>
-        </div>
-        <div className="gp-hero-art" aria-hidden="true">
-          <div className="gp-orbit gp-orbit-outer" />
-          <div className="gp-orbit gp-orbit-inner" />
-          <div className="gp-hero-git">
-            <GitBranch size={58} strokeWidth={1.3} />
+      {!isLoggedIn && (
+        <section className="gp-hero">
+          <div>
+            <span className="gp-hero-kicker">
+              <span /> {t("CONNECT TO OPEN SOURCE")}
+            </span>
+            <h2>
+              {t("下一个好想法，")}
+              <br />
+              {t("从这里开始。")}
+            </h2>
+            <p>
+              {t("探索新项目，追踪你的协作，把 GitHub 变成更专注的工作台。")}
+            </p>
+            <Button size="large" onClick={() => navigate("/explore")}>
+              {t("探索仓库")}
+              <ArrowRight size={17} />
+            </Button>
           </div>
-          <div className="gp-orbit-node gp-node-one">
-            <Star size={22} />
+          <div className="gp-hero-art" aria-hidden="true">
+            <div className="gp-orbit gp-orbit-outer" />
+            <div className="gp-orbit gp-orbit-inner" />
+            <div className="gp-hero-git">
+              <GitBranch size={58} strokeWidth={1.3} />
+            </div>
+            <div className="gp-orbit-node gp-node-one">
+              <Star size={22} />
+            </div>
+            <div className="gp-orbit-node gp-node-two">
+              <BookOpen size={22} />
+            </div>
+            <div className="gp-orbit-node gp-node-three">
+              <UsersRound size={21} />
+            </div>
           </div>
-          <div className="gp-orbit-node gp-node-two">
-            <BookOpen size={22} />
-          </div>
-          <div className="gp-orbit-node gp-node-three">
-            <UsersRound size={21} />
-          </div>
-        </div>
-      </section>}
+        </section>
+      )}
       <div className="gp-stat-grid">
         {stats.map(({ label, value, icon: Icon }) => (
           <Card className="gp-stat-card" key={label}>

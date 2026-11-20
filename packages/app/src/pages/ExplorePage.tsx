@@ -422,8 +422,14 @@ export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
                       <ResultIcon size={20} aria-hidden="true" />
                       <div>
                         <a
-                          href={internalWorkUrl(hit.url, activeAccountId) || hit.url}
-                          target={internalWorkUrl(hit.url, activeAccountId) ? undefined : "_blank"}
+                          href={
+                            internalWorkUrl(hit.url, activeAccountId) || hit.url
+                          }
+                          target={
+                            internalWorkUrl(hit.url, activeAccountId)
+                              ? undefined
+                              : "_blank"
+                          }
                           rel="noopener noreferrer"
                         >
                           <MatchHighlight text={hit.title} query={keyword} />

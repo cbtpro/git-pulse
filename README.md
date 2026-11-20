@@ -6,11 +6,16 @@
 
 - GitHub 官网授权与 Token 登录，多账号切换，本地账号数据加密保存。
 - 顶部聚合搜索与独立搜索页，覆盖仓库、用户、组织、主题、代码、提交、Issues/PR 和 GitHub Pages；支持 GitHub 搜索语法、输入法、键盘选择与最近搜索管理。
-- 收件箱筛选、跳转与标记已读。
+- 仓库详情、分支/文件预览、README、Star；Issue/PR 创建、讨论、评审、改动与合并。
+- 首页协作待办、Actions 运行/日志/重跑/产物、多账号统一收件箱及来源账号操作。
+- Star 分组、标签和私人笔记；Release 订阅、版本更新中心和附件下载。
+- 按账号加密的离线阅读与评论草稿，恢复联网后显式发送。
 - 个人资料、Canvas 2D/3D 贡献图、仓库与 Gist pins、本地 pins 定制、GitHub Pages 搜索与分页。
 - 简体中文、繁体中文、英文、日语，深浅主题与移动端安全区设置。
 
 开发和打包脚本覆盖 macOS、Windows、Linux、iOS、Android 与 Web；各平台所需主机、架构和验证边界见 [平台矩阵](docs/PLATFORM_GUIDE.md)。
+
+使用入口、存储边界和业务验证方法见 [业务工作区说明](docs/WORKSPACE.md)。
 
 ## 快速开始
 
@@ -27,15 +32,15 @@ pnpm dev:web
 
 ## 各平台入口
 
-| 平台 | 开发 | 构建 | 指南 |
-| --- | --- | --- | --- |
-| 当前桌面 | `pnpm dev` | `pnpm build` | [本地开发](docs/DEVELOPMENT.md) |
-| macOS | `pnpm dev:macos` | `pnpm build:macos` | [macOS](docs/macOS_DEVELOPMENT.md) |
-| Windows | `pnpm dev:windows` | `pnpm build:windows` | [Windows](docs/WINDOWS_DEVELOPMENT.md) |
-| Linux | `pnpm dev:linux` | `pnpm build:linux` | [Linux](docs/LINUX_DEVELOPMENT.md) |
-| iOS | `pnpm dev:ios` | `pnpm build:ios` | [iOS](docs/iOS_DEVELOPMENT.md) |
-| Android | `pnpm dev:android` | `pnpm build:android` | [Android](docs/ANDROID_DEVELOPMENT.md) |
-| Web | `pnpm dev:web` | `pnpm build:web` | [Web](docs/WEB_DEVELOPMENT.md) |
+| 平台     | 开发               | 构建                 | 指南                                   |
+| -------- | ------------------ | -------------------- | -------------------------------------- |
+| 当前桌面 | `pnpm dev`         | `pnpm build`         | [本地开发](docs/DEVELOPMENT.md)        |
+| macOS    | `pnpm dev:macos`   | `pnpm build:macos`   | [macOS](docs/macOS_DEVELOPMENT.md)     |
+| Windows  | `pnpm dev:windows` | `pnpm build:windows` | [Windows](docs/WINDOWS_DEVELOPMENT.md) |
+| Linux    | `pnpm dev:linux`   | `pnpm build:linux`   | [Linux](docs/LINUX_DEVELOPMENT.md)     |
+| iOS      | `pnpm dev:ios`     | `pnpm build:ios`     | [iOS](docs/iOS_DEVELOPMENT.md)         |
+| Android  | `pnpm dev:android` | `pnpm build:android` | [Android](docs/ANDROID_DEVELOPMENT.md) |
+| Web      | `pnpm dev:web`     | `pnpm build:web`     | [Web](docs/WEB_DEVELOPMENT.md)         |
 
 移动端首次运行需先 `pnpm init:ios` / `pnpm init:android`。iOS 模拟器构建使用 `pnpm build:ios:simulator`。原生启动会自动启动或复用本工作区的前端服务，保留原有包级命令，如 `pnpm -F @gitpulse/app tauri:ios`。
 
