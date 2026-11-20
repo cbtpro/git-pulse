@@ -1,0 +1,21 @@
+.gp-work-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; }
+.gp-work-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.gp-work-field > span { display: flex; align-items: center; gap: 6px; color: var(--gp-secondary); font-size: 12px; }
+.gp-work-path { display: flex; flex: 1; gap: 8px; min-width: 200px; align-self: end; }
+.gp-work-content { margin: 16px 0; min-width: 0; }
+.gp-work-break { overflow-wrap: anywhere; min-width: 0; }
+.gp-file-list { list-style: none; padding: 0; margin: 0; }
+.gp-file-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid var(--gp-border); padding: 9px 0; }
+.gp-file-list button { display: flex; align-items: center; gap: 10px; color: var(--gp-text); border: 0; background: transparent; text-align: left; min-width: 0; cursor: pointer; padding: 6px; }
+.gp-file-list button span { overflow-wrap: anywhere; }
+.gp-file-list button svg { flex-shrink: 0; color: var(--gp-accent); }
+.gp-file-list li > span { color: var(--gp-subtle); font-size: 11px; flex-shrink: 0; }
+.gp-code { overflow: auto; max-height: 65vh; padding: 16px; background: var(--gp-bg); border: 1px solid var(--gp-border); border-radius: 10px; font: 12px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; tab-size: 2; }
+.gp-repository .gp-page-header h1 { overflow-wrap: anywhere; }
+.gp-repository .gp-page-header > div:first-child { min-width: 0; }
+.gp-repository .arco-tabs-content-item { min-width: 0; }
+@media (max-width: 640px) {
+  .gp-repository .gp-page-header { align-items: start; flex-direction: column; gap: 12px; }
+  .gp-work-path { min-width: 100%; }
+  .gp-code { font-size: 11px; padding: 10px; }
+}

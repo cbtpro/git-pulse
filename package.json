@@ -44,6 +44,7 @@
     "build:ios:simulator": "node scripts/dev/platform.mjs build ios:simulator"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "pnpm": "^10.34.9",
     "sharp": "^0.35.5"
   },

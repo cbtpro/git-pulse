@@ -196,6 +196,7 @@ export async function requestGitHub<T>(
         queryCache.delete(queryCache.keys().next().value!);
       queryCache.set(path, { ...result, expires: Date.now() + 60_000 });
     }
+    if (options.method && options.method !== "GET" && cacheToken === token) queryCache.clear();
     return result;
   } catch (error) {
     if (controller.signal.aborted) throw controller.signal.reason;

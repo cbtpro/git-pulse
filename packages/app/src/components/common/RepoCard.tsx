@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { RepositoryCardData } from "../../types/github";
 import { formatDate, formatNumber, LANGUAGE_COLORS } from "../../utils/format";
+import { repoRoute } from "../../services/github/RepositoryService";
 
 export function RepoCard({
   repo,
@@ -23,9 +24,7 @@ export function RepoCard({
       <div className="gp-repo-heading">
         <BookOpen size={18} className="gp-muted" aria-hidden="true" />
         <a
-          href={repo.html_url}
-          target="_blank"
-          rel="noreferrer"
+          href={`#${repoRoute(repo.full_name)}`}
           title={repo.full_name}
         >
           <span>{repo.owner.login} / </span>
