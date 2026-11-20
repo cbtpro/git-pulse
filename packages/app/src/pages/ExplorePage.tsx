@@ -46,6 +46,7 @@ import { searchCategory, searchPages } from "../services/github/SearchService";
 import { cachedGitHubPages } from "../services/github/ProfileService";
 import { searchIntent } from "../utils/searchIntent";
 import "../components/search/search.css";
+import { internalWorkUrl } from "../services/github/CollaborationService";
 
 const icons = {
   repositories: BookOpen,
@@ -421,8 +422,8 @@ export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
                       <ResultIcon size={20} aria-hidden="true" />
                       <div>
                         <a
-                          href={hit.url}
-                          target="_blank"
+                          href={internalWorkUrl(hit.url, activeAccountId) || hit.url}
+                          target={internalWorkUrl(hit.url, activeAccountId) ? undefined : "_blank"}
                           rel="noopener noreferrer"
                         >
                           <MatchHighlight text={hit.title} query={keyword} />

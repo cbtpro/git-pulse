@@ -12,6 +12,7 @@ import { PageHeader } from "../components/common/PageHeader";
 import { EmptyState, RequestError } from "../components/common/ResourceState";
 import { RepositoryContext } from "../components/workspace/RepositoryContext";
 import "../styles/workspace.css";
+import { IssuesWorkspace } from "../components/workspace/IssuesWorkspace";
 
 function RepositoryContent({ repo, owner, name, token, onShowLogin }: {
   repo: RepositoryDetails; owner: string; name: string; token: string | null; onShowLogin: () => void;
@@ -68,6 +69,8 @@ function RepositoryWorkspace({ repo, owner, name, onShowLogin }: { repo: Reposit
   const { t } = useTranslation();
   const account = useWorkspaceAccount();
   const action = useWorkspaceAction();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") || "code";
   const starred = useGitHubResource(useCallback((signal) => account.token ? repositories.starred(owner, name, account.token, signal) : Promise.resolve(false), [owner, name, account.token]));
   return <RepositoryContext.Provider value={{ repo, owner, name, token: account.token, accountId: account.id, username: account.username, onShowLogin }}>
     <div className="gp-page gp-repository">
@@ -80,7 +83,7 @@ function RepositoryWorkspace({ repo, owner, name, onShowLogin }: { repo: Reposit
       </div>} />
       <div className="gp-work-toolbar"><Tag>{repo.private ? t("私有仓库") : t("公开仓库")}</Tag><Tag>{repo.stargazers_count} Stars</Tag>{repo.archived && <Tag>{t("已归档")}</Tag>}</div>
       {starred.error && <RequestError error={starred.error} retry={starred.reload} onLogin={onShowLogin} />}
-      <Tabs defaultActiveTab="code"><Tabs.TabPane key="code" title={t("代码与文档")}><RepositoryContent {...{ repo, owner, name, onShowLogin }} token={account.token} /></Tabs.TabPane></Tabs>
+      <Tabs activeTab={tab} onChange={(value) => setParams(current => { const next = new URLSearchParams(current); next.set("tab", value); next.delete("number"); return next; })}><Tabs.TabPane key="code" title={t("代码与文档")}><RepositoryContent {...{ repo, owner, name, onShowLogin }} token={account.token} /></Tabs.TabPane><Tabs.TabPane key="issues" title="Issues"><IssuesWorkspace kind="issues" /></Tabs.TabPane><Tabs.TabPane key="pulls" title="Pull requests"><IssuesWorkspace kind="pulls" /></Tabs.TabPane></Tabs>
     </div>
   </RepositoryContext.Provider>;
 }

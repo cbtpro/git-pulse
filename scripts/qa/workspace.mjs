@@ -1,6 +1,7 @@
 import { chromium, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 const repo = {id:1, name:'project',full_name:'octo/project',html_url:'https://github.com/octo/project',description:'Workspace smoke fixture',default_branch:'main',private:false,stargazers_count:12,forks_count:2,open_issues_count:1,owner:{login:'octo',avatar_url:'',html_url:'https://github.com/octo'}};
+const issue = {id:7,number:7,title:'A useful issue',body:'Discussion fixture',state:'open',html_url:'https://github.com/octo/project/issues/7',user:{login:'tester'},labels:[],assignees:[],updated_at:'2026-11-21T00:00:00Z',comments:0};
 const browser = await chromium.launch({executablePath:process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
 try {
  await mkdir('review-artifacts/business', {recursive:true});
@@ -15,6 +16,8 @@ try {
    else if(url.pathname.endsWith('/readme')) data={name:'README.md',encoding:'base64',content:Buffer.from('# Project\nA readable README.').toString('base64'),size:30,html_url:repo.html_url+'/blob/main/README.md',download_url:'https://raw.githubusercontent.com/octo/project/main/README.md'};
    else if(url.pathname.endsWith('/contents/src/index.ts')) data={name:'index.ts',path:'src/index.ts',encoding:'base64',content:Buffer.from('export const value = 42;').toString('base64'),size:24,html_url:repo.html_url};
    else if(url.pathname.includes('/contents/')) data=[{type:'file',name:'index.ts',path:'src/index.ts',size:24}];
+   else if(url.pathname==='/search/issues') data={items:[issue],total_count:1};
+   else if(url.pathname==='/repos/octo/project/issues/7') data=issue;
    else if(url.pathname.includes('/search/')) data={items:[],total_count:0};
    else data=[];
    await route.fulfill({json:data});
@@ -24,11 +27,14 @@ try {
   await expect(page.getByText('A readable README.')).toBeVisible();
   await page.getByRole('button',{name:'index.ts',exact:true}).click();
   await expect(page.getByText('export const value = 42;', {exact:true})).toBeVisible();
+  await page.goto('http://localhost:1420/#/repo/octo/project?tab=issues');
+  await page.getByRole('link',{name:/A useful issue/}).click();
+  await expect(page.getByText('Discussion fixture')).toBeVisible();
   await page.screenshot({path:`review-artifacts/business/repository-${width}.png`,fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   expect(overflow,`Horizontal overflow at ${width}`).toBe(false);
   expect(errors).toEqual([]);
-  console.log(`Repository ${width}px: README, file navigation, no overflow or page errors`);
+  console.log(`Repository ${width}px: README, file navigation, Issue list and discussion, no overflow or page errors`);
   await context.close();
  }
 } finally {await browser.close();}
