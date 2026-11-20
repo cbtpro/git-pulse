@@ -1,0 +1,389 @@
+.gp-app {
+  min-height: 100dvh;
+}
+/* Keep the status-bar area opaque, including during iOS scroll bounce. */
+.gp-app::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--gp-safe-top);
+  background: var(--gp-surface);
+  pointer-events: none;
+  z-index: 70;
+}
+.gp-sidebar {
+  width: calc(216px + var(--gp-safe-left));
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+  background: var(--gp-surface);
+  border-right: 1px solid var(--gp-line);
+  display: flex;
+  flex-direction: column;
+  padding: calc(29px + var(--gp-safe-top)) 16px
+    calc(18px + var(--gp-safe-bottom)) calc(16px + var(--gp-safe-left));
+}
+.gp-brand-link {
+  display: block;
+  padding: 0 7px;
+}
+.gp-nav-caption {
+  margin: 44px 15px 12px;
+  color: var(--gp-subtle);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.gp-sidebar .arco-menu {
+  background: transparent;
+}
+.gp-sidebar .arco-menu-inner {
+  padding: 0;
+}
+.gp-sidebar .arco-menu-item {
+  height: 44px;
+  line-height: 44px;
+  border-radius: 7px;
+  padding: 0 15px;
+  margin: 4px 0;
+  color: var(--gp-secondary);
+  background: transparent;
+}
+.gp-sidebar .arco-menu-item.arco-menu-selected {
+  background: var(--gp-tint);
+  color: var(--gp-accent);
+  font-weight: 600;
+}
+.gp-sidebar .arco-menu-item:not(.arco-menu-selected):hover {
+  background: var(--gp-hover);
+}
+.gp-menu-content {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 13px;
+}
+.gp-sidebar-bottom {
+  margin-top: auto;
+  padding-top: 34px;
+}
+.gp-sidebar-connect {
+  background: var(--gp-canvas);
+  padding: 16px 13px;
+  border-radius: 9px;
+  margin-bottom: 20px;
+}
+.gp-connect-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #8090ed;
+  box-shadow: 0 0 0 4px var(--gp-tint);
+  margin: 4px 0 15px 4px;
+}
+.gp-sidebar-connect strong {
+  font-size: 12px;
+  font-weight: 600;
+}
+.gp-sidebar-connect p {
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--gp-secondary);
+  margin: 6px 0 14px;
+}
+.gp-sidebar-connect .arco-btn {
+  font-size: 11px;
+}
+.gp-help-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gp-secondary);
+  font-size: 11px;
+  padding: 10px;
+}
+.gp-sidebar-version {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 10px 0;
+  margin-top: 7px;
+  border-top: 1px solid var(--gp-line);
+  font-size: 10px;
+  color: var(--gp-subtle);
+}
+.gp-workspace {
+  margin-left: calc(216px + var(--gp-safe-left));
+  min-width: 0;
+}
+.gp-topbar {
+  height: calc(68px + var(--gp-safe-top));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: var(--gp-safe-top) calc(34px + var(--gp-safe-right)) 0 34px;
+  background: var(--gp-surface);
+  border-bottom: 1px solid var(--gp-line);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.gp-breadcrumb {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  font-size: 12px;
+  color: var(--gp-subtle);
+}
+/* Blur only the background: filtering the header itself would re-anchor
+   the search panel's fixed positioning on mobile Safari/Chromium. */
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  body:not([data-header-blur="off"]) .gp-topbar {
+    background: transparent;
+    border-bottom-color: transparent;
+  }
+  body:not([data-header-blur="off"]) .gp-topbar::before {
+    content: "";
+    position: absolute;
+    /* Center the gradient on the toolbar, excluding the opaque safe area. */
+    inset: var(--gp-safe-top) 0 0;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(
+      ellipse farthest-side at 50% 50%,
+      rgb(var(--gp-header-glass-rgb) / 92%) 0%,
+      rgb(var(--gp-header-glass-rgb) / 86%) 28%,
+      rgb(var(--gp-header-glass-rgb) / 64%) 55%,
+      rgb(var(--gp-header-glass-rgb) / 36%) 78%,
+      rgb(var(--gp-header-glass-rgb) / 16%) 100%
+    );
+    -webkit-backdrop-filter: blur(24px) saturate(135%);
+    backdrop-filter: blur(24px) saturate(135%);
+    /* Fade the blur itself as well as the tint toward the outer edge. */
+    --gp-header-glass-mask: radial-gradient(
+      ellipse farthest-side at 50% 50%,
+      #000 0%,
+      #000 55%,
+      rgb(0 0 0 / 85%) 80%,
+      rgb(0 0 0 / 60%) 100%
+    );
+    -webkit-mask-image: var(--gp-header-glass-mask);
+    mask-image: var(--gp-header-glass-mask);
+  }
+  body:not([data-header-blur="off"]) .gp-topbar::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 -1px;
+    height: 1px;
+    pointer-events: none;
+    background: linear-gradient(to right, transparent, var(--gp-line), transparent);
+  }
+}
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  body:not([data-header-blur="off"]) .gp-topbar {
+    background: var(--gp-surface);
+    border-bottom-color: var(--gp-line);
+  }
+  body:not([data-header-blur="off"]) .gp-topbar::before,
+  body:not([data-header-blur="off"]) .gp-topbar::after {
+    display: none;
+  }
+}
+.gp-breadcrumb strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--gp-text);
+}
+.gp-topbar-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.gp-breadcrumb > a,
+.gp-breadcrumb > span {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.gp-search-shortcut.arco-btn {
+  color: var(--gp-secondary);
+  font-size: 12px;
+}
+.gp-topbar-divider {
+  width: 1px;
+  height: 22px;
+  background: var(--gp-line);
+}
+.gp-account-button {
+  border: 0;
+  background: transparent;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--gp-text);
+  font-size: 12px;
+}
+.gp-account-button > span:last-child {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gp-main {
+  max-width: 1512px;
+  padding: 34px calc(34px + var(--gp-safe-right)) var(--gp-safe-bottom) 34px;
+  margin: 0 auto;
+  outline: 0;
+}
+.gp-page {
+  min-width: 0;
+  min-height: calc(100dvh - 191px);
+}
+.gp-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  color: var(--gp-subtle);
+  font-size: 10px;
+  margin-top: 40px;
+  border-top: 1px solid var(--gp-line);
+  padding: 22px 0;
+}
+.gp-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--gp-secondary);
+}
+.gp-mobile-nav {
+  display: none;
+}
+.gp-skip-link {
+  position: fixed;
+  top: -100px;
+  left: 12px;
+  background: var(--gp-surface);
+  padding: 8px 16px;
+  z-index: 100;
+}
+.gp-skip-link:focus {
+  top: calc(10px + var(--gp-safe-top));
+}
+@media (min-width: 769px) and (max-width: 1100px) {
+  .gp-sidebar {
+    width: calc(76px + var(--gp-safe-left));
+    padding: calc(24px + var(--gp-safe-top)) 10px
+      calc(15px + var(--gp-safe-bottom)) calc(10px + var(--gp-safe-left));
+  }
+  .gp-brand-link {
+    padding: 0 8px;
+  }
+  .gp-sidebar .gp-brand-name,
+  .gp-nav-caption,
+  .gp-menu-content > span,
+  .gp-sidebar-connect,
+  .gp-help-link > span,
+  .gp-help-link > svg:last-child,
+  .gp-sidebar-version {
+    display: none;
+  }
+  .gp-sidebar nav {
+    margin-top: 36px;
+  }
+  .gp-sidebar .arco-menu-item {
+    padding: 0;
+    height: 46px;
+  }
+  .gp-menu-content {
+    justify-content: center;
+    height: 46px;
+  }
+  .gp-sidebar .arco-menu-item::after {
+    content: none;
+  }
+  .gp-help-link {
+    justify-content: center;
+  }
+  .gp-workspace {
+    margin-left: calc(76px + var(--gp-safe-left));
+  }
+  .gp-topbar {
+    padding: var(--gp-safe-top) calc(26px + var(--gp-safe-right)) 0 26px;
+  }
+  .gp-main {
+    padding: 28px calc(26px + var(--gp-safe-right)) var(--gp-safe-bottom) 26px;
+  }
+}
+@media (max-width: 768px) {
+  .gp-sidebar {
+    display: none;
+  }
+  .gp-workspace {
+    margin-left: 0;
+  }
+  .gp-topbar {
+    height: calc(58px + var(--gp-safe-top));
+    padding: var(--gp-safe-top) calc(20px + var(--gp-safe-right)) 0
+      calc(20px + var(--gp-safe-left));
+  }
+  .gp-topbar-actions {
+    gap: 9px;
+  }
+  .gp-topbar-divider,
+  .gp-search-shortcut > span,
+  .gp-account-button > span:last-child {
+    display: none;
+  }
+  .gp-breadcrumb {
+    gap: 9px;
+    font-size: 11px;
+  }
+  .gp-main {
+    padding: 26px calc(20px + var(--gp-safe-right))
+      calc(80px + var(--gp-safe-bottom)) calc(20px + var(--gp-safe-left));
+  }
+  .gp-mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(66px + var(--gp-safe-bottom));
+    padding: 7px calc(12px + var(--gp-safe-right))
+      calc(7px + var(--gp-safe-bottom)) calc(12px + var(--gp-safe-left));
+    background: var(--gp-surface);
+    border-top: 1px solid var(--gp-line);
+    z-index: 60;
+  }
+  .gp-mobile-link {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    color: var(--gp-secondary);
+    font-size: 10px;
+    border-radius: 8px;
+  }
+  .gp-mobile-link.is-active {
+    color: var(--gp-accent);
+    background: var(--gp-tint);
+    font-weight: 600;
+  }
+  .gp-footer {
+    margin-top: 30px;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+@media (max-height: 650px) and (min-width: 1101px) {
+  .gp-sidebar-connect {
+    display: none;
+  }
+}

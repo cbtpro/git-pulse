@@ -1,0 +1,64 @@
+{
+  "name": "gitpulse-monorepo",
+  "version": "0.0.1",
+  "description": "GitPulse - 跨平台 GitHub 管理工具 (Monorepo 版本)",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm dev:desktop",
+    "dev:core": "pnpm -F @gitpulse/core dev",
+    "dev:app": "pnpm dev:desktop",
+    "build": "pnpm build:desktop",
+    "build:core": "pnpm -F @gitpulse/core build",
+    "build:app": "pnpm build:desktop",
+    "type-check": "pnpm -r type-check",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "clean": "node scripts/dev/clean.mjs",
+    "install-all": "pnpm install --frozen-lockfile",
+    "dev:web": "node scripts/dev/frontend.mjs",
+    "dev:desktop": "node scripts/dev/platform.mjs dev desktop",
+    "build:web": "pnpm -F @gitpulse/app build:web",
+    "build:desktop": "node scripts/dev/platform.mjs build desktop",
+    "doctor": "node scripts/dev/doctor.mjs",
+    "test:scripts": "node --test scripts/ci/scripts.test.mjs scripts/dev/scripts.test.mjs",
+    "check": "pnpm -F @gitpulse/app type-check && pnpm -F @gitpulse/app test && pnpm test:scripts",
+    "preview:web": "pnpm -F @gitpulse/app preview",
+    "dev:macos": "node scripts/dev/platform.mjs dev macos",
+    "build:macos": "node scripts/dev/platform.mjs build macos",
+    "dev:windows": "node scripts/dev/platform.mjs dev windows",
+    "build:windows": "node scripts/dev/platform.mjs build windows",
+    "dev:linux": "node scripts/dev/platform.mjs dev linux",
+    "build:linux": "node scripts/dev/platform.mjs build linux",
+    "dev:ios": "node scripts/dev/platform.mjs dev ios",
+    "build:ios": "node scripts/dev/platform.mjs build ios",
+    "dev:android": "node scripts/dev/platform.mjs dev android",
+    "build:android": "node scripts/dev/platform.mjs build android",
+    "init:ios": "node scripts/dev/platform.mjs init ios",
+    "init:android": "node scripts/dev/platform.mjs init android",
+    "build:ios:simulator": "node scripts/dev/platform.mjs build ios:simulator"
+  },
+  "devDependencies": {
+    "pnpm": "^10.34.9"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "keywords": [
+    "github",
+    "tauri",
+    "react",
+    "typescript",
+    "cross-platform",
+    "ios",
+    "macos",
+    "android"
+  ],
+  "author": "GitPulse Team",
+  "license": "MIT",
+  "packageManager": "pnpm@10.34.9"
+}

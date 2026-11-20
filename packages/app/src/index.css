@@ -1,0 +1,170 @@
+:root {
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "PingFang SC",
+    "Microsoft YaHei",
+    sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  --primary-6: 67, 85, 219;
+  --primary-5: 88, 105, 230;
+  --primary-7: 52, 66, 187;
+  --primary-1: 238, 241, 255;
+  --border-radius-small: 6px;
+  --border-radius-medium: 8px;
+  --gp-canvas: #f6f7fb;
+  --gp-surface: #fff;
+  --gp-header-glass-rgb: 255 255 255;
+  --gp-text: #202637;
+  --gp-secondary: #667085;
+  --gp-subtle: #626d80;
+  --gp-line: #e7eaf0;
+  --gp-tint: #eef1ff;
+  --gp-accent: #4355db;
+  --gp-hover: #f5f6fa;
+  --gp-gap: 18px;
+  --gp-card-padding: 22px;
+  --gp-safe-top: max(env(safe-area-inset-top, 0px), var(--gp-native-safe-top, 0px));
+  --gp-safe-right: max(env(safe-area-inset-right, 0px), var(--gp-native-safe-right, 0px));
+  --gp-safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--gp-native-safe-bottom, 0px));
+  --gp-safe-left: max(env(safe-area-inset-left, 0px), var(--gp-native-safe-left, 0px));
+  background: var(--gp-canvas);
+  color: var(--gp-text);
+  font-size: 14px;
+  line-height: 1.6;
+  overscroll-behavior-y: none;
+}
+body[data-safe-area="off"] {
+  --gp-safe-top: 0px;
+  --gp-safe-right: 0px;
+  --gp-safe-bottom: 0px;
+  --gp-safe-left: 0px;
+}
+body[arco-theme="dark"] {
+  --gp-canvas: #15171e;
+  --gp-surface: #1e212b;
+  --gp-header-glass-rgb: 30 33 43;
+  --gp-text: #e4e7ef;
+  --gp-secondary: #a0a8bb;
+  --gp-subtle: #8690a5;
+  --gp-line: #313644;
+  --gp-tint: #282f50;
+  --gp-accent: #98a5ff;
+  --gp-hover: #272b37;
+  --primary-6: 130, 147, 255;
+  --primary-5: 153, 168, 255;
+  --primary-7: 112, 130, 241;
+  --primary-1: 40, 47, 80;
+}
+body[data-density="compact"] {
+  --gp-gap: 12px;
+  --gp-card-padding: 16px;
+}
+a {
+  color: var(--gp-accent);
+  text-decoration: none;
+}
+a:hover {
+  color: rgb(var(--primary-5));
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+svg {
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+button:focus-visible,
+a:focus-visible,
+.arco-radio:has(input:focus-visible),
+.arco-radio-button:has(input:focus-visible) {
+  outline: 3px solid var(--gp-accent);
+  outline-offset: 3px;
+}
+.arco-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  font-weight: 500;
+}
+.arco-btn > svg + span,
+.arco-btn > span + svg {
+  margin-left: 0;
+}
+.arco-card {
+  border-color: var(--gp-line);
+  border-radius: 10px;
+  background: var(--gp-surface);
+  color: var(--gp-text);
+}
+.arco-card-body {
+  padding: var(--gp-card-padding);
+}
+.arco-radio-group-button {
+  padding: 3px;
+  border-radius: 8px;
+  background: var(--gp-line);
+}
+.arco-radio-button {
+  border-radius: 5px;
+}
+.arco-radio-button-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.arco-tag {
+  border-radius: 4px;
+}
+.arco-alert {
+  border-radius: 8px;
+}
+.gp-muted {
+  color: var(--gp-secondary);
+}
+.gp-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

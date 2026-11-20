@@ -1,0 +1,161 @@
+.gp-login-modal {
+  max-width: calc(100vw - 32px);
+  border-radius: 14px;
+}
+.gp-login-modal .arco-modal-content {
+  padding: 32px;
+}
+.gp-login-close.arco-btn {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  color: var(--gp-secondary);
+}
+.gp-login-modal h2,
+.gp-login-page h1 {
+  color: var(--gp-text);
+  margin-top: 30px;
+  font-size: 24px;
+  font-weight: 600;
+}
+.gp-login-subtitle {
+  color: var(--gp-secondary);
+  font-size: 12px;
+  margin: 9px 0 26px;
+}
+.gp-login-tabs {
+  display: flex;
+  width: 100%;
+  margin-bottom: 20px;
+}
+.gp-login-tabs .arco-radio-button {
+  flex: 1;
+  text-align: center;
+}
+.gp-login-tabs .arco-radio-button-inner {
+  width: 100%;
+}
+.gp-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.gp-login-form label {
+  font-size: 12px;
+  color: var(--gp-text);
+  margin: 4px 0 -5px;
+}
+.gp-login .arco-alert {
+  margin-bottom: 16px;
+}
+.gp-login-hint {
+  font-size: 12px;
+  color: var(--gp-secondary);
+  line-height: 1.9;
+}
+.gp-login-hint a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gp-login-privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--gp-subtle);
+  font-size: 11px;
+  line-height: 1.8;
+  padding-top: 20px;
+  margin-top: 24px;
+  border-top: 1px solid var(--gp-line);
+}
+.gp-login-privacy svg {
+  margin-top: 2px;
+  color: var(--gp-secondary);
+}
+.gp-authorization {
+  text-align: center;
+  font-size: 12px;
+  color: var(--gp-secondary);
+}
+.gp-device-code-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--gp-canvas);
+  border: 1px dashed var(--gp-line);
+  padding: 12px;
+  border-radius: 8px;
+  margin: 15px 0 0;
+}
+.gp-device-code {
+  color: var(--gp-text);
+  font-family: ui-monospace, monospace;
+  font-size: clamp(20px, 5vw, 26px);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.gp-copy-code {
+  flex-shrink: 0;
+}
+.gp-copy-feedback {
+  min-height: 18px;
+  margin: 6px 0 14px;
+  font-size: 11px;
+  line-height: 18px;
+  color: var(--gp-secondary);
+}
+.gp-copy-error {
+  color: rgb(var(--danger-6));
+}
+.gp-authorization .gp-login-hint {
+  margin-top: 12px;
+  font-size: 10px;
+}
+.gp-authorization-status {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0 8px;
+  font-size: 11px;
+}
+.gp-login-page {
+  min-height: 100dvh;
+  background: var(--gp-canvas);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.gp-login-page-card {
+  width: 460px;
+  max-width: 100%;
+  position: relative;
+}
+.gp-login-page-card .arco-card-body {
+  padding: 34px;
+}
+@media (max-width: 480px) {
+  .gp-login-modal .arco-modal-content {
+    padding: 27px 22px;
+  }
+  .gp-login-modal h2 {
+    font-size: 22px;
+  }
+  .gp-login-page {
+    padding: 16px;
+  }
+  .gp-login-page-card .arco-card-body {
+    padding: 24px;
+  }
+}
+
+.gp-login-modal .arco-modal-header {
+  height: 0;
+  padding: 0;
+  border: 0;
+}
