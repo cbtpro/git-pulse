@@ -36,6 +36,8 @@ import {
 } from "../services/github/GitHubService";
 import { formatNumber } from "../utils/format";
 
+import { MyWorkDashboard } from "../components/workspace/MyWorkDashboard";
+
 const topics = [
   ["人工智能", "artificial-intelligence"],
   ["开发工具", "developer-tools"],
@@ -134,8 +136,8 @@ export function HomePage({ onShowLogin }: { onShowLogin: () => void }) {
     <div className="gp-page gp-home">
       <PageHeader
         eyebrow={t("OVERVIEW")}
-        title={t("发现值得关注的开源")}
-        description={t("项目、开发者和灵感，让每一次探索都有收获。")}
+        title={t(isLoggedIn ? "你的开源工作台" : "发现值得关注的开源")}
+        description={t(isLoggedIn ? "先处理协作，再发现新的项目。" : "项目、开发者和灵感，让每一次探索都有收获。")}
         actions={
           <span className="gp-date">
             <CalendarDays size={16} />
@@ -147,7 +149,8 @@ export function HomePage({ onShowLogin }: { onShowLogin: () => void }) {
           </span>
         }
       />
-      <section className="gp-hero">
+      {isLoggedIn && <MyWorkDashboard onShowLogin={onShowLogin} />}
+      {!isLoggedIn && <section className="gp-hero">
         <div>
           <span className="gp-hero-kicker">
             <span /> {t("CONNECT TO OPEN SOURCE")}
@@ -179,7 +182,7 @@ export function HomePage({ onShowLogin }: { onShowLogin: () => void }) {
             <UsersRound size={21} />
           </div>
         </div>
-      </section>
+      </section>}
       <div className="gp-stat-grid">
         {stats.map(({ label, value, icon: Icon }) => (
           <Card className="gp-stat-card" key={label}>

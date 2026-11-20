@@ -363,3 +363,6 @@ export function notificationUrl(notification: Notification): string {
   }
   return notification.repository.html_url;
 }
+
+/** Explicit refresh invalidates query results without removing rate-limit cooldowns. */
+export function invalidateGitHubQueryCache() { queryCache.clear(); }

@@ -35,3 +35,7 @@
 .gp-diff-add { color:var(--color-success-6,#16803d); background:rgba(22,128,61,.07); }
 .gp-diff-remove { color:var(--color-danger-6,#c62a3a); background:rgba(198,42,58,.07); }
 @media(max-width:640px) { .gp-work-search { min-width:100%; } .gp-work-list > li { padding:12px; } }
+.gp-work-filters { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:16px 0; }
+.gp-work-filters button { border:1px solid var(--gp-border); background:var(--gp-bg); color:var(--gp-secondary); padding:14px 10px; border-radius:10px; display:flex; align-items:center; gap:8px; cursor:pointer; justify-content:center; }
+.gp-work-filters button[aria-pressed=true] { border-color:var(--gp-accent); color:var(--gp-accent); background:var(--gp-accent-soft); }
+@media(max-width:640px) { .gp-work-filters { grid-template-columns:repeat(2,minmax(0,1fr)); } }

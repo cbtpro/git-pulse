@@ -11,7 +11,8 @@ try {
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('https://api.github.com/**', async route => {
    const url=new URL(route.request().url()); let data={};
-   if(url.pathname==='/repos/octo/project') data=repo;
+   if(url.pathname==='/user') data={id:100,login:'fixture',name:'Fixture',avatar_url:'',html_url:'https://github.com/fixture',public_repos:1,followers:0,following:0};
+   else if(url.pathname==='/repos/octo/project') data=repo;
    else if(url.pathname.endsWith('/branches')) data=[{name:'main'},{name:'feature/ui'}];
    else if(url.pathname.endsWith('/readme')) data={name:'README.md',encoding:'base64',content:Buffer.from('# Project\nA readable README.').toString('base64'),size:30,html_url:repo.html_url+'/blob/main/README.md',download_url:'https://raw.githubusercontent.com/octo/project/main/README.md'};
    else if(url.pathname.endsWith('/contents/src/index.ts')) data={name:'index.ts',path:'src/index.ts',encoding:'base64',content:Buffer.from('export const value = 42;').toString('base64'),size:24,html_url:repo.html_url};
@@ -30,11 +31,22 @@ try {
   await page.goto('http://localhost:1420/#/repo/octo/project?tab=issues');
   await page.getByRole('link',{name:/A useful issue/}).click();
   await expect(page.getByText('Discussion fixture')).toBeVisible();
+  await page.evaluate(async()=>{
+   const {TokenManager}=await import('/src/services/auth/TokenManager.ts');
+   const {useAuthStore}=await import('/src/stores/authStore.ts');
+   await TokenManager.saveSession('isolated-smoke-token','fixture','token',{id:100,login:'fixture',name:'Fixture'});
+   useAuthStore.setState({isLoggedIn:true,token:'isolated-smoke-token',username:'fixture',activeAccountId:'100',accounts:TokenManager.getAccounts()});
+  });
+  await page.goto('http://localhost:1420/#/');
+  await page.reload();
+  await expect(page.getByText('我的待办',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'分配给我',exact:true}).click();
+  await expect(page.getByRole('link',{name:/A useful issue/})).toHaveAttribute('href',/#\/repo\/octo\/project\?account=100/);
   await page.screenshot({path:`review-artifacts/business/repository-${width}.png`,fullPage:true});
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
   expect(overflow,`Horizontal overflow at ${width}`).toBe(false);
   expect(errors).toEqual([]);
-  console.log(`Repository ${width}px: README, file navigation, Issue list and discussion, no overflow or page errors`);
+  console.log(`Repository ${width}px: README, file navigation, Issue list, discussion and account-scoped dashboard, no overflow or page errors`);
   await context.close();
  }
 } finally {await browser.close();}
