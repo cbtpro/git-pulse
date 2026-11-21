@@ -9,6 +9,7 @@ import {
   type NavigationPage,
 } from "../../types/navigation";
 import { Brand } from "../common/Brand";
+import { usePageDestination } from "../routing/PageState";
 
 export function DesktopSidebar({
   currentPage,
@@ -21,6 +22,7 @@ export function DesktopSidebar({
 }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const destination = usePageDestination();
   return (
     <aside className="gp-sidebar">
       <a className="gp-brand-link" href="#/" aria-label={t("GitPulse 概览")}>
@@ -30,7 +32,10 @@ export function DesktopSidebar({
       <nav aria-label={t("主导航")}>
         <Menu
           selectedKeys={[currentPage]}
-          onClickMenuItem={(key) => navigate(pagePath(key as NavigationPage))}
+          onClickMenuItem={(key) => {
+            const target = destination(pagePath(key as NavigationPage));
+            navigate(target.to, { state: target.state });
+          }}
         >
           {NAVIGATION_ITEMS.map(({ id, label, icon: Icon }) => (
             <Menu.Item key={id} aria-label={t(label)}>

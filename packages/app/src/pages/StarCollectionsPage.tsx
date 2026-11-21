@@ -3,11 +3,11 @@ import {
   Alert,
   Button,
   Input,
-  Modal,
   Select,
   Spin,
   Tag,
 } from "@arco-design/web-react";
+import { PageModal as Modal } from "../components/routing/PageModal";
 import { ArrowLeft, FolderHeart, Pencil, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "../i18n";

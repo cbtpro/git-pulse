@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { Button, Checkbox, Input, Modal, Spin } from "@arco-design/web-react";
+import { Button, Checkbox, Input, Spin } from "@arco-design/web-react";
+import { PageModal as Modal } from "../routing/PageModal";
 import { ArrowUpRight, BookOpen, Code2, Search, X } from "lucide-react";
 import { useTranslation } from "../../i18n";
 import { useGitHubResource } from "../../hooks/useGitHubResource";

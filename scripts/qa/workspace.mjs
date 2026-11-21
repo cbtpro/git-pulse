@@ -346,7 +346,9 @@ try {
     });
     await page.getByRole("button", { name: /^A useful issue/ }).click();
     await expect(
-      page.getByText("Discussion fixture", { exact: true }),
+      page
+        .locator("[data-route-page]:visible")
+        .getByText("Discussion fixture", { exact: true }),
     ).toBeVisible();
     await expect(
       page.getByRole("textbox", { name: "添加评论", exact: true }),
@@ -360,7 +362,9 @@ try {
     ).toBeEnabled();
     expect(commentWrites).toBe(0);
     await page.getByRole("button", { name: "发送评论", exact: true }).click();
-    await expect(page.getByText("评论已发送", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("评论已发送", { exact: true }).filter({ visible: true }),
+    ).toBeVisible();
     expect(commentWrites).toBe(1);
     await expect(page.getByText("暂无评论草稿", { exact: true })).toBeVisible();
     await page.screenshot({
@@ -398,7 +402,9 @@ try {
       .getByRole("textbox", { name: "添加评论", exact: true })
       .fill("Reply as source account");
     await page.getByRole("button", { name: "发送评论", exact: true }).click();
-    await expect(page.getByText("评论已发送", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("评论已发送", { exact: true }).filter({ visible: true }),
+    ).toBeVisible();
     expect(readAccounts).toEqual(["Bearer isolated-smoke-token"]);
     expect(commentAccounts.at(-1)).toBe("Bearer isolated-smoke-token");
     await page.goto(

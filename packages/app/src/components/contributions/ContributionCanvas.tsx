@@ -53,7 +53,10 @@ export function ContributionCanvas({
 
   useLayoutEffect(() => {
     const element = viewport.current!;
-    const update = () => setAvailableWidth(Math.max(1, element.clientWidth));
+    const update = () => {
+      // A retained page has zero width while hidden; keep its canvas and scroll.
+      if (element.clientWidth > 0) setAvailableWidth(element.clientWidth);
+    };
     update();
     const observer = new ResizeObserver(update);
     observer.observe(element);

@@ -88,6 +88,18 @@ pnpm test:scripts
 
 自动测试使用虚拟凭证与模拟响应，不需要真实 GitHub Token。原生运行还应人工检查浏览器授权、账号切换、系统安全存储、安全区、外链跳转，以及屏幕阅读器和软键盘行为。Web 测试通过不能替代各系统上的安装验证。
 
+启动 `pnpm dev:web` 后，可在另一个终端执行浏览器回归测试：
+
+```bash
+pnpm test:auth:recovery
+pnpm test:page-state
+pnpm test:mobile:viewport
+```
+
+默认使用 macOS 的 Chrome；其他环境可通过 `CHROME_PATH` 指定可执行文件，通过 `GITPULSE_TEST_URL` 指定前端地址。授权测试使用模拟响应，覆盖加密进度恢复、页面重建与返回前台时的临时网络失败；设备模拟不代表真实 GitHub 账号授权已通过。
+
+路由状态保存在当前会话的内存中，最多保留最近 12 个页面，覆盖输入、筛选、分页、加载结果及滚动位置。切换账号或退出登录会清空页面缓存；刷新应用后重新加载页面。后台切换不会主动取消授权；明确取消、GitHub 拒绝授权或未完成的验证码到期时会清理待授权进度。
+
 ## 产物与清理
 
 应用图标使用站立木乃伊猫原稿，执行 `pnpm icons:generate` 可重新生成所有平台尺寸及 PNG、ICO、ICNS、WebP 导出。移动工程会自动同步图标，细节见[应用图标](APP_ICONS.md)。

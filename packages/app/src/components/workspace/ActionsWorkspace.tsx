@@ -5,12 +5,12 @@ import {
   Button,
   Card,
   Input,
-  Modal,
   Popconfirm,
   Select,
   Spin,
   Tag,
 } from "@arco-design/web-react";
+import { PageModal as Modal } from "../routing/PageModal";
 import { ArrowLeft, Download, FileText, RefreshCw } from "lucide-react";
 import { useTranslation } from "../../i18n";
 import { useRepository } from "./RepositoryContext";

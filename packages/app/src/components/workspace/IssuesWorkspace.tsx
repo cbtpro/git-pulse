@@ -5,13 +5,13 @@ import {
   Button,
   Card,
   Input,
-  Modal,
   Popconfirm,
   Select,
   Spin,
   Tabs,
   Tag,
 } from "@arco-design/web-react";
+import { PageModal as Modal } from "../routing/PageModal";
 import { ArrowLeft, ExternalLink, MessageSquare, Plus } from "lucide-react";
 import { useTranslation } from "../../i18n";
 import { useGitHubResource } from "../../hooks/useGitHubResource";

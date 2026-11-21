@@ -5,7 +5,6 @@ import {
   Navigate,
   Link,
   Route,
-  Routes,
   useLocation,
   useNavigate,
 } from "react-router-dom";
@@ -28,12 +27,27 @@ import { OfflineWorkspacePage } from "../../pages/OfflineWorkspacePage";
 import { ReleaseCenterPage } from "../../pages/ReleaseCenterPage";
 import { StarCollectionsPage } from "../../pages/StarCollectionsPage";
 import { RepositoryPage } from "../../pages/RepositoryPage";
+import {
+  PageStateProvider,
+  RetainedRoutes,
+  usePageDestination,
+} from "../routing/PageState";
 
 export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
+  const account = useAuthStore((state) => state.activeAccountId);
+  return (
+    <PageStateProvider key={account || "guest"}>
+      <AppLayoutContent onShowLogin={onShowLogin} />
+    </PageStateProvider>
+  );
+}
+
+function AppLayoutContent({ onShowLogin }: { onShowLogin: () => void }) {
   const { t } = useTranslation();
   const { isLoggedIn, userProfile, activeAccountId } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const destination = usePageDestination();
   const page =
     NAVIGATION_ITEMS.find(
       (item) =>
@@ -55,9 +69,6 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
   useEffect(() => {
     document.title = `${pageTitle} · GitPulse`;
   }, [pageTitle]);
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
   return (
     <div className="gp-app">
       <a
@@ -95,7 +106,10 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
             {isLoggedIn && userProfile ? (
               <button
                 className="gp-account-button"
-                onClick={() => navigate("/profile")}
+                onClick={() => {
+                  const target = destination("/profile");
+                  navigate(target.to, { state: target.state });
+                }}
                 aria-label={t("查看我的空间")}
               >
                 <Avatar size={30}>
@@ -115,7 +129,7 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
           </div>
         </header>
         <main id="main-content" className="gp-main" tabIndex={-1}>
-          <Routes key={activeAccountId || "guest"}>
+          <RetainedRoutes>
             <Route
               path="/profile/offline"
               element={<OfflineWorkspacePage onShowLogin={onShowLogin} />}
@@ -154,7 +168,7 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
               element={<Navigate to={PROFILE_SETTINGS_PATH} replace />}
             />
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          </RetainedRoutes>
           <footer className="gp-footer">
             <span>{t("GitPulse · 保持与开源世界的连接")}</span>
             <a href="https://github.com" target="_blank" rel="noreferrer">
