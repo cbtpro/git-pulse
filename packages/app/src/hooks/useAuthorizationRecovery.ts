@@ -17,6 +17,7 @@ export function useAuthorizationRecovery(ready: boolean) {
       if (
         authorizationIsForeground() &&
         !auth.isLoading &&
+        auth.authorization &&
         pendingGitHubAuthorization()
       )
         void auth.loginWithGitHub();

@@ -83,9 +83,9 @@ it("does not resurrect canceled authorization on foreground, online, or retry ti
     await useAuthStore.getState().loginWithGitHub();
   });
   useAuthStore.getState().cancelLogin();
-  await TokenManager.loadSession();
   window.dispatchEvent(new Event("focus"));
   window.dispatchEvent(new Event("online"));
+  await TokenManager.loadSession();
   expect(TokenManager.getPendingAuthorization()).toBeNull();
   expect(GitHubAuthService.loginWithToken).toHaveBeenCalledTimes(1);
   expect(useAuthStore.getState().authorization).toBeNull();
