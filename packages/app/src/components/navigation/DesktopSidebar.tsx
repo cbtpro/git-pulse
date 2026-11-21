@@ -9,7 +9,7 @@ import {
   type NavigationPage,
 } from "../../types/navigation";
 import { Brand } from "../common/Brand";
-import { usePageDestination } from "../routing/PageState";
+import { useTabDestination } from "../routing/PageState";
 
 export function DesktopSidebar({
   currentPage,
@@ -22,7 +22,7 @@ export function DesktopSidebar({
 }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const destination = usePageDestination();
+  const destination = useTabDestination();
   return (
     <aside className="gp-sidebar">
       <a className="gp-brand-link" href="#/" aria-label={t("GitPulse 概览")}>

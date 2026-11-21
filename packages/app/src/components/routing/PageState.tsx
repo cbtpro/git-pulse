@@ -13,6 +13,7 @@ import {
 } from "react-router-dom";
 import { isMainPagePath, isRepositoryPath } from "../../types/navigation";
 
+import { navigationSection } from "./navigationTrail";
 import { PageHistoryContext, pageKey, recordPageHistory } from "./pageRuntime";
 export { usePageActive, usePageScrollToTop } from "./pageRuntime";
 export { RetainedRoutes } from "./RetainedRoutes";
@@ -29,14 +30,6 @@ const Sources = createContext<(key: string) => Location | undefined>(
 export function PageStateProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
   const action = useNavigationType();
-  const [history, setHistory] = useState(() =>
-    recordPageHistory(undefined, location, action),
-  );
-  if (
-    history.entries[history.index]?.key !== location.key ||
-    pageKey(history.entries[history.index]) !== pageKey(location)
-  )
-    setHistory(recordPageHistory(history, location, action));
   const destinations = useRef(new Map<string, Location>());
   const sources = useRef(new Map<string, Location | undefined>());
   const previous = useRef<Location>();
@@ -56,6 +49,26 @@ export function PageStateProvider({ children }: { children: ReactNode }) {
     if (sources.current.size > MAX_PAGES * 8)
       sources.current.delete(sources.current.keys().next().value!);
   }
+  const section = navigationSection(
+    location,
+    sources.current.get(location.key),
+  );
+  const [history, setHistory] = useState(() =>
+    recordPageHistory(undefined, location, action, section),
+  );
+  if (
+    history.entries[history.index]?.key !== location.key ||
+    pageKey(history.entries[history.index]) !== pageKey(location)
+  )
+    setHistory(
+      recordPageHistory(
+        history,
+        location,
+        action,
+        section,
+        location.state?.navigationIntent === "tab",
+      ),
+    );
   previous.current = location;
   // Navigation links restore the latest URL, including search filters and pagination.
   destinations.current.set(location.pathname, location);
@@ -102,5 +115,17 @@ export function usePageDestination() {
     return location
       ? restoredDestination(location)
       : { to: path, state: undefined };
+  };
+}
+
+/** Switching top-level menus restores their page but starts a new Back boundary. */
+export function useTabDestination() {
+  const destination = usePageDestination();
+  return (path: string) => {
+    const target = destination(path);
+    return {
+      ...target,
+      state: { ...target.state, navigationIntent: "tab" },
+    };
   };
 }

@@ -5,7 +5,7 @@ import {
   pagePath,
   type NavigationPage,
 } from "../../types/navigation";
-import { usePageDestination } from "../routing/PageState";
+import { useTabDestination } from "../routing/PageState";
 
 export function MobileBottomNav({
   currentPage,
@@ -13,7 +13,7 @@ export function MobileBottomNav({
   currentPage: NavigationPage;
 }) {
   const { t } = useTranslation();
-  const destination = usePageDestination();
+  const destination = useTabDestination();
   return (
     <nav className="gp-mobile-nav" aria-label={t("底部导航")}>
       {NAVIGATION_ITEMS.map(({ id, shortLabel, icon: Icon }) => (

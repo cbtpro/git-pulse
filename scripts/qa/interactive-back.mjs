@@ -327,9 +327,103 @@ try {
     await expect(page).toHaveURL(/q=react&page=2/);
     await settled();
     expect(await active.evaluate((e) => e.scrollTop)).toBe(700);
+    // Tabs are separate top-level sections. Switching restores the original
+    // query/draft/viewport, but cannot turn a swipe into another tab selection.
+    const selectTab = async (
+      mobileName,
+      desktopName = mobileName,
+      programmatic = false,
+    ) => {
+      const mobile = page.locator(".gp-mobile-nav");
+      const item = (await mobile.isVisible())
+        ? mobile.getByRole("link", { name: mobileName, exact: true })
+        : page
+            .locator(".gp-sidebar")
+            .getByRole("menuitem", { name: desktopName, exact: true });
+      if (programmatic) await item.evaluate((e) => e.click());
+      else await item.click();
+    };
+    const swipe = async () => {
+      const left = await start();
+      await move(left, distance);
+      await touch("touchEnd", left + 8 + distance);
+      await settled();
+    };
+    await input.fill("preserved tab draft");
+    await input.blur();
+    await active.evaluate((e) => (e.scrollTop = 700));
+    await selectTab("我的", "我的空间");
+    await expect(page).toHaveURL(/#\/profile$/);
+    await expect(active).toHaveAttribute("data-route-url", "/profile");
+    await expect(
+      active.getByRole("button", { name: "账号与外观", exact: true }),
+    ).toBeVisible();
+    await swipe();
+    await expect(page).toHaveURL(/#\/profile$/);
+    await selectTab("搜索");
+    await expect(input).toHaveValue("preserved tab draft");
+    expect(
+      await active.evaluate((e) => e === window.qaA && e.scrollTop === 700),
+    ).toBe(true);
+    await swipe();
+    await expect(page).toHaveURL(/q=react&page=2/);
+    // Chrome is pointer-disabled during a drag. An external/programmatic tab
+    // change must still cancel the stale transition before it can commit Back.
+    await input.fill("vue");
+    await input.press("Enter");
+    await input.blur();
+    await expect(page).toHaveURL(/q=vue/);
+    // A hash change precedes the React transition in WebKit. Wait for the
+    // committed active frame before blurring its input and starting a gesture.
+    await expect(active).toHaveAttribute("data-route-url", /q=vue/);
+    await input.blur();
+    x = await start();
+    await move(x, 60);
+    await expect.poll(phase).toBe("dragging");
+    await selectTab("我的", "我的空间", true);
+    await settled();
+    await touch("touchEnd", x + 68);
+    await expect(page).toHaveURL(/#\/profile$/);
+    await expect(active).toHaveAttribute("data-route-url", "/profile");
+    // Drill-down Back still works within the current tab, including repeated
+    // settings visits and a root selection while already inside that tab.
+    await active
+      .getByRole("button", { name: "账号与外观", exact: true })
+      .click();
+    await expect(active).toHaveAttribute("data-route-url", "/profile/settings");
+    await expect(
+      active.getByRole("heading", { name: "账号与外观", exact: true }),
+    ).toBeVisible();
+    const settingsScroll = await page.evaluate(() => {
+      window.qaSettings = document.querySelector("[data-route-active=true]");
+      window.qaSettings.scrollTop = 250;
+      return window.qaSettings.scrollTop;
+    });
+    expect(settingsScroll).toBeGreaterThan(0);
+    await swipe();
+    await expect(page).toHaveURL(/#\/profile$/);
+    await swipe();
+    await expect(page).toHaveURL(/#\/profile$/);
+    // Wait out the controller's 500ms post-gesture ghost-click guard before
+    // beginning a genuinely separate tap (especially with reduced motion).
+    await page.waitForTimeout(550);
+    await active
+      .getByRole("button", { name: "账号与外观", exact: true })
+      .click();
+    await expect(active).toHaveAttribute("data-route-url", "/profile/settings");
+    expect(
+      await active.evaluate((e) => ({
+        same: e === window.qaSettings,
+        scroll: e.scrollTop,
+      })),
+    ).toEqual({ same: true, scroll: settingsScroll });
+    await selectTab("我的", "我的空间");
+    await swipe();
+    await expect(page).toHaveURL(/#\/profile$/);
+    expect(await chromeBounds()).toEqual(fixed);
     expect(errors).toEqual([]);
     console.log(
-      `${safari ? "WebKit synthetic" : "Chromium trusted touch"} ${width}px: cancel/commit/repeated Back, query/draft/scroll/canvas identity, fixed navigation and ${samples.length} transition frames passed`,
+      `${safari ? "WebKit synthetic" : "Chromium trusted touch"} ${width}px: cancel/commit/repeated Back, query/draft/scroll/canvas identity, tab boundaries, same-tab Back, fixed navigation and ${samples.length} transition frames passed`,
     );
     await context.close();
   }

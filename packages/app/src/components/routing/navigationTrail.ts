@@ -13,6 +13,19 @@ export type NavigationCrumb = PageDestination & {
   literal?: boolean;
 };
 
+/** Repository ownership follows the history entry's source, never its URL. */
+export function navigationSection(
+  location: Pick<Location, "pathname">,
+  source?: Pick<Location, "pathname">,
+): NavigationPage {
+  const path = isRepositoryPath(location.pathname)
+    ? source?.pathname || "/explore"
+    : location.pathname;
+  return path === "/profile" || path.startsWith("/profile/")
+    ? "profile"
+    : NAVIGATION_ITEMS.find((item) => pagePath(item.id) === path)?.id || "home";
+}
+
 /** A hierarchy is independent of browser Back: direct links have a safe parent. */
 export function buildNavigationTrail(
   location: Location,
@@ -99,9 +112,5 @@ export function buildNavigationTrail(
         });
     }
   } else addPage(location.pathname, restore(location));
-  const section: NavigationPage = sectionPath.startsWith("/profile")
-    ? "profile"
-    : NAVIGATION_ITEMS.find((item) => pagePath(item.id) === sectionPath)?.id ||
-      "home";
-  return { trail, section };
+  return { trail, section: navigationSection(location, source) };
 }

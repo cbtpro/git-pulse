@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
@@ -12,7 +12,9 @@ import { AppBreadcrumbs } from "../src/components/navigation/AppBreadcrumbs";
 import {
   PageStateProvider,
   restoredDestination,
+  useTabDestination,
 } from "../src/components/routing/PageState";
+import { PageHistoryContext } from "../src/components/routing/pageRuntime";
 import { buildNavigationTrail } from "../src/components/routing/navigationTrail";
 import {
   useAppLinkNavigation,
@@ -35,6 +37,7 @@ const describe = (url: string, from?: string) =>
     from ? location(from) : undefined,
     (path) => ({ to: path }),
     restoredDestination,
+    useTabDestination,
   );
 beforeEach(() => vi.spyOn(window, "scrollTo").mockImplementation(() => {}));
 
@@ -102,11 +105,27 @@ function NavigationFixture() {
   const navigateLink = useAppLinkNavigation();
   const navigate = useNavigate();
   const current = useLocation();
+  const history = useContext(PageHistoryContext);
+  const tab = useTabDestination();
   return (
     <div onClick={navigateLink}>
       <AppBreadcrumbs trail={trail} />
       <output aria-label="url">{current.pathname + current.search}</output>
       <output aria-label="section">{section}</output>
+      <output aria-label="back target">
+        {history.entries[history.index - 1]?.pathname || "none"}
+      </output>
+      {["/explore", "/inbox", "/profile"].map((path) => (
+        <button
+          key={path}
+          onClick={() => {
+            const target = tab(path);
+            navigate(target.to, { state: target.state });
+          }}
+        >
+          Tab {path}
+        </button>
+      ))}
       <output aria-label="state">{JSON.stringify(current.state)}</output>
       <a href="#/repo/octo/project" data-testid="repo">
         Open repository
@@ -178,6 +197,7 @@ it("keeps history-entry origins separate when the same repository is opened from
   render(<Fixture />);
   await user.click(screen.getByTestId("repo"));
   await user.click(screen.getByRole("link", { name: "Open inbox" }));
+  expect(screen.getByLabelText("back target").textContent).toBe("none");
   await user.click(screen.getByTestId("repo"));
   expect(screen.getByRole("link", { name: "返回收件箱" })).toBeTruthy();
   await user.click(screen.getByRole("button", { name: "History back" }));
@@ -245,4 +265,58 @@ it("leaves modified clicks, new tabs, downloads and prevented links to their exi
   expect(screen.getByLabelText("url").textContent).toBe(
     "/explore?q=react&page=2",
   );
+});
+
+it("starts a new interactive Back boundary for each tab without rewriting browser history", async () => {
+  const user = userEvent.setup();
+  render(<Fixture />);
+  await user.click(screen.getByTestId("repo"));
+  expect(screen.getByLabelText("back target").textContent).toBe("/explore");
+  await user.click(screen.getByRole("button", { name: "Tab /profile" }));
+  expect(screen.getByLabelText("back target").textContent).toBe("none");
+  await user.click(screen.getByRole("link", { name: "Open settings" }));
+  expect(screen.getByLabelText("back target").textContent).toBe("/profile");
+  // Selecting the active tab's root is also a boundary, never a Back to settings.
+  await user.click(screen.getByRole("button", { name: "Tab /profile" }));
+  expect(screen.getByLabelText("url").textContent).toBe("/profile");
+  expect(screen.getByLabelText("back target").textContent).toBe("none");
+  await user.click(screen.getByRole("button", { name: "Tab /explore" }));
+  expect(screen.getByLabelText("url").textContent).toBe(
+    "/explore?q=react&page=2",
+  );
+  expect(screen.getByLabelText("back target").textContent).toBe("none");
+  // Browser Back keeps its own cross-tab semantics, with no inferred preview.
+  await user.click(screen.getByRole("button", { name: "History back" }));
+  expect(screen.getByLabelText("url").textContent).toBe("/profile");
+  expect(screen.getByLabelText("back target").textContent).toBe("none");
+});
+
+it("keeps the same repository's Back target bound to its real source section", async () => {
+  const user = userEvent.setup();
+  render(<Fixture />);
+  await user.click(screen.getByTestId("repo"));
+  expect(screen.getByLabelText("back target").textContent).toBe("/explore");
+  await user.click(screen.getByRole("button", { name: "Tab /inbox" }));
+  expect(screen.getByLabelText("back target").textContent).toBe("none");
+  await user.click(screen.getByTestId("repo"));
+  expect(screen.getByLabelText("section").textContent).toBe("inbox");
+  expect(screen.getByLabelText("back target").textContent).toBe("/inbox");
+  await user.click(screen.getByRole("link", { name: "Open issue" }));
+  expect(screen.getByLabelText("back target").textContent).toBe(
+    "/repo/octo/project",
+  );
+  await user.click(screen.getByRole("button", { name: "History back" }));
+  expect(screen.getByLabelText("back target").textContent).toBe("/inbox");
+});
+
+it("does not replay a tab selection marker during same-section browser Back and Forward", async () => {
+  const user = userEvent.setup();
+  render(<Fixture />);
+  await user.click(screen.getByRole("button", { name: "Tab /profile" }));
+  await user.click(screen.getByRole("link", { name: "Open settings" }));
+  await user.click(screen.getByRole("button", { name: "History back" }));
+  expect(screen.getByLabelText("back target").textContent).toBe("none");
+  await user.click(screen.getByRole("button", { name: "History forward" }));
+  expect(screen.getByLabelText("url").textContent).toBe("/profile/settings");
+  expect(screen.getByLabelText("back target").textContent).toBe("/profile");
 });
