@@ -43,6 +43,8 @@ final class SafeAreaTests: XCTestCase {
     XCTAssertEqual(app.links["我的"].frame.maxY, enabledBottom, accuracy: 2)
     app.descendants(matching: .any).matching(identifier: "聚合搜索").firstMatch.tap()
     XCTAssertTrue(app.keyboards.firstMatch.waitForExistence(timeout: 5))
+    XCTAssertGreaterThan(app.keyboards.firstMatch.frame.height, 200,
+      "Disable Simulator > I/O > Keyboard > Connect Hardware Keyboard for this test")
     let keyboard = XCTAttachment(screenshot: app.screenshot())
     keyboard.name = "safe-area-keyboard-open"
     keyboard.lifetime = .keepAlways

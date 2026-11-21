@@ -28,24 +28,40 @@ final class GestureTests: XCTestCase {
     before.lifetime = .keepAlways
     add(before)
     app.links["搜索"].tap()
+    let searchInput = app.descendants(matching: .any).matching(identifier: "搜索关键词").firstMatch
+    XCTAssertTrue(searchInput.waitForExistence(timeout: 10))
     XCTAssertFalse(marker.exists)
+    // A tab root is not a Back destination for a different tab, even when
+    // the earlier settings page is retained in memory.
+    origin.withOffset(CGVector(dx: 8, dy: 450)).press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: 350, dy: 450)))
+    Thread.sleep(forTimeInterval: 0.6)
+    XCTAssertTrue(searchInput.exists)
+    XCTAssertFalse(marker.exists)
+    XCTAssertEqual(app.links["我的"].frame, fixedNav)
+    app.links["我的"].tap()
+    XCTAssertTrue(settings.waitForExistence(timeout: 5))
+    settings.tap()
+    XCTAssertTrue(marker.waitForExistence(timeout: 5))
+    XCTAssertEqual(marker.frame.minY, savedY, accuracy: 1)
     // A short edge drag cancels; it must not consume a history entry.
     origin.withOffset(CGVector(dx: 8, dy: 450)).press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: 45, dy: 450)))
     Thread.sleep(forTimeInterval: 0.6)
-    XCTAssertFalse(marker.exists)
-    XCTAssertEqual(app.links["我的"].frame, fixedNav)
-    // Complete a true history Back, preserving the settings viewport.
-    origin.withOffset(CGVector(dx: 8, dy: 450)).press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: 350, dy: 450)))
-    XCTAssertTrue(marker.waitForExistence(timeout: 5))
+    XCTAssertTrue(marker.exists)
     XCTAssertEqual(marker.frame.minY, savedY, accuracy: 1)
     XCTAssertEqual(app.links["我的"].frame, fixedNav)
     let after = XCTAttachment(screenshot: app.screenshot())
-    after.name = "settings-after-return"
+    after.name = "settings-restored-after-tab-switch"
     after.lifetime = .keepAlways
     add(after)
-    // A second completed gesture returns to the actual previous profile page.
+    // Complete Back inside the same tab, then stop at its root.
     origin.withOffset(CGVector(dx: 8, dy: 450)).press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: 350, dy: 450)))
     XCTAssertTrue(settings.waitForExistence(timeout: 5))
+    XCTAssertFalse(marker.exists)
+    XCTAssertEqual(app.links["我的"].frame, fixedNav)
+    origin.withOffset(CGVector(dx: 8, dy: 450)).press(forDuration: 0.05, thenDragTo: origin.withOffset(CGVector(dx: 350, dy: 450)))
+    Thread.sleep(forTimeInterval: 0.6)
+    XCTAssertTrue(settings.exists)
+    XCTAssertFalse(searchInput.exists)
     XCTAssertFalse(marker.exists)
     XCTAssertEqual(app.links["我的"].frame, fixedNav)
   }
