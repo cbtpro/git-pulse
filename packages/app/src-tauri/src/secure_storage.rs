@@ -147,14 +147,67 @@ mod tests {
     }
 }
 
+// Keep the read and conditional commit under the same lock used by all vault commands.
+fn compare_vault(
+    expected: Option<String>,
+    read: impl FnOnce() -> Result<Option<String>, String>,
+    commit: impl FnOnce() -> Result<(), String>,
+) -> Result<bool, String> {
+    let _guard = VAULT_LOCK.lock().map_err(|_| "安全存储暂不可用")?;
+    if read()? != expected { return Ok(false); }
+    commit()?;
+    Ok(true)
+}
+
 /// Atomic compare-and-swap for read/modify/write across WebView callers.
 #[tauri::command]
 pub async fn compare_auth_vault(app: tauri::AppHandle, expected: Option<String>, value: Option<String>) -> Result<bool, String> {
     let path = vault_path(&app)?;
     tauri::async_runtime::spawn_blocking(move || {
-        let _guard = VAULT_LOCK.lock().map_err(|_| "安全存储暂不可用")?;
-        if read_vault_unlocked(&path)? != expected { return Ok(false); }
-        match value { Some(value) => write_vault_unlocked(&path, &value)?, None => clear_vault_unlocked(&path)? }
-        Ok(true)
+        compare_vault(expected, || read_vault_unlocked(&path), || {
+            match value { Some(value) => write_vault_unlocked(&path, &value), None => clear_vault_unlocked(&path) }
+        })
     }).await.map_err(|_| "安全存储暂不可用")?
+}
+
+#[cfg(test)]
+mod compare_tests {
+    use super::*;
+    use std::sync::{Arc, Barrier};
+
+    #[test]
+    fn concurrent_callers_cannot_both_commit_the_same_snapshot() {
+        let value = Arc::new(Mutex::new(Some("before".to_owned())));
+        let barrier = Arc::new(Barrier::new(8));
+        let callers: Vec<_> = (0..8).map(|index| {
+            let value = value.clone();
+            let barrier = barrier.clone();
+            std::thread::spawn(move || {
+                barrier.wait();
+                compare_vault(Some("before".to_owned()),
+                    || Ok(value.lock().unwrap().clone()),
+                    || { *value.lock().unwrap() = Some(index.to_string()); Ok(()) },
+                ).unwrap()
+            })
+        }).collect();
+        let commits = callers.into_iter().map(|caller| usize::from(caller.join().unwrap())).sum::<usize>();
+        assert_eq!(commits, 1);
+        assert_ne!(value.lock().unwrap().as_deref(), Some("before"));
+    }
+
+    #[test]
+    fn stale_expectations_and_read_errors_do_not_commit() {
+        let stale = compare_vault(Some("removed-account".into()),
+            || Ok(Some("logout-generation".into())),
+            || panic!("stale credentials must not be written"),
+        );
+        assert_eq!(stale, Ok(false));
+        let unreadable = compare_vault(None,
+            || Err("unreadable".into()),
+            || panic!("unreadable vault must not be replaced"),
+        );
+        assert_eq!(unreadable, Err("unreadable".into()));
+        let failed_write = compare_vault(None, || Ok(None), || Err("write failed".into()));
+        assert_eq!(failed_write, Err("write failed".into()));
+    }
 }
