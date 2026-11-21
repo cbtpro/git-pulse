@@ -80,6 +80,7 @@ gitpulse/
 ## 文档
 
 - [本地开发总览](docs/DEVELOPMENT.md)：环境、命令、OAuth、输出目录与常见问题。
+- [测试包与真机安装](docs/DEVELOPMENT.md#打包测试版本并安装真机)：iOS / Android 的构建、签名、安装验证与交付记录。
 - [多端同步调试](docs/SYNC_DEVELOPMENT_WORKFLOW.md)：共用前端、热更新和原生构建。
 - [GitHub Actions](docs/GITHUB_ACTIONS.md)：构建矩阵、签名变量与产物下载。
 - [Monorepo 指南](MONOREPO_GUIDE.md)：包边界、依赖与共享源码。

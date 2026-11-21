@@ -91,6 +91,32 @@ pnpm build:android --apk --target aarch64 --debug
 脚本只引用环境变量，不把密码写进 Gradle；缺少部分变量或文件不存在会停止。CI 使用 `ANDROID_KEYSTORE_BASE64` 解码临时文件，与本地路径变量不同，见 [Actions 签名](GITHUB_ACTIONS.md#android-签名)。签名材料不要提交到仓库。
 
 Android 当前使用 Web Crypto 非导出密钥加密本地账号数据；它与桌面/iOS 的系统安全存储实现不同。清除应用数据会清除本地账号与设置。
+
+## 测试包安装到真机
+
+先完成 `pnpm check` 并记录待测提交号，手机开启 USB 调试、解锁并确认电脑授权。以下命令在仓库根目录执行，`替换为设备序列号` 使用 `adb devices -l` 中目标手机的序列号；连接多台设备或同时运行模拟器时，每条 `adb` 命令都显式传入同一个 `-s`。
+
+```bash
+adb devices -l
+adb -s 替换为设备序列号 shell getprop ro.product.cpu.abilist
+pnpm build:android --apk --target aarch64 --debug
+adb -s 替换为设备序列号 install -r packages/app/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
+adb -s 替换为设备序列号 shell am force-stop com.pe7er.gitpulse
+adb -s 替换为设备序列号 shell am start -W -n com.pe7er.gitpulse/.MainActivity
+adb -s 替换为设备序列号 shell pidof com.pe7er.gitpulse
+adb -s 替换为设备序列号 shell dumpsys package com.pe7er.gitpulse
+```
+
+上例适用于 `abilist` 包含 `arm64-v8a` 的设备；其他架构按实际设备调整 `--target`，APK 路径以本次构建成功输出为准。`install -r` 覆盖安装同一签名的应用，保留已有数据。`am force-stop` 会结束旧进程，先保存正在编辑的内容；`am start -W` 确认启动成功，随后检查 PID 仍存在，并从 `dumpsys package` 核对 `versionName` / `versionCode`。
+
+该包内置页面资源，可关闭电脑开发服务后再打开应用验证。测试真实 GitHub 授权返回、冷启动与弱网恢复、账号切换、路由状态、安全区和语言切换；使用临时账号时仅移除该测试账号，不清空整个应用数据。
+
+调试签名 APK 适合功能测试，不能把其启动耗时当作 Release 性能结果。进行正式性能测试时，配置前文四个签名变量后执行 `pnpm build:android --apk --target aarch64`，安装构建实际输出的签名 Release APK。遇到 `INSTALL_FAILED_UPDATE_INCOMPATIBLE` 时先确认新旧签名是否一致；不要为绕过错误直接卸载，卸载会丢失本地账号及设置。AAB 和未签名 APK 不能作为这里的安装包。
+
+交付时将本次 APK 复制到单独的版本目录（例如忽略提交的 `artifacts/android/`），保留 SHA-256 校验值、源码提交号、构建模式、设备/系统/ABI、安装与启动结果以及测试说明。macOS 可使用 `shasum -a 256`，Linux 使用 `sha256sum`，Windows PowerShell 使用 `Get-FileHash -Algorithm SHA256` 计算 APK 校验值。
+
+已验证记录：2026-11-21，`25f70b8` 的 ARM64 调试 APK 已完成 Android 模拟器安装、启动及原生 WebView 恢复检查；该记录不代表 Android 物理真机已经验证。
+
 ## 贡献活动桌面小组件
 
 应用包含 2D/3D 两种原生小组件，添加方式、同步规则及验证范围见 [桌面小组件](HOME_SCREEN_WIDGETS.md)。本地初始化和 CI 会自动接入 `src-tauri/widgets/android/`，重新生成 Android 工程后无需手动复制源码。

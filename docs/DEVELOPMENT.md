@@ -63,6 +63,17 @@ pnpm build:android --help
 
 原有包级别命令仍可使用，例如 `pnpm -F @gitpulse/app tauri:ios`、`tauri:android:init`、`tauri:windows:build`。底层 `pnpm -F @gitpulse/app tauri ...` 保留给 Actions 和 Xcode；它绕过本地环境检查及默认参数。
 
+### 打包测试版本并安装真机
+
+交给测试人员的包使用 `build` 命令生成，页面资源随应用内置，无需电脑持续运行前端开发服务。按平台完成签名、明确选择设备，再覆盖安装并核对版本和运行状态：
+
+| 平台 | 测试包构建 | 安装与验证流程 |
+| --- | --- | --- |
+| iOS 真机 | `pnpm build:ios --signed --export-method debugging` | [签名检查、IPA 解包、真机安装与交付](iOS_DEVELOPMENT.md#测试包打包与真机安装) |
+| Android ARM64 | `pnpm build:android --apk --target aarch64 --debug` | [APK 安装、启动与测试包交付](ANDROID_DEVELOPMENT.md#测试包安装到真机) |
+
+iOS 上述命令使用 Release 编译和开发签名导出；Android 示例使用调试签名，正式性能验收应按平台文档改用有签名的 Release 包。每次交付保留源码提交号、版本和构建号、包校验值、设备与系统版本、安装结果及测试说明；原生构建会写入同一份前端输出目录，多平台打包应依次执行。
+
 ## 前端服务与多端调试
 
 原生启动会自动启动前端，无需提前单独运行 Vite。需要同时调试多个端时，可先在独立终端运行 `pnpm dev:web`，再启动各原生应用。前端固定使用 1420 端口，通过工作区标识确认后复用，不能误复用另一份检出的页面。遇到其他程序占用端口会说明原因，不会结束现有进程。
