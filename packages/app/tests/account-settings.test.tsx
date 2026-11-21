@@ -35,7 +35,7 @@ beforeEach(async () => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-it("provides add, switch and remove controls for independent saved accounts", async () => {
+it("provides add, renew authorization, switch and remove controls for independent saved accounts", async () => {
   const user = userEvent.setup();
   const add = vi.fn();
   render(<AccountSettingsCard onShowLogin={add} />);
@@ -44,6 +44,9 @@ it("provides add, switch and remove controls for independent saved accounts", as
   ).toHaveLength(2);
   await user.click(screen.getByRole("button", { name: "添加账号" }));
   expect(add).toHaveBeenCalledOnce();
+  await user.click(screen.getByRole("button", { name: "更新授权" }));
+  expect(add).toHaveBeenCalledTimes(2);
+  expect(useAuthStore.getState().accounts).toHaveLength(2);
   expect(useAuthStore.getState().activeAccountId).toBe("2");
   await user.click(screen.getByRole("button", { name: "切换到 first" }));
   await waitFor(() =>

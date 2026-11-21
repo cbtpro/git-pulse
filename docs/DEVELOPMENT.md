@@ -33,7 +33,7 @@ VITE_GITHUB_CLIENT_ID=your_public_client_id
 
 OAuth App 必须开启 **Enable Device Flow**。应用通过 GitHub 官网完成授权，不收集 GitHub 密码，也不需要 Client Secret。更改环境变量后重启前端。没有 Client ID 时可在应用中使用 Token 登录。账号凭证由应用加密保存，不能放入任何 `VITE_*` 环境变量；这些变量会进入前端产物。
 
-OAuth 登录申请 `repo read:user read:org notifications`，其中 `read:org` 用于读取当前账号的组织成员身份，包括非公开成员身份。旧授权不会因应用升级自动增加权限；在“我的组织”中点击“重新授权组织访问”，使用同一 GitHub 账号完成授权即可更新本地凭证，无需先移除账号。使用经典 PAT 时需自行授予 `read:org`；细粒度 PAT 和组织访问策略可能限制可见范围。
+OAuth 登录申请 `repo read:user read:org notifications`，其中 `read:org` 用于读取当前账号的组织成员身份，包括非公开成员身份。旧授权不会因应用升级自动增加权限；在“账号与外观”的当前账号中点击“更新授权”，使用同一 GitHub 账号完成登录即可更新本地凭证，无需先移除账号。此入口打开登录流程，不会直接修改 GitHub 组织权限；组织策略限制不一定能通过重新登录解决。使用经典 PAT 时需自行授予 `read:org`，再通过 Token 登录更新凭证；细粒度 PAT 和组织访问策略可能限制可见范围。
 
 ## 开发、初始化与打包
 
@@ -130,7 +130,7 @@ pnpm test:startup
 
 个人卡片的身份徽章来自 [GitHub GraphQL User](https://docs.github.com/en/graphql/reference/users) 的官方身份标记，仅显示接口确认拥有的徽章；Pull Shark、YOLO 等成就通过卡片里的 GitHub 成就入口查看。“我的组织”使用[当前账号的组织成员列表](https://docs.github.com/en/rest/orgs/members#list-organization-memberships-for-the-authenticated-user)，读取 `state=active` 并遍历分页，包含授权允许的非公开成员身份，不把待接受的邀请当成已加入的组织。
 
-旧凭证访问成员列表返回权限不足时，回退至 `/users/{login}/orgs` 的公开结果，并明确提示授权范围与重新授权入口；凭证失效、限流或网络错误不会伪装成“没有组织”。空列表仅表示当前授权没有可显示的组织，不代表账号一定未加入组织。两个区域独立加载，切换账号后取消过时请求，不阻塞个人卡片和页面内容，也不会改变 GitHub 上的成员公开状态。
+访问成员列表返回权限不足时，回退至 `/users/{login}/orgs` 的公开结果，并明确提示授权范围；组织卡片不展示重新授权按钮，授权管理统一放在“账号与外观”。凭证失效、限流或网络错误不会伪装成“没有组织”。空列表仅表示当前授权没有可显示的组织，不代表账号一定未加入组织，也不是需要重新授权的依据。两个区域独立加载，切换账号后取消过时请求，不阻塞个人卡片和页面内容，也不会改变 GitHub 上的成员公开状态。
 
 个人卡片统一资料、统计和身份区域的左右边距。桌面端徽章与组织使用等宽双列、对齐标题及内容起点；移动端纵向排列，以分隔线区分区域。长名称可换行，头像、徽章图标与组织头像不参与压缩。`pnpm test:startup` 同时检查这些对齐关系、320px 窄屏、四种语言、深色主题及旧授权的空状态布局。
 

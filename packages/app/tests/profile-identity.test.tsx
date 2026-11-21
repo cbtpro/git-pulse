@@ -179,31 +179,39 @@ it("does not leak a previous account's organizations after a switch", async () =
   expect(screen.queryByText("private-to-first")).toBeNull();
 });
 
-it("offers reauthorization for old grants without telling the user they have no organizations", async () => {
-  fetchMock.mockImplementation(async (url) =>
-    String(url).includes("/user/memberships/orgs")
-      ? response({}, 403)
-      : String(url).endsWith("/graphql")
-        ? response({ data: { viewer: flags } })
-        : response([]),
-  );
-  const onShowLogin = vi.fn();
-  render(
-    <ProfileIdentity
-      login="owner"
-      token="old-token"
-      onShowLogin={onShowLogin}
-    />,
-  );
-  await screen.findByText(
-    "当前授权无法读取非公开的组织成员身份，仅显示公开结果。",
-  );
-  await userEvent.click(
-    screen.getByRole("button", { name: "重新授权组织访问" }),
-  );
-  expect(onShowLogin).toHaveBeenCalledOnce();
-  expect(screen.queryByText("当前授权下暂无可显示的组织")).toBeNull();
-});
+it.each([200, 403])(
+  "keeps organization results informational after a %i response",
+  async (status) => {
+    fetchMock.mockImplementation(async (url) =>
+      String(url).includes("/user/memberships/orgs")
+        ? response(status === 200 ? [] : {}, status)
+        : String(url).endsWith("/graphql")
+          ? response({ data: { viewer: flags } })
+          : response([]),
+    );
+    const onShowLogin = vi.fn();
+    render(
+      <ProfileIdentity
+        login="owner"
+        token="old-token"
+        onShowLogin={onShowLogin}
+      />,
+    );
+    await screen.findByText(
+      status === 403
+        ? "当前授权无法读取非公开的组织成员身份，仅显示公开结果。"
+        : "当前授权下暂无可显示的组织",
+    );
+    expect(
+      within(screen.getByRole("region", { name: "我的组织" })).queryByRole(
+        "button",
+      ),
+    ).toBeNull();
+    expect(onShowLogin).not.toHaveBeenCalled();
+    if (status === 403)
+      expect(screen.queryByText("当前授权下暂无可显示的组织")).toBeNull();
+  },
+);
 
 it.each([401, 403])(
   "offers account authorization for a %i rejection instead of treating it as no badges",

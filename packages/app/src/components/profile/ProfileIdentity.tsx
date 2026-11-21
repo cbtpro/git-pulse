@@ -204,13 +204,6 @@ export function ProfileIdentity({
                   ? t("当前授权无法读取非公开的组织成员身份，仅显示公开结果。")
                   : t("仅显示当前账号授权可见的组织。")}
               </p>
-              {(organizations.data.access === "public-only" ||
-                organizations.data.organizations.length === 0) &&
-                onShowLogin && (
-                  <Button size="mini" type="text" onClick={onShowLogin}>
-                    {t("重新授权组织访问")}
-                  </Button>
-                )}
             </div>
           )}
       </section>

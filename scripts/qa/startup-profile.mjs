@@ -228,8 +228,8 @@ try {
       "Updated in background",
     );
     await expect(page.getByRole("dialog")).toHaveCount(0);
-    // An old grant must show a useful authorization action, including with long
-    // localized empty-state text and dark mode on narrow screens.
+    // Restricted results explain their visibility without an authorization button
+    // in the profile card, including localized text and dark mode on narrow screens.
     mode = "restricted";
     for (const language of device.name === "Android"
       ? ["zh-CN", "en", "ja", "zh-TW"]
@@ -248,20 +248,21 @@ try {
       await page.reload({ waitUntil: "domcontentloaded" });
       await expect(
         page.locator(
-          ".gp-profile-identity > section:last-child .gp-profile-identity-footer button",
+          ".gp-profile-identity > section:last-child .gp-profile-identity-footer p",
         ),
       ).toBeVisible();
+      await expect(
+        page.locator(".gp-profile-identity > section:last-child button"),
+      ).toHaveCount(0);
       await expect(page.locator(".gp-profile-badges")).toHaveCount(0);
       expect(
         await page.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
         ),
       ).toBe(true);
-      await page
-        .locator(".gp-profile-card")
-        .screenshot({
-          path: `review-artifacts/startup/profile-${device.name}-${language}-restricted.png`,
-        });
+      await page.locator(".gp-profile-card").screenshot({
+        path: `review-artifacts/startup/profile-${device.name}-${language}-restricted.png`,
+      });
     }
     expect(errors).toEqual([]);
     console.log(

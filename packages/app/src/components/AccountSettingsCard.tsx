@@ -3,6 +3,7 @@ import {
   ArrowRightLeft,
   GitBranch,
   LogOut,
+  RefreshCw,
   ShieldCheck,
   Trash2,
   UserPlus,
@@ -44,6 +45,9 @@ export function AccountSettingsCard({
       </div>
       <p className="gp-accounts-description">
         {t("添加多个 GitHub 账号，切换后显示对应账号的内容。")}
+        {isLoggedIn && (
+          <> {t("使用同一账号重新登录可更新授权，无需移除账号。")}</>
+        )}
       </p>
       {error && (
         <Alert type="error" content={t(error)} closable onClose={clearError} />
@@ -72,7 +76,17 @@ export function AccountSettingsCard({
                 </div>
                 <div className="gp-saved-account-actions">
                   {current ? (
-                    <Tag color="green">{t("当前账号")}</Tag>
+                    <>
+                      <Tag color="green">{t("当前账号")}</Tag>
+                      <Button
+                        type="text"
+                        icon={<RefreshCw size={15} />}
+                        disabled={isLoading}
+                        onClick={onShowLogin}
+                      >
+                        {t("更新授权")}
+                      </Button>
+                    </>
                   ) : (
                     <Button
                       icon={<ArrowRightLeft size={15} />}
