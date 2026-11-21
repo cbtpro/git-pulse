@@ -644,5 +644,6 @@
   "暂无公开身份徽章": "No public identity badges",
   "暂时无法加载公开组织": "Public organizations are unavailable",
   "刷新公开组织": "Refresh public organizations",
-  "暂无公开的组织成员身份": "No public organization memberships"
+  "暂无公开的组织成员身份": "No public organization memberships",
+  "身份徽章用于 GitHub Star、开发者计划等身份。YOLO、Pull Shark 等成就请在 GitHub 查看。": "Identity badges recognize roles such as GitHub Star and Developer Program member. View achievements such as YOLO and Pull Shark on GitHub."
 }

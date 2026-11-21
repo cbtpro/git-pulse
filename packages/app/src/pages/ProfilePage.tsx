@@ -184,7 +184,12 @@ export function ProfilePage({ onShowLogin }: { onShowLogin: () => void }) {
                 </div>
               ))}
             </div>
-            <ProfileIdentity key={token} login={profile.login} token={token} />
+            <ProfileIdentity
+              key={token}
+              login={profile.login}
+              token={token}
+              onShowLogin={onShowLogin}
+            />
           </Card>
           {showProfileReadme && (
             <Suspense fallback={<LoadingCards />}>

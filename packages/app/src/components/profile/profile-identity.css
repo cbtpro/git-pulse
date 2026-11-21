@@ -106,6 +106,13 @@
   font-size: 12px;
   color: var(--gp-subtle);
 }
+.gp-profile-identity-explanation {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--gp-secondary);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 768px) {
   .gp-profile-identity {
     grid-template-columns: minmax(0, 1fr);

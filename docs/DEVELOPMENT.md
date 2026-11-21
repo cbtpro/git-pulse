@@ -128,6 +128,8 @@ pnpm test:startup
 
 个人卡片的身份徽章来自 [GitHub GraphQL User](https://docs.github.com/en/graphql/reference/users) 的官方身份标记，仅显示接口确认拥有的徽章；Pull Shark、YOLO 等成就通过卡片里的 GitHub 成就入口查看。组织来自[公开组织成员列表](https://docs.github.com/en/rest/orgs/orgs#list-organizations-for-a-user)，不额外申请私有组织权限；两个区域独立加载、失败可分别重试，不阻塞个人卡片和页面内容。
 
+“暂无公开身份徽章”表示查询成功，但当前查询的六个身份标记均为 `false`；拥有 GitHub 成就不意味着拥有这些身份徽章。不要将空结果当作鉴权失败，也不要据仓库数或贡献数推断徽章。查询失败时页面显示网络、权限或限流原因，凭证失效或权限不足时可从徽章区域重新登录。
+
 ## 产物与清理
 
 应用图标使用站立木乃伊猫原稿，执行 `pnpm icons:generate` 可重新生成所有平台尺寸及 PNG、ICO、ICNS、WebP 导出。移动工程会自动同步图标，细节见[应用图标](APP_ICONS.md)。

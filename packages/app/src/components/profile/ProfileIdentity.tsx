@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "../../i18n";
 import { useGitHubResource } from "../../hooks/useGitHubResource";
+import { GitHubRequestError } from "../../services/github/GitHubService";
 import {
   profileBadges,
   profileOrganizations,
@@ -30,9 +31,11 @@ const icons = {
 export function ProfileIdentity({
   login,
   token,
+  onShowLogin,
 }: {
   login: string;
   token: string;
+  onShowLogin?: () => void;
 }) {
   const { t } = useTranslation();
   const badges = useGitHubResource(
@@ -68,6 +71,11 @@ export function ProfileIdentity({
         ) : badges.error ? (
           <div className="gp-profile-identity-status" role="status">
             <span>{t("暂时无法加载身份徽章")}</span>
+            {badges.error.message !== "暂时无法加载身份徽章" && (
+              <p className="gp-profile-identity-explanation">
+                {t(badges.error.message)}
+              </p>
+            )}
             <Button
               size="mini"
               type="text"
@@ -77,6 +85,14 @@ export function ProfileIdentity({
             >
               {t("重试")}
             </Button>
+            {onShowLogin &&
+              badges.error instanceof GitHubRequestError &&
+              (badges.error.status === 401 ||
+                (badges.error.status === 403 && !badges.error.rateLimited)) && (
+                <Button size="mini" type="text" onClick={onShowLogin}>
+                  {t("重新登录")}
+                </Button>
+              )}
           </div>
         ) : badges.data?.length ? (
           <ul className="gp-profile-badges">
@@ -91,7 +107,14 @@ export function ProfileIdentity({
             })}
           </ul>
         ) : (
-          <p className="gp-profile-identity-status">{t("暂无公开身份徽章")}</p>
+          <div className="gp-profile-identity-status" role="status">
+            <span>{t("暂无公开身份徽章")}</span>
+            <p className="gp-profile-identity-explanation">
+              {t(
+                "身份徽章用于 GitHub Star、开发者计划等身份。YOLO、Pull Shark 等成就请在 GitHub 查看。",
+              )}
+            </p>
+          </div>
         )}
       </section>
       <section aria-label={t("公开组织")} aria-busy={organizations.loading}>
