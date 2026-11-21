@@ -30,8 +30,10 @@ it("toggles iOS insets immediately and refreshes native geometry after rotation"
   );
   expect(invoke).toHaveBeenCalledWith("configure_safe_area");
   expect(document.body.dataset.safeArea).toBe("on");
+  expect(document.documentElement.dataset.nativeViewport).toBe("ios");
   hook.rerender({ enabled: false });
   expect(document.body.dataset.safeArea).toBe("off");
+  expect(document.documentElement.dataset.nativeViewport).toBe("ios");
   hook.rerender({ enabled: true });
   expect(document.body.dataset.safeArea).toBe("on");
   vi.mocked(invoke).mockResolvedValue({
@@ -49,6 +51,15 @@ it("toggles iOS insets immediately and refreshes native geometry after rotation"
   expect(document.body.style.getPropertyValue("--gp-native-safe-top")).toBe(
     "0px",
   );
+  hook.unmount();
+  expect(document.documentElement.dataset.nativeViewport).toBeUndefined();
+});
+
+it("does not apply the iOS viewport workaround to other platforms", () => {
+  vi.stubGlobal("navigator", { userAgent: "Android" });
+  const hook = renderHook(() => useSafeArea(true));
+  expect(document.documentElement.dataset.nativeViewport).toBeUndefined();
+  hook.unmount();
 });
 
 it("does not apply stale iOS measurements after toggling the setting", async () => {

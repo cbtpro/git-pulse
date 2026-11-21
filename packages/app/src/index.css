@@ -16,6 +16,14 @@
 html[data-mobile-viewport="fixed"] {
   touch-action: pan-x pan-y;
 }
+/* WKWebView can derive a short dynamic viewport from its own short document
+   when viewport-fit=cover is used. Anchor the native iOS document to the full
+   viewport so our 100dvh page stack does not perpetuate that safe-area deficit.
+   Browser toolbars keep their normal dynamic-viewport behavior. */
+html[data-native-viewport="ios"],
+html[data-native-viewport="ios"] body {
+  min-height: 100vh;
+}
 * {
   box-sizing: border-box;
 }

@@ -14,6 +14,9 @@ export function useSafeArea(enabled: boolean) {
       viewport.content = `${viewport.content.replace(/,?\s*viewport-fit=[^,]*/g, "")}, viewport-fit=cover`;
     }
     if (!isTauri() || !/iPhone|iPad|iPod/.test(navigator.userAgent)) return;
+    const root = document.documentElement;
+    const previousNativeViewport = root.dataset.nativeViewport;
+    root.dataset.nativeViewport = "ios";
     let active = true;
     let request = 0;
     const sync = async () => {
@@ -39,6 +42,9 @@ export function useSafeArea(enabled: boolean) {
     document.addEventListener("visibilitychange", sync);
     return () => {
       active = false;
+      if (previousNativeViewport === undefined)
+        delete root.dataset.nativeViewport;
+      else root.dataset.nativeViewport = previousNativeViewport;
       window.removeEventListener("resize", sync);
       window.removeEventListener("orientationchange", sync);
       document.removeEventListener("visibilitychange", sync);

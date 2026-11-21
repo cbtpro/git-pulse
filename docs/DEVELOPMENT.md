@@ -112,6 +112,7 @@ pnpm test:interactive-back
 pnpm test:mobile:viewport
 pnpm test:vault-concurrency
 pnpm test:resource-consistency
+pnpm test:safe-area-layout
 ```
 
 `test:vault-concurrency` 使用隔离的两个浏览器标签页验证凭证并发合并、退出撤销与迟到回调；`test:resource-consistency` 使用模拟 GitHub 响应验证详情修改后返回缓存列表的状态同步。它们不使用真实账号。
@@ -121,6 +122,12 @@ pnpm test:resource-consistency
 路由状态保存在当前会话的内存中，按完整页面地址（路径、查询参数和片段）最多保留最近 12 个实例，覆盖输入、筛选、分页、加载结果及滚动位置。同一路径的不同搜索条件、页码、仓库目录有各自的实例。每页拥有独立滚动容器，隐藏页保持布局，使用 `visibility`、`inert` 和 `aria-hidden` 隔离交互与无障碍读取；返回时直接激活原来的 DOM，不重新请求数据或通过 `window.scrollTo` 重建位置。缓存访问顺序与 DOM 顺序分离，避免移动节点导致浏览器重置滚动位置。局部分页通过 `usePageScrollToTop` 重置当前页滚动，不能再操作窗口滚动。
 
 切换账号或退出登录会清空页面缓存；刷新应用后重新加载页面。缓存容量之外的旧页再次进入时正常加载。后台切换不会主动取消授权；明确取消、GitHub 拒绝授权或未完成的验证码到期时会清理待授权进度。
+
+### 移动端安全区
+
+iOS 的 `configure_safe_area` 关闭原生滚动视图的自动安全区占位，CSS 统一管理安全区。WKWebView 在 `viewport-fit=cover` 与短文档组合下可能将动态视口高度扣除安全区；应用再使用 `100dvh` 固定根布局，会延续这个较小视口，导致底部导航下方出现空白。原生 iOS 通过 `data-native-viewport="ios"` 将 `html`、`body` 的最小高度锚定为 `100vh`，页面内部继续使用动态视口。普通浏览器不应用此补偿，原生视图 frame 也不做改写。安全区开关只决定 CSS 内容留白。
+
+`pnpm test:safe-area-layout` 模拟 430×932 的 iPhone 布局及 59/34 像素安全区，检查开关、导航贴底、内容留白与路由返回；已加入浏览器 CI。原生视图大小必须额外由 `pnpm test:ios:navigation -- <模拟器 UDID>` 的 `SafeAreaTests` 验证，浏览器测试不能发现原生容器裁切。
 
 ### 移动端系统返回
 
@@ -136,7 +143,7 @@ Android 使用 Tauri 的[系统返回接口](https://v2.tauri.app/reference/java
 
 `pnpm test:interactive-back` 使用隔离的原生桥接与 GitHub 模拟响应，在 320/390/1024 像素布局发送 Chromium 真实触摸输入，检查取消与连续返回、不同查询的原始实例、滚动/Canvas 保留、固定导航、输入与弹窗拦截、后台中断及减少动态效果。逐帧记录动画与路由交接的可见性、位置和滚动值。`GITPULSE_TEST_BROWSER=webkit pnpm test:interactive-back` 在 WebKit 使用合成触摸执行同一套断言；它验证 WebKit 布局和路由交接，不等同于 iOS 系统触摸验证，仍需模拟器或真机检查。
 
-原生触摸回归使用 XCTest：先在 iPhone 15 Pro Max 模拟器安装并启动最新 GitPulse，使用简体中文界面、默认字号和游客状态；开发包须保持对应前端服务可用。执行 `pnpm test:ios:navigation -- <模拟器 UDID>`，脚本在临时目录生成独立测试工程，不修改应用工程或签名。测试覆盖纵向滚动、短拖取消、完成返回后滚动坐标一致、连续返回，以及底部导航位置一致；报告和返回前后截图保存至 `review-artifacts/ios-navigation/*.xcresult`，可用 Xcode 打开。测试会重新启动模拟器中的应用，不清空账号或修改设置。此用例已在 iOS 17.4 模拟器验证；真机的触感、软键盘和系统边缘冲突仍应单独检查。
+原生触摸回归使用 XCTest：先在 iPhone 15 Pro Max 模拟器安装并启动最新 GitPulse，使用简体中文界面、默认字号和游客状态；开发包须保持对应前端服务可用。执行 `pnpm test:ios:navigation -- <模拟器 UDID>`，脚本在临时目录生成独立测试工程，不修改应用工程或签名。测试覆盖纵向滚动、短拖取消、完成返回后滚动坐标一致、连续返回，以及底部导航位置一致；报告和返回前后截图保存至 `review-artifacts/ios-navigation/*.xcresult`，可用 Xcode 打开。测试会重新启动模拟器中的应用，不清空账号；安全区用例临时切换开关并恢复原值，同时验证底部只预留一次手势条空间、软键盘关闭后恢复贴底。此用例已在 iOS 17.4 模拟器验证；真机的触感、软键盘和系统边缘冲突仍应单独检查。
 
 ### 页面层级与返回
 
