@@ -8,7 +8,7 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
-import { useEffect } from "react";
+import { lazy, useEffect } from "react";
 import { useAuthStore } from "../../stores/authStore";
 import {
   NAVIGATION_ITEMS,
@@ -17,21 +17,66 @@ import {
 } from "../../types/navigation";
 import { DesktopSidebar } from "../navigation/DesktopSidebar";
 import { MobileBottomNav } from "../navigation/MobileBottomNav";
-import { HomePage } from "../../pages/HomePage";
-import { ExplorePage } from "../../pages/ExplorePage";
-import { InboxPage } from "../../pages/InboxPage";
-import { ProfilePage } from "../../pages/ProfilePage";
 import { GlobalSearch } from "../search/GlobalSearch";
-import { SettingsPage } from "../../pages/SettingsPage";
-import { OfflineWorkspacePage } from "../../pages/OfflineWorkspacePage";
-import { ReleaseCenterPage } from "../../pages/ReleaseCenterPage";
-import { StarCollectionsPage } from "../../pages/StarCollectionsPage";
-import { RepositoryPage } from "../../pages/RepositoryPage";
 import {
   PageStateProvider,
   RetainedRoutes,
   usePageDestination,
 } from "../routing/PageState";
+
+const HomePage = lazy(() =>
+  import("../../pages/HomePage").then((module) => ({
+    default: module.HomePage,
+  })),
+);
+
+const ExplorePage = lazy(() =>
+  import("../../pages/ExplorePage").then((module) => ({
+    default: module.ExplorePage,
+  })),
+);
+
+const InboxPage = lazy(() =>
+  import("../../pages/InboxPage").then((module) => ({
+    default: module.InboxPage,
+  })),
+);
+
+const ProfilePage = lazy(() =>
+  import("../../pages/ProfilePage").then((module) => ({
+    default: module.ProfilePage,
+  })),
+);
+
+const SettingsPage = lazy(() =>
+  import("../../pages/SettingsPage").then((module) => ({
+    default: module.SettingsPage,
+  })),
+);
+
+const OfflineWorkspacePage = lazy(() =>
+  import("../../pages/OfflineWorkspacePage").then((module) => ({
+    default: module.OfflineWorkspacePage,
+  })),
+);
+
+const ReleaseCenterPage = lazy(() =>
+  import("../../pages/ReleaseCenterPage").then((module) => ({
+    default: module.ReleaseCenterPage,
+  })),
+);
+
+const StarCollectionsPage = lazy(() =>
+  import("../../pages/StarCollectionsPage").then((module) => ({
+    default: module.StarCollectionsPage,
+  })),
+);
+
+const RepositoryPage = lazy(() =>
+  import("../../pages/RepositoryPage").then((module) => ({
+    default: module.RepositoryPage,
+  })),
+);
 
 export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
   const account = useAuthStore((state) => state.activeAccountId);

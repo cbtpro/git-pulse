@@ -1,0 +1,117 @@
+.gp-profile-identity {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px 28px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--gp-line);
+}
+.gp-profile-identity > section {
+  min-width: 0;
+}
+.gp-profile-identity-heading,
+.gp-profile-identity-heading h3,
+.gp-profile-identity-heading a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gp-profile-identity-heading {
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.gp-profile-identity-heading h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.gp-profile-identity-heading a {
+  font-size: 11px;
+  color: var(--gp-secondary);
+  min-height: 28px;
+}
+.gp-profile-identity-count {
+  color: var(--gp-subtle);
+  font-weight: 400;
+}
+.gp-profile-badges,
+.gp-profile-organizations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.gp-profile-badges li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--gp-line);
+  background: var(--color-fill-1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  max-width: 100%;
+}
+.gp-profile-badges svg {
+  color: rgb(var(--primary-6));
+  flex-shrink: 0;
+}
+.gp-profile-organizations li {
+  min-width: 0;
+  max-width: 100%;
+}
+.gp-profile-organizations a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
+  padding: 6px 8px;
+  min-height: 44px;
+  color: var(--gp-secondary);
+  border: 1px solid var(--gp-line);
+  font-size: 12px;
+}
+.gp-profile-organizations a:hover,
+.gp-profile-identity-heading a:hover {
+  color: rgb(var(--primary-6));
+  background: var(--color-fill-1);
+}
+.gp-profile-organizations img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.gp-profile-organizations span,
+.gp-profile-badges span {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.gp-profile-organizations svg {
+  flex-shrink: 0;
+}
+.gp-profile-identity-status,
+.gp-profile-identity-placeholder {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 40px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--gp-subtle);
+}
+@media (max-width: 768px) {
+  .gp-profile-identity {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .gp-profile-identity-heading a {
+    min-height: 36px;
+  }
+}

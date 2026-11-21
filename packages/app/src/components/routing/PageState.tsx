@@ -1,5 +1,6 @@
 import { ConfigProvider } from "@arco-design/web-react";
 import {
+  Suspense,
   createContext,
   useCallback,
   useContext,
@@ -10,6 +11,8 @@ import {
   type ReactNode,
 } from "react";
 import { Routes, useLocation, type Location } from "react-router-dom";
+
+import { LoadingCards } from "../common/ResourceState";
 
 const MAX_PAGES = 12;
 const urlKey = (location: Location) =>
@@ -107,7 +110,9 @@ function PageFrame({
             },
           }}
         >
-          <Routes location={location}>{children}</Routes>
+          <Suspense fallback={<LoadingCards />}>
+            <Routes location={location}>{children}</Routes>
+          </Suspense>
         </ConfigProvider>
       </PageActivity.Provider>
     </div>

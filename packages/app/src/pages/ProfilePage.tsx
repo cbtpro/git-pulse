@@ -31,6 +31,7 @@ import { ContributionCard } from "../components/contributions/ContributionCard";
 import { PinnedRepositories } from "../components/profile/PinnedRepositories";
 import { GitHubPages } from "../components/profile/GitHubPages";
 import { usePreferencesStore } from "../stores/preferencesStore";
+import { ProfileIdentity } from "../components/profile/ProfileIdentity";
 
 const ProfileReadmeCard = lazy(
   () => import("../components/profile/ProfileReadmeCard"),
@@ -183,6 +184,7 @@ export function ProfilePage({ onShowLogin }: { onShowLogin: () => void }) {
                 </div>
               ))}
             </div>
+            <ProfileIdentity key={token} login={profile.login} token={token} />
           </Card>
           {showProfileReadme && (
             <Suspense fallback={<LoadingCards />}>

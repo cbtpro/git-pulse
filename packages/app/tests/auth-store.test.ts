@@ -283,6 +283,143 @@ it("retains a known encrypted identity when GitHub is temporarily rate limited d
   });
 });
 
+describe("cached startup", () => {
+  it("renders the saved identity before a slow network check finishes, then refreshes its profile", async () => {
+    await TokenManager.saveSession(
+      "cached-token",
+      profile.login,
+      "oauth",
+      profile,
+    );
+    let finish!: (value: Response) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await useAuthStore.getState().checkAuth();
+    expect(useAuthStore.getState()).toMatchObject({
+      isLoggedIn: true,
+      isLoading: false,
+      userProfile: profile,
+    });
+    expect(finish).toBeTypeOf("function");
+    finish(response({ ...profile, name: "Fresh profile" }));
+    await vi.waitFor(() =>
+      expect(useAuthStore.getState().userProfile?.name).toBe("Fresh profile"),
+    );
+    expect(TokenManager.getActiveAccount()?.profile?.name).toBe(
+      "Fresh profile",
+    );
+  });
+
+  it("keeps a cached session offline without showing a login error", async () => {
+    await TokenManager.saveSession(
+      "cached-token",
+      profile.login,
+      "oauth",
+      profile,
+    );
+    fetchMock.mockRejectedValueOnce(new TypeError("offline"));
+    await useAuthStore.getState().checkAuth();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(useAuthStore.getState()).toMatchObject({
+      isLoggedIn: true,
+      isLoading: false,
+      error: null,
+    });
+    expect(TokenManager.getToken()).toBe("cached-token");
+  });
+
+  it("removes only a revoked cached account and clears its displayed workspace", async () => {
+    await TokenManager.saveSession("other-token", "other", "token", {
+      ...profile,
+      id: 2,
+      login: "other",
+    });
+    await TokenManager.saveSession(
+      "cached-token",
+      profile.login,
+      "oauth",
+      profile,
+    );
+    fetchMock.mockResolvedValueOnce(response({}, 401));
+    await useAuthStore.getState().checkAuth();
+    await vi.waitFor(() =>
+      expect(useAuthStore.getState().isLoggedIn).toBe(false),
+    );
+    await vi.waitFor(() =>
+      expect(useAuthStore.getState().accounts.map((a) => a.id)).toEqual(["2"]),
+    );
+    expect(useAuthStore.getState().error).toContain("过期");
+    expect(TokenManager.getToken()).toBeNull();
+  });
+
+  it.each([200, 401])(
+    "ignores an old startup response (%i) after switching accounts",
+    async (status) => {
+      const second = { ...profile, id: 2, login: "second" };
+      await TokenManager.saveSession(
+        "second-token",
+        second.login,
+        "token",
+        second,
+      );
+      await TokenManager.saveSession(
+        "cached-token",
+        profile.login,
+        "oauth",
+        profile,
+      );
+      let finish!: (value: Response) => void;
+      fetchMock.mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            finish = resolve;
+          }),
+      );
+      await useAuthStore.getState().checkAuth();
+      fetchMock.mockResolvedValueOnce(response(second));
+      await useAuthStore.getState().switchAccount("2");
+      finish(response({ ...profile, name: "Stale" }, status));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(useAuthStore.getState()).toMatchObject({
+        activeAccountId: "2",
+        userProfile: second,
+        token: "second-token",
+      });
+      expect(TokenManager.getAccounts()).toHaveLength(2);
+    },
+  );
+
+  it("does not resurrect a logged-out account when its startup check finishes", async () => {
+    await TokenManager.saveSession(
+      "cached-token",
+      profile.login,
+      "oauth",
+      profile,
+    );
+    let finish!: (value: Response) => void;
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await useAuthStore.getState().checkAuth();
+    await useAuthStore.getState().logout();
+    finish(response(profile));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(useAuthStore.getState()).toMatchObject({
+      isLoggedIn: false,
+      token: null,
+      userProfile: null,
+    });
+    expect(TokenManager.getAccounts()).toHaveLength(0);
+  });
+});
+
 it("restores an interrupted OAuth login without blocking startup or losing the existing account", async () => {
   vi.stubEnv("VITE_GITHUB_CLIENT_ID", "resume-client");
   await TokenManager.saveSession("existing-token", "existing", "token", {

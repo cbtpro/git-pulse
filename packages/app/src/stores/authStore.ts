@@ -11,6 +11,7 @@ import {
   TokenManager,
   type LoginMode,
   type AccountSummary,
+  type SavedAccount,
 } from "../services/auth/TokenManager";
 import type { UserProfile } from "../types/auth";
 export type { UserProfile } from "../types/auth";
@@ -57,7 +58,48 @@ const errorMessage = (error: unknown) =>
 // Auth state stays in memory. TokenManager persists all accounts in an encrypted vault.
 export const useAuthStore = create<AuthState>()((set, get) => {
   let pending: AbortController | null = null;
+  let refresh: AbortController | null = null;
   let operation = 0;
+  // A cached, encrypted identity is sufficient to render the workspace. A slow
+  // /user request must never hold the startup screen open.
+  const refreshSession = async (account: SavedAccount, current: number) => {
+    const controller = new AbortController();
+    refresh = controller;
+    const isCurrent = () =>
+      !controller.signal.aborted &&
+      current === operation &&
+      get().activeAccountId === account.id &&
+      get().token === account.token;
+    try {
+      const result = await GitHubAuthService.loginWithToken(
+        account.token,
+        controller.signal,
+      );
+      if (!isCurrent()) return;
+      if (result.success) {
+        await TokenManager.updateProfile(account.id, result.profile);
+        if (isCurrent())
+          set({
+            username: result.profile.login,
+            userProfile: result.profile,
+            accounts: TokenManager.getAccounts(),
+          });
+      } else if (result.invalidCredentials) {
+        // Only an explicit rejection invalidates the saved session. Offline,
+        // timeout and rate-limit responses leave the cached workspace usable.
+        clearGitHubRequestState();
+        set({ ...signedOut, error: result.error });
+        await TokenManager.removeAccount(account.id);
+        if (current === operation)
+          set({ accounts: TokenManager.getAccounts() });
+      }
+    } catch {
+      // Background refresh is best effort; never replace a newer login or show
+      // a login error simply because the network/storage is temporarily slow.
+    } finally {
+      if (refresh === controller) refresh = null;
+    }
+  };
   const authenticate = async (
     getToken: (signal: AbortSignal) => Promise<string>,
     mode: LoginMode,
@@ -65,6 +107,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     accountId?: string,
   ): Promise<boolean> => {
     pending?.abort();
+    refresh?.abort();
     ++operation;
     const controller = new AbortController();
     pending = controller;
@@ -188,6 +231,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     cancelLogin: () => {
       ++operation;
       pending?.abort();
+      refresh?.abort();
       pending = null;
       set({ isLoading: false, authorization: null });
       const current = operation;
@@ -248,6 +292,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     clearError: () => set({ error: null }),
     checkAuth: async () => {
       pending?.abort();
+      refresh?.abort();
       pending = null;
       set({ authorization: null });
       const current = ++operation;
@@ -275,6 +320,21 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           set({ ...signedOut, error: null });
           return;
         }
+        if (account.profile?.login && typeof account.profile.id === "number") {
+          set({
+            isLoggedIn: true,
+            isLoading: false,
+            token: account.token,
+            username: account.username,
+            userProfile: account.profile,
+            loginMode: account.mode,
+            activeAccountId: account.id,
+            error: null,
+          });
+          void refreshSession(account, current);
+          return;
+        }
+        // Legacy sessions without a validated profile still need verification.
         await authenticate(
           async () => account.token,
           account.mode,

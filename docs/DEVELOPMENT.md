@@ -100,6 +100,23 @@ pnpm test:mobile:viewport
 
 路由状态保存在当前会话的内存中，最多保留最近 12 个页面，覆盖输入、筛选、分页、加载结果及滚动位置。切换账号或退出登录会清空页面缓存；刷新应用后重新加载页面。后台切换不会主动取消授权；明确取消、GitHub 拒绝授权或未完成的验证码到期时会清理待授权进度。
 
+### 启动恢复与个人资料
+
+启动时先读取加密账号库中的已验证个人资料，立即显示工作台，再后台请求 `/user` 更新身份信息。离线、超时或限流不会清除已保存的账号；明确返回 `401` 时移除失效账号并清空其页面。切换账号、退出或开始新的授权会取消旧的后台校验，避免迟到响应覆盖新账号。首次登录及没有个人资料的旧格式账号仍需完成身份校验。所有业务请求继续携带当前账号凭证，不以本地资料替代服务端鉴权。
+
+页面通过 `React.lazy` 按路由加载，每个保留页面有独立的 `Suspense` 边界；打开首页时无需解析仓库详情、Markdown 和设置页面。测试正式构建的恢复速度：
+
+```bash
+pnpm build:web
+pnpm preview:web --host 127.0.0.1 --port 1421 --strictPort
+# 另一个终端
+pnpm test:startup
+```
+
+该测试使用虚拟账号登录后重新加载，在 `/user` 一直未返回、CPU 降速 4 倍的情况下验证个人卡片能先显示，并检查离线恢复、徽章、组织、头像比例和窄屏布局。它使用 Chromium 的移动设备模拟，记录的耗时不是 iOS 或 Android 原生冷启动基准。截图保存在忽略目录 `review-artifacts/startup`。
+
+个人卡片的身份徽章来自 [GitHub GraphQL User](https://docs.github.com/en/graphql/reference/users) 的官方身份标记，仅显示接口确认拥有的徽章；Pull Shark、YOLO 等成就通过卡片里的 GitHub 成就入口查看。组织来自[公开组织成员列表](https://docs.github.com/en/rest/orgs/orgs#list-organizations-for-a-user)，不额外申请私有组织权限；两个区域独立加载、失败可分别重试，不阻塞个人卡片和页面内容。
+
 ## 产物与清理
 
 应用图标使用站立木乃伊猫原稿，执行 `pnpm icons:generate` 可重新生成所有平台尺寸及 PNG、ICO、ICNS、WebP 导出。移动工程会自动同步图标，细节见[应用图标](APP_ICONS.md)。

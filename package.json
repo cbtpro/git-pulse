@@ -45,7 +45,8 @@
     "test:workspace:browser": "node scripts/qa/workspace.mjs",
     "test:mobile:viewport": "node scripts/qa/mobile-viewport.mjs",
     "test:auth:recovery": "node scripts/qa/auth-recovery.mjs",
-    "test:page-state": "node scripts/qa/page-state.mjs"
+    "test:page-state": "node scripts/qa/page-state.mjs",
+    "test:startup": "node scripts/qa/startup-profile.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
