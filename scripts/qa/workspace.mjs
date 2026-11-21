@@ -1,5 +1,6 @@
 import { chromium, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
+const origin = process.env.GITPULSE_TEST_URL || "http://localhost:1420";
 const repo = {
   id: 1,
   name: "project",
@@ -249,7 +250,7 @@ try {
       else data = [];
       await route.fulfill({ json: data });
     });
-    await page.goto("http://localhost:1420/#/repo/octo/project");
+    await page.goto(`${origin}/#/repo/octo/project`);
     await expect(
       page.getByRole("heading", { name: "octo/project" }),
     ).toBeVisible();
@@ -258,7 +259,7 @@ try {
     await expect(
       page.getByText("export const value = 42;", { exact: true }),
     ).toBeVisible();
-    await page.goto("http://localhost:1420/#/repo/octo/project?tab=issues");
+    await page.goto(`${origin}/#/repo/octo/project?tab=issues`);
     await page.getByRole("link", { name: /A useful issue/ }).click();
     await expect(page.getByText("Discussion fixture")).toBeVisible();
     await page.evaluate(async () => {
@@ -279,14 +280,14 @@ try {
         accounts: TokenManager.getAccounts(),
       });
     });
-    await page.goto("http://localhost:1420/#/");
+    await page.goto(`${origin}/#/`);
     await page.reload();
     await expect(page.getByText("我的待办", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "分配给我", exact: true }).click();
     await expect(
       page.getByRole("link", { name: /A useful issue/ }),
     ).toHaveAttribute("href", /#\/repo\/octo\/project\?account=100/);
-    await page.goto("http://localhost:1420/#/repo/octo/project?tab=actions");
+    await page.goto(`${origin}/#/repo/octo/project?tab=actions`);
     await page.screenshot({
       path: `review-artifacts/business/actions-debug-${width}.png`,
       fullPage: true,
@@ -299,7 +300,7 @@ try {
     await expect(
       page.getByRole("button", { name: "下载 Expired artifact" }),
     ).toBeDisabled();
-    await page.goto("http://localhost:1420/#/profile/collections");
+    await page.goto(`${origin}/#/profile/collections`);
     await page.getByRole("button", { name: "整理收藏", exact: true }).click();
     await page
       .getByLabel("私人笔记", { exact: true })
@@ -316,7 +317,7 @@ try {
       path: `review-artifacts/business/collections-${width}.png`,
       fullPage: true,
     });
-    await page.goto("http://localhost:1420/#/profile/releases");
+    await page.goto(`${origin}/#/profile/releases`);
     await page.getByLabel("订阅仓库", { exact: true }).fill("octo/project");
     await page.getByRole("button", { name: "添加订阅", exact: true }).click();
     await expect(
@@ -330,14 +331,20 @@ try {
       path: `review-artifacts/business/releases-${width}.png`,
       fullPage: true,
     });
-    await page.goto(
-      "http://localhost:1420/#/repo/octo/project?tab=issues&number=7",
-    );
+    // Load the lazy workspace while the Vite server is reachable. Native apps
+    // bundle this module locally; offline browser dev tests must warm it first.
+    await page.goto(`${origin}/#/profile/offline`);
+    await expect(
+      page.getByRole("heading", { name: "离线阅读与草稿", exact: true }),
+    ).toBeVisible();
+    await page.goto(`${origin}/#/repo/octo/project?tab=issues&number=7`);
     await page
       .getByRole("textbox", { name: "添加评论", exact: true })
       .fill("Offline draft fixture");
     await expect(
-      page.getByText("草稿已在本机加密保存", { exact: true }),
+      page
+        .locator("[data-route-active=true]")
+        .getByText("草稿已在本机加密保存", { exact: true }),
     ).toBeVisible();
     await page.waitForTimeout(500);
     await context.setOffline(true);
@@ -381,7 +388,7 @@ try {
         name: "Second",
       });
     });
-    await page.goto("http://localhost:1420/#/inbox");
+    await page.goto(`${origin}/#/inbox`);
     await page.reload();
     await expect(
       page.getByRole("link", { name: /Account notification/ }),
@@ -408,7 +415,7 @@ try {
     expect(readAccounts).toEqual(["Bearer isolated-smoke-token"]);
     expect(commentAccounts.at(-1)).toBe("Bearer isolated-smoke-token");
     await page.goto(
-      "http://localhost:1420/#/repo/octo/project?account=100&tab=pulls&number=7",
+      `${origin}/#/repo/octo/project?account=100&tab=pulls&number=7`,
     );
     await page.getByRole("tab", { name: "文件改动", exact: true }).click();
     await expect(
@@ -445,7 +452,7 @@ try {
           JSON.stringify(preferences),
         );
       }, language);
-      await page.goto("http://localhost:1420/#/profile/collections");
+      await page.goto(`${origin}/#/profile/collections`);
       await page.reload();
       await expect(
         page.getByRole("heading", { name: title, exact: true }),

@@ -85,22 +85,38 @@ try {
             .click();
     await page.goto(`${origin}/#/explore?q=react&page=2`);
     await expect(
-      page.locator('[data-route-page="/explore"] .gp-repo-card'),
+      page.locator(
+        '[data-route-page="/explore"][data-route-active="true"] .gp-repo-card',
+      ),
     ).toHaveCount(30);
     const input = page.getByRole("textbox", {
       name: "搜索关键词",
       exact: true,
     });
     await input.fill("unfinished draft");
-    await page.evaluate(() => window.scrollTo(0, 700));
-    await expect.poll(() => page.evaluate(() => scrollY)).toBe(700);
+    await page
+      .locator("[data-route-active=true]")
+      .evaluate((element) => element.scrollTo(0, 700));
+    await expect
+      .poll(() =>
+        page
+          .locator("[data-route-active=true]")
+          .evaluate((element) => element.scrollTop),
+      )
+      .toBe(700);
     const requests = searches;
     await navigate(width === 390 ? "我的" : "我的空间");
     await expect(input).not.toBeVisible();
     await navigate("搜索");
     await expect(input).toHaveValue("unfinished draft");
     expect(page.url()).toContain("q=react&page=2");
-    await expect.poll(() => page.evaluate(() => scrollY)).toBe(700);
+    await expect
+      .poll(() =>
+        page
+          .locator("[data-route-active=true]")
+          .evaluate((element) => element.scrollTop),
+      )
+      .toBe(700);
     expect(searches).toBe(requests);
     await input.fill("vue");
     await input.press("Enter");
@@ -108,21 +124,39 @@ try {
     // Old results can still be present for a frame before the loading skeleton.
     // Wait for the new response to render before testing the wheel position.
     await expect(
-      page.locator('[data-route-page="/explore"] .gp-repo-card').first(),
+      page
+        .locator(
+          '[data-route-page="/explore"][data-route-active="true"] .gp-repo-card',
+        )
+        .first(),
     ).toContainText("vue-0");
     await expect(
-      page.locator('[data-route-page="/explore"] .gp-repo-card'),
+      page.locator(
+        '[data-route-page="/explore"][data-route-active="true"] .gp-repo-card',
+      ),
     ).toHaveCount(30);
     await page.mouse.move(width / 2, 550);
     await page.mouse.wheel(0, 450);
-    await expect.poll(() => page.evaluate(() => scrollY)).toBe(450);
+    await expect
+      .poll(() =>
+        page
+          .locator("[data-route-active=true]")
+          .evaluate((element) => element.scrollTop),
+      )
+      .toBe(450);
     await navigate(width === 390 ? "我的" : "我的空间");
     await navigate("搜索");
     await expect(input).toHaveValue("vue");
     await expect(page).toHaveURL(/q=vue/);
-    await expect.poll(() => page.evaluate(() => scrollY)).toBe(450);
+    await expect
+      .poll(() =>
+        page
+          .locator("[data-route-active=true]")
+          .evaluate((element) => element.scrollTop),
+      )
+      .toBe(450);
     await page.goto(`${origin}/#/repo/octo/project?path=src/file.ts`);
-    const code = page.locator(".gp-code");
+    const code = page.locator("[data-route-active=true] .gp-code");
     await expect(code).toBeVisible();
     await code.evaluate((element) => {
       element.scrollLeft = 240;
@@ -135,7 +169,7 @@ try {
       .toBe(240);
     expect(errors).toEqual([]);
     console.log(
-      `${width}px: draft, query, pagination, results, window scroll, code scroll, and browser back retained`,
+      `${width}px: draft, query, pagination, results, page scroll, code scroll, and browser back retained`,
     );
     await context.close();
   }

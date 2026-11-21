@@ -47,6 +47,8 @@
     "test:auth:recovery": "node scripts/qa/auth-recovery.mjs",
     "test:page-state": "node scripts/qa/page-state.mjs",
     "test:navigation": "node scripts/qa/navigation.mjs",
+    "test:interactive-back": "node scripts/qa/interactive-back.mjs",
+    "test:ios:navigation": "node scripts/qa/ios-navigation.mjs",
     "test:startup": "node scripts/qa/startup-profile.mjs"
   },
   "devDependencies": {

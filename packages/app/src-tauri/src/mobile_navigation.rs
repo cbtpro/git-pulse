@@ -1,4 +1,5 @@
-/// Keep iOS swipe navigation disabled; navigation uses explicit page controls.
+/// Keep whole-WebView gestures disabled. The app animates retained content pages
+/// without moving fixed navigation or rebuilding the destination.
 #[cfg(target_os = "ios")]
 fn set_gestures<R: tauri::Runtime>(webview: &tauri::Webview<R>, enabled: bool) -> tauri::Result<()> {
     webview.with_webview(move |native| unsafe {

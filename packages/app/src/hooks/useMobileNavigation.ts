@@ -4,6 +4,15 @@ import { invoke, isTauri, type PluginListener } from "@tauri-apps/api/core";
 import { getPlatformInfo } from "../utils/PlatformDetector";
 
 const overlays: { dismiss: () => void }[] = [];
+const subscribers = new Set<() => void>();
+export const hasBackOverlay = () => overlays.length > 0;
+export function observeBackOverlays(callback: () => void) {
+  subscribers.add(callback);
+  return () => {
+    subscribers.delete(callback);
+  };
+}
+const notify = () => subscribers.forEach((callback) => callback());
 
 /** A retained, hidden page must not consume Back. */
 export function useBackDismiss(visible: boolean, dismiss: () => void) {
@@ -11,12 +20,14 @@ export function useBackDismiss(visible: boolean, dismiss: () => void) {
   latest.current = dismiss;
   useLayoutEffect(() => {
     const { os } = getPlatformInfo();
-    if (!visible || !isTauri() || os !== "android") return;
+    if (!visible || !isTauri() || (os !== "android" && os !== "ios")) return;
     const overlay = { dismiss: () => latest.current() };
     overlays.push(overlay);
+    notify();
     return () => {
       const index = overlays.indexOf(overlay);
       if (index >= 0) overlays.splice(index, 1);
+      notify();
     };
   }, [visible]);
 }

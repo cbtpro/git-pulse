@@ -1,0 +1,81 @@
+/* Each route owns its scroll viewport. Hidden routes keep layout and scroll,
+   but remain hidden from pointer, keyboard and assistive-technology navigation. */
+.gp-route-stack {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+}
+.gp-route-frame {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--gp-canvas);
+  scrollbar-gutter: stable;
+}
+.gp-route-frame[hidden] {
+  display: block;
+  visibility: hidden;
+  /* Some third-party descendants set visibility:visible. Fade the entire
+     inactive layer as well so they cannot leak through the active page. */
+  opacity: 0;
+  pointer-events: none;
+}
+.gp-route-frame[data-route-active="true"] {
+  z-index: 2;
+}
+.gp-page-content {
+  max-width: 1512px;
+  margin: 0 auto;
+  padding: calc(102px + var(--gp-safe-top)) calc(34px + var(--gp-safe-right))
+    var(--gp-safe-bottom) 34px;
+}
+.gp-route-frame[data-back-layer] {
+  visibility: visible;
+  opacity: 1;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: transform;
+}
+.gp-route-frame[data-back-layer="previous"] {
+  z-index: 3;
+  transform: translate3d(calc((var(--gp-back-progress) - 1) * 24%), 0, 0);
+}
+.gp-route-frame[data-back-layer="current"] {
+  z-index: 4;
+  transform: translate3d(calc(var(--gp-back-progress) * 100%), 0, 0);
+  box-shadow: -12px 0 32px rgb(0 0 0 / 14%);
+}
+.gp-route-stack[data-back-phase="settling"] > [data-back-layer] {
+  transition: transform var(--gp-back-duration) cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.gp-route-stack[data-back-phase] {
+  touch-action: none;
+  user-select: none;
+}
+.gp-route-stack[data-back-phase]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: rgb(0 0 0 / 12%);
+  opacity: calc(1 - var(--gp-back-progress));
+  pointer-events: none;
+}
+.gp-app:has(.gp-route-stack[data-back-phase])
+  :is(.gp-topbar, .gp-mobile-nav, .gp-sidebar) {
+  pointer-events: none;
+}
+@media (max-width: 1180px) {
+  .gp-page-content {
+    padding: calc(96px + var(--gp-safe-top)) calc(26px + var(--gp-safe-right))
+      var(--gp-safe-bottom) 26px;
+  }
+}
+@media (max-width: 768px) {
+  .gp-page-content {
+    padding: calc(84px + var(--gp-safe-top)) calc(20px + var(--gp-safe-right))
+      calc(80px + var(--gp-safe-bottom)) calc(20px + var(--gp-safe-left));
+  }
+}

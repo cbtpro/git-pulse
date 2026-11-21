@@ -1,0 +1,21 @@
+name: GitPulseGestureQA
+options:
+  deploymentTarget:
+    iOS: "17.4"
+targets:
+  GestureTests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [Tests]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chenbitao.gitpulse.gestureqa
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGNING_ALLOWED: NO
+schemes:
+  GestureTests:
+    build:
+      targets:
+        GestureTests: all
+    test:
+      targets: [GestureTests]

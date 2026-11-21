@@ -101,7 +101,11 @@ try {
       speed: 500,
       gestureSourceType: "touch",
     });
-    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(50);
+    expect(
+      await page
+        .locator("[data-route-active=true]")
+        .evaluate((element) => element.scrollTop),
+    ).toBeGreaterThan(50);
     await page.getByRole("button", { name: "登录", exact: true }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();

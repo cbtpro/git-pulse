@@ -1,5 +1,7 @@
 .gp-app {
   min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
 }
 /* Keep the status-bar area opaque, including during iOS scroll bounce. */
 .gp-app::before {
@@ -114,6 +116,8 @@
 .gp-workspace {
   margin-left: calc(216px + var(--gp-safe-left));
   min-width: 0;
+  height: 100dvh;
+  position: relative;
 }
 .gp-topbar {
   height: calc(68px + var(--gp-safe-top));
@@ -213,9 +217,9 @@
   text-overflow: ellipsis;
 }
 .gp-main {
-  max-width: 1512px;
-  padding: 34px calc(34px + var(--gp-safe-right)) var(--gp-safe-bottom) 34px;
-  margin: 0 auto;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   outline: 0;
 }
 .gp-page {
@@ -294,9 +298,6 @@
   .gp-topbar {
     padding: var(--gp-safe-top) calc(26px + var(--gp-safe-right)) 0 26px;
   }
-  .gp-main {
-    padding: 28px calc(26px + var(--gp-safe-right)) var(--gp-safe-bottom) 26px;
-  }
 }
 @media (max-width: 768px) {
   .gp-sidebar {
@@ -318,10 +319,6 @@
   .gp-search-shortcut > span,
   .gp-account-button > span:last-child {
     display: none;
-  }
-  .gp-main {
-    padding: 26px calc(20px + var(--gp-safe-right))
-      calc(80px + var(--gp-safe-bottom)) calc(20px + var(--gp-safe-left));
   }
   .gp-mobile-nav {
     display: flex;

@@ -35,15 +35,31 @@ function Navigation() {
           {path}
         </button>
       ))}
+      <button onClick={() => navigate("/a?q=vue&page=3")}>another query</button>
+      <button onClick={() => navigate(-1)}>history back</button>
+      <button onClick={() => navigate(1)}>history forward</button>
+      <button
+        onClick={() =>
+          navigate("/a?q=react&page=2", {
+            state: { aggregateSearch: true, selection: "new selection" },
+          })
+        }
+      >
+        new search intent
+      </button>
     </nav>
   );
 }
 function Editor({ name, mounted }: { name: string; mounted: () => void }) {
+  const location = useLocation();
   const [text, setText] = useState("");
   const [open, setOpen] = useState(false);
   useEffect(mounted, [mounted]);
   return (
     <>
+      <output aria-label="selection">
+        {location.state?.selection || "none"}
+      </output>
       <label>
         {name}
         <input value={text} onChange={(e) => setText(e.target.value)} />
@@ -115,6 +131,48 @@ it("retains local input and URL filters, mounts each visited page only once, and
     "value",
     "another draft",
   );
+});
+
+it("keeps query variants as the same original DOM instances across Back and Forward", async () => {
+  const user = userEvent.setup(),
+    mounted = vi.fn();
+  render(<Fixture mounted={mounted} />);
+  const first = screen.getByRole("textbox", { name: "A draft" });
+  const firstFrame = first.closest<HTMLElement>("[data-route-page]")!;
+  await user.type(first, "first query draft");
+  firstFrame.scrollTop = 700;
+  await user.click(screen.getByRole("button", { name: "another query" }));
+  const second = screen.getByRole("textbox", { name: "A draft" });
+  expect(second).not.toBe(first);
+  const secondFrame = second.closest<HTMLElement>("[data-route-page]")!;
+  const order = Array.from(firstFrame.parentElement!.children);
+  await user.type(second, "second query draft");
+  secondFrame.scrollTop = 350;
+  await user.click(screen.getByRole("button", { name: "history back" }));
+  expect(screen.getByRole("textbox", { name: "A draft" })).toBe(first);
+  expect(first).toHaveProperty("value", "first query draft");
+  expect(firstFrame.scrollTop).toBe(700);
+  expect(secondFrame.inert).toBe(true);
+  expect(Array.from(firstFrame.parentElement!.children)).toEqual(order);
+  await user.click(screen.getByRole("button", { name: "history forward" }));
+  expect(screen.getByRole("textbox", { name: "A draft" })).toBe(second);
+  expect(second).toHaveProperty("value", "second query draft");
+  expect(secondFrame.scrollTop).toBe(350);
+  expect(mounted).toHaveBeenCalledTimes(2);
+});
+
+it("applies a new search selection to a retained URL without remounting the page", async () => {
+  const user = userEvent.setup(),
+    mounted = vi.fn();
+  render(<Fixture mounted={mounted} />);
+  const input = screen.getByRole("textbox", { name: "A draft" });
+  await user.click(screen.getByRole("button", { name: "/b" }));
+  await user.click(screen.getByRole("button", { name: "new search intent" }));
+  expect(screen.getByRole("textbox", { name: "A draft" })).toBe(input);
+  expect(screen.getByRole("status", { name: "selection" }).textContent).toBe(
+    "new selection",
+  );
+  expect(mounted).toHaveBeenCalledTimes(2);
 });
 
 it("keeps portalled dialogs with their page and prevents hidden dialogs consuming Escape", async () => {

@@ -146,7 +146,17 @@ function AppLayoutContent({ onShowLogin }: { onShowLogin: () => void }) {
           </div>
         </header>
         <main id="main-content" className="gp-main" tabIndex={-1}>
-          <RetainedRoutes>
+          <RetainedRoutes
+            footer={
+              <footer className="gp-footer">
+                <span>{t("GitPulse · 保持与开源世界的连接")}</span>
+                <a href="https://github.com" target="_blank" rel="noreferrer">
+                  {t("在 GitHub 继续探索")}
+                  <ArrowUpRight size={12} />
+                </a>
+              </footer>
+            }
+          >
             <Route
               path="/profile/offline"
               element={<OfflineWorkspacePage onShowLogin={onShowLogin} />}
@@ -186,13 +196,6 @@ function AppLayoutContent({ onShowLogin }: { onShowLogin: () => void }) {
             />
             <Route path="*" element={<Navigate to="/" replace />} />
           </RetainedRoutes>
-          <footer className="gp-footer">
-            <span>{t("GitPulse · 保持与开源世界的连接")}</span>
-            <a href="https://github.com" target="_blank" rel="noreferrer">
-              {t("在 GitHub 继续探索")}
-              <ArrowUpRight size={12} />
-            </a>
-          </footer>
         </main>
       </div>
       <MobileBottomNav currentPage={section} />

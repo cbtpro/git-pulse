@@ -102,7 +102,9 @@ try {
       page.getByRole("button", { name: "账号与外观", exact: true }).click();
     await page.goto(`${origin}/#/explore?q=react&page=2`);
     await expect(
-      page.locator('[data-route-page="/explore"] .gp-repo-card'),
+      page.locator(
+        '[data-route-page="/explore"][data-route-active="true"] .gp-repo-card',
+      ),
     ).toHaveCount(30);
     const input = page.getByRole("textbox", {
       name: "搜索关键词",
@@ -111,10 +113,14 @@ try {
     await input.fill("unfinished draft");
     await input.blur();
     const repoLink = page
-      .locator('[data-route-page="/explore"] .gp-repo-heading a')
+      .locator(
+        '[data-route-page="/explore"][data-route-active="true"] .gp-repo-heading a',
+      )
       .nth(3);
     await repoLink.scrollIntoViewIfNeeded();
-    const savedScroll = await page.evaluate(() => scrollY);
+    const savedScroll = await page
+      .locator("[data-route-active=true]")
+      .evaluate((element) => element.scrollTop);
     const count = searches;
     await repoLink.click();
     await expect(
@@ -135,7 +141,9 @@ try {
       .locator(".gp-file-list")
       .getByRole("button", { name: "file.ts", exact: true })
       .click();
-    await expect(page.locator(".gp-code")).toBeVisible();
+    await expect(
+      page.locator("[data-route-active=true] .gp-code"),
+    ).toBeVisible();
     await layout();
     await page.getByRole("link", { name: "返回src", exact: true }).click();
     await expect(page).toHaveURL(/path=src$/);
@@ -145,7 +153,13 @@ try {
     await page.getByRole("link", { name: "返回搜索", exact: true }).click();
     await expect(page).toHaveURL(/#\/explore\?q=react&page=2$/);
     await expect(input).toHaveValue("unfinished draft");
-    await expect.poll(() => page.evaluate(() => scrollY)).toBe(savedScroll);
+    await expect
+      .poll(() =>
+        page
+          .locator("[data-route-active=true]")
+          .evaluate((element) => element.scrollTop),
+      )
+      .toBe(savedScroll);
     expect(searches).toBe(count);
     await expect(page.locator("#main-content")).toBeFocused();
 
@@ -179,9 +193,13 @@ try {
     await page.goto(
       `${origin}/#/repo/octo/${longName}?ref=release%2F1&path=src/components/long-directory/long-component-name.ts`,
     );
-    await expect(page.locator(".gp-code")).toBeVisible();
+    await expect(
+      page.locator("[data-route-active=true] .gp-code"),
+    ).toBeVisible();
     await page.reload();
-    await expect(page.locator(".gp-code")).toBeVisible();
+    await expect(
+      page.locator("[data-route-active=true] .gp-code"),
+    ).toBeVisible();
     await layout();
     await page.screenshot({ path: `/tmp/gitpulse-navigation-${width}.png` });
     const overflow = crumbs.locator(

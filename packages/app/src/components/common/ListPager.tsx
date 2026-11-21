@@ -1,6 +1,8 @@
 import { useTranslation } from "../../i18n";
 import { Button } from "@arco-design/web-react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useLayoutEffect, useRef } from "react";
+import { usePageActive, usePageScrollToTop } from "../routing/PageState";
 
 export function ListPager({
   page,
@@ -12,10 +14,16 @@ export function ListPager({
   onChange: (page: number) => void;
 }) {
   const { t } = useTranslation();
+  const active = usePageActive();
+  const scrollToTop = usePageScrollToTop();
+  const previous = useRef(page);
+  useLayoutEffect(() => {
+    if (previous.current !== page && active) scrollToTop();
+    previous.current = page;
+  }, [page, active, scrollToTop]);
   if (page === 1 && !hasNext) return null;
   const changePage = (next: number) => {
     onChange(next);
-    document.getElementById("main-content")?.scrollIntoView({ block: "start" });
   };
   return (
     <nav className="gp-list-pager" aria-label={t("列表分页")}>

@@ -1,5 +1,5 @@
 import { useTranslation } from "../i18n";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
   Alert,
   Button,
@@ -23,6 +23,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useLocation, useSearchParams } from "react-router-dom";
+import { usePageScrollToTop } from "../components/routing/pageRuntime";
 import {
   SEARCH_CATEGORIES,
   type SearchCategory,
@@ -89,6 +90,9 @@ interface PageResults {
 }
 export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
   const { t, i18n } = useTranslation();
+  const queryId = useId();
+  const syntaxId = useId();
+  const scrollToTop = usePageScrollToTop();
   const { token, activeAccountId } = useAuthStore();
   const [params, setParams] = useSearchParams();
   const location = useLocation();
@@ -112,9 +116,18 @@ export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
   const composing = useRef(false);
   useEffect(() => setInput(keyword), [keyword]);
   useEffect(() => {
-    if (location.state?.aggregateSearch)
-      document.getElementById("gp-repository-query")?.focus();
-  }, [location.key]);
+    if (location.state?.aggregateSearch) {
+      setInput(keyword);
+      scrollToTop();
+      document.getElementById(queryId)?.focus();
+    }
+  }, [
+    location.key,
+    location.state?.aggregateSearch,
+    keyword,
+    queryId,
+    scrollToTop,
+  ]);
   const update = (changes: Record<string, string>, resetPage = true) => {
     const next = new URLSearchParams(params);
     if (resetPage) next.delete("page");
@@ -235,9 +248,9 @@ export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
           }}
         >
           <Input
-            id="gp-repository-query"
+            id={queryId}
             aria-label={t("搜索关键词")}
-            aria-describedby="gp-search-page-syntax"
+            aria-describedby={syntaxId}
             size="large"
             prefix={<Search size={19} aria-hidden="true" />}
             placeholder={t("搜索 GitHub，支持高级语法")}
@@ -321,7 +334,7 @@ export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
             <ArrowUpRight size={14} aria-hidden="true" />
           </a>
         </div>
-        <p id="gp-search-page-syntax" className="gp-search-page-hint">
+        <p id={syntaxId} className="gp-search-page-hint">
           {t("一次搜索一种类型，按 Enter 或点击搜索提交。")}
         </p>
         {!keyword && (
@@ -461,9 +474,6 @@ export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
                 bufferSize={1}
                 onChange={(next) => {
                   update({ page: String(next) }, false);
-                  document
-                    .getElementById("main-content")
-                    ?.scrollIntoView({ block: "start" });
                 }}
               />
             </nav>
