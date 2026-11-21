@@ -1,11 +1,19 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { exit, onBackButtonPress } from "@tauri-apps/api/app";
-import { invoke, isTauri, type PluginListener } from "@tauri-apps/api/core";
+import { isTauri, type PluginListener } from "@tauri-apps/api/core";
 import { getPlatformInfo } from "../utils/PlatformDetector";
 
 const overlays: { dismiss: () => void }[] = [];
 const subscribers = new Set<() => void>();
 const notify = () => subscribers.forEach((subscriber) => subscriber());
+
+export const hasBackOverlay = () => overlays.length > 0;
+export function observeBackOverlays(callback: () => void) {
+  subscribers.add(callback);
+  return () => {
+    subscribers.delete(callback);
+  };
+}
 
 /** A retained, hidden page must not consume Back. */
 export function useBackDismiss(visible: boolean, dismiss: () => void) {
@@ -30,26 +38,6 @@ export function useMobileNavigation() {
   useEffect(() => {
     if (!isTauri()) return;
     const { os } = getPlatformInfo();
-    if (os === "ios") {
-      // Serialize updates and read the latest stack to handle rapid overlay changes.
-      let pending = Promise.resolve();
-      const sync = () => {
-        pending = pending
-          .then(() =>
-            invoke<void>("set_navigation_gestures", {
-              enabled: overlays.length === 0,
-            }),
-          )
-          .catch((error) =>
-            console.warn("Unable to update navigation gestures", error),
-          );
-      };
-      subscribers.add(sync);
-      sync();
-      return () => {
-        subscribers.delete(sync);
-      };
-    }
     if (os !== "android") return;
     let active = true;
     let listener: PluginListener | undefined;

@@ -39,13 +39,16 @@ try {
       let data = [];
       if (url.pathname === "/search/repositories") {
         if (url.searchParams.get("q")?.includes("react")) searches++;
+        const name = url.searchParams.get("q")?.includes("vue")
+          ? "vue"
+          : "project";
         data = {
           total_count: 300,
           items: Array.from({ length: 30 }, (_, i) => ({
             ...repo,
             id: i + 1,
-            name: "project-" + i,
-            full_name: "octo/project-" + i,
+            name: name + "-" + i,
+            full_name: "octo/" + name + "-" + i,
           })),
         };
       } else if (url.pathname === "/repos/octo/project") data = repo;
@@ -102,6 +105,11 @@ try {
     await input.fill("vue");
     await input.press("Enter");
     await expect(page).toHaveURL(/q=vue/);
+    // Old results can still be present for a frame before the loading skeleton.
+    // Wait for the new response to render before testing the wheel position.
+    await expect(
+      page.locator('[data-route-page="/explore"] .gp-repo-card').first(),
+    ).toContainText("vue-0");
     await expect(
       page.locator('[data-route-page="/explore"] .gp-repo-card'),
     ).toHaveCount(30);

@@ -46,6 +46,7 @@
     "test:mobile:viewport": "node scripts/qa/mobile-viewport.mjs",
     "test:auth:recovery": "node scripts/qa/auth-recovery.mjs",
     "test:page-state": "node scripts/qa/page-state.mjs",
+    "test:content-back": "node scripts/qa/content-back.mjs",
     "test:startup": "node scripts/qa/startup-profile.mjs"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
-/// WKWebView owns interactive edge gestures and navigation history. React Router
-/// receives popstate and restores retained page state after a completed gesture.
+/// Whole-WebView gestures also move fixed navigation bars. The frontend handles
+/// content-only edge gestures and still navigates using the existing history.
 #[cfg(target_os = "ios")]
 fn set_gestures<R: tauri::Runtime>(webview: &tauri::Webview<R>, enabled: bool) -> tauri::Result<()> {
     webview.with_webview(move |native| unsafe {
@@ -12,14 +12,14 @@ pub fn init<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
     tauri::plugin::Builder::new("mobile-navigation")
         .on_webview_ready(|_webview| {
             #[cfg(target_os = "ios")]
-            if let Err(error) = set_gestures(&_webview, true) {
-                eprintln!("Unable to enable native navigation gestures: {error}");
+            if let Err(error) = set_gestures(&_webview, false) {
+                eprintln!("Unable to configure native navigation gestures: {error}");
             }
         })
         .build()
 }
 
-/// A modal must not allow a swipe to navigate the page underneath it.
+/// Also lets updated frontend code disable gestures in an older native build.
 #[tauri::command]
 pub fn set_navigation_gestures(window: tauri::WebviewWindow, enabled: bool) -> Result<(), String> {
     #[cfg(target_os = "ios")]

@@ -18,6 +18,7 @@ import {
 import { DesktopSidebar } from "../navigation/DesktopSidebar";
 import { MobileBottomNav } from "../navigation/MobileBottomNav";
 import { GlobalSearch } from "../search/GlobalSearch";
+import { ContentBackTransition } from "../routing/ContentBackTransition";
 import {
   PageStateProvider,
   RetainedRoutes,
@@ -173,55 +174,60 @@ function AppLayoutContent({ onShowLogin }: { onShowLogin: () => void }) {
             )}
           </div>
         </header>
-        <main id="main-content" className="gp-main" tabIndex={-1}>
-          <RetainedRoutes>
-            <Route
-              path="/profile/offline"
-              element={<OfflineWorkspacePage onShowLogin={onShowLogin} />}
-            />
-            <Route
-              path="/profile/releases"
-              element={<ReleaseCenterPage onShowLogin={onShowLogin} />}
-            />
-            <Route
-              path="/profile/collections"
-              element={<StarCollectionsPage onShowLogin={onShowLogin} />}
-            />
-            <Route
-              path="/repo/:owner/:name"
-              element={<RepositoryPage onShowLogin={onShowLogin} />}
-            />
-            <Route path="/" element={<HomePage onShowLogin={onShowLogin} />} />
-            <Route
-              path="/explore"
-              element={<ExplorePage onShowLogin={onShowLogin} />}
-            />
-            <Route
-              path="/inbox"
-              element={<InboxPage onShowLogin={onShowLogin} />}
-            />
-            <Route
-              path="/profile"
-              element={<ProfilePage onShowLogin={onShowLogin} />}
-            />
-            <Route
-              path={PROFILE_SETTINGS_PATH}
-              element={<SettingsPage onShowLogin={onShowLogin} />}
-            />
-            <Route
-              path="/settings"
-              element={<Navigate to={PROFILE_SETTINGS_PATH} replace />}
-            />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </RetainedRoutes>
-          <footer className="gp-footer">
-            <span>{t("GitPulse · 保持与开源世界的连接")}</span>
-            <a href="https://github.com" target="_blank" rel="noreferrer">
-              {t("在 GitHub 继续探索")}
-              <ArrowUpRight size={12} />
-            </a>
-          </footer>
-        </main>
+        <ContentBackTransition>
+          <main id="main-content" className="gp-main" tabIndex={-1}>
+            <RetainedRoutes>
+              <Route
+                path="/profile/offline"
+                element={<OfflineWorkspacePage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/profile/releases"
+                element={<ReleaseCenterPage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/profile/collections"
+                element={<StarCollectionsPage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/repo/:owner/:name"
+                element={<RepositoryPage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/"
+                element={<HomePage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/explore"
+                element={<ExplorePage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/inbox"
+                element={<InboxPage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/profile"
+                element={<ProfilePage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path={PROFILE_SETTINGS_PATH}
+                element={<SettingsPage onShowLogin={onShowLogin} />}
+              />
+              <Route
+                path="/settings"
+                element={<Navigate to={PROFILE_SETTINGS_PATH} replace />}
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </RetainedRoutes>
+            <footer className="gp-footer">
+              <span>{t("GitPulse · 保持与开源世界的连接")}</span>
+              <a href="https://github.com" target="_blank" rel="noreferrer">
+                {t("在 GitHub 继续探索")}
+                <ArrowUpRight size={12} />
+              </a>
+            </footer>
+          </main>
+        </ContentBackTransition>
       </div>
       <MobileBottomNav />
     </div>

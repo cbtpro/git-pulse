@@ -106,6 +106,7 @@ pnpm test:scripts
 ```bash
 pnpm test:auth:recovery
 pnpm test:page-state
+pnpm test:content-back
 pnpm test:mobile:viewport
 ```
 
@@ -115,11 +116,11 @@ pnpm test:mobile:viewport
 
 ### 移动端系统返回
 
-iOS 原生应用开启 WKWebView 的[前进与返回手势](https://developer.apple.com/documentation/webkit/wkwebview/allowsbackforwardnavigationgestures)：从左边缘向右滑返回上一条历史记录，取消手势则留在当前页面。有前进记录时也支持反向手势。登录弹窗、页面弹窗或聚合搜索面板打开期间暂停页面滑动返回，关闭浮层后恢复，避免导航到浮层后面的页面。浏览器版沿用浏览器自身的手势。
+iOS 原生应用关闭 WKWebView 的[整页前进与返回手势](https://developer.apple.com/documentation/webkit/wkwebview/allowsbackforwardnavigationgestures)，改由内容层处理左边缘右滑返回：只有页面内容跟随手指，底部导航、顶部栏及安全区保持固定。滑动不足或系统取消手势时恢复原位；正常上下滚动、双指触摸、编辑输入框和控件交互不触发返回。登录弹窗、页面弹窗或聚合搜索面板打开期间暂停滑动返回，关闭全部浮层后恢复。浏览器版沿用浏览器自身的手势。
 
 Android 使用 Tauri 的[系统返回接口](https://v2.tauri.app/reference/javascript/api/namespaceapp/#onbackbuttonpress)，同时覆盖返回键和系统返回手势。返回时优先关闭最上层浮层，然后回退页面；没有可回退页面时结束当前应用 Activity。系统软键盘仍由 Android 先处理。这里不额外模拟 Android 的返回预览动画。
 
-两端都使用 WebView 原有的导航历史，完成返回后由路由缓存恢复页面和滚动状态，不增加另一套页面栈。原生验证应覆盖：设置返回个人页、仓库详情返回搜索结果、滚动位置与未提交输入保留、取消 iOS 边缘手势、弹窗与搜索面板、Android 根页面返回和软键盘收起。原生手势配置需要重新构建安装，仅刷新前端不会更新旧安装。
+两端都使用 WebView 原有的导航历史，完成返回后由路由缓存恢复页面和滚动状态，不增加另一套页面栈。`pnpm test:content-back` 在浏览器触摸模拟中检查内容位移、导航固定、取消手势和缓存恢复；该测试通过开发服务加载手势控制器，不替代 iOS 真机验收。原生验证应覆盖：设置返回个人页、仓库详情返回搜索结果、滚动位置与未提交输入保留、取消 iOS 边缘手势、弹窗与搜索面板、Android 根页面返回和软键盘收起。原生手势默认值更新需要重新构建安装；前端也会通过已有桥接接口关闭旧安装的整页手势。
 
 ### 应用标识
 
