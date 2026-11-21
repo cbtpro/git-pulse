@@ -12,7 +12,7 @@ import { AppLayout } from "./components/layout/AppLayout";
 import { LoginModal } from "./components/LoginModal";
 import { Brand } from "./components/common/Brand";
 import { useAuthStore } from "./stores/authStore";
-import { pendingGitHubAuthorization } from "./services/auth/GitHubDeviceAuth";
+import { useAuthorizationRecovery } from "./hooks/useAuthorizationRecovery";
 import { useMobileViewport } from "./hooks/useMobileViewport";
 import { useAppearance } from "./hooks/useAppearance";
 import "./App.css";
@@ -25,6 +25,7 @@ export function App() {
   const authorization = useAuthStore((state) => state.authorization);
   const [showLogin, setShowLogin] = useState(false);
   const [ready, setReady] = useState(false);
+  useAuthorizationRecovery(ready);
   const { density } = useAppearance();
   useEffect(() => {
     let active = true;
@@ -35,20 +36,6 @@ export function App() {
       active = false;
     };
   }, [checkAuth]);
-  useEffect(() => {
-    const resume = () => {
-      if (!ready || document.visibilityState === "hidden") return;
-      const auth = useAuthStore.getState();
-      if (!auth.isLoading && pendingGitHubAuthorization())
-        void auth.loginWithGitHub();
-    };
-    document.addEventListener("visibilitychange", resume);
-    window.addEventListener("pageshow", resume);
-    return () => {
-      document.removeEventListener("visibilitychange", resume);
-      window.removeEventListener("pageshow", resume);
-    };
-  }, [ready]);
   useEffect(() => {
     if (ready) return startContributionWidgetSync();
   }, [ready]);

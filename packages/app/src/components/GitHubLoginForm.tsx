@@ -33,6 +33,7 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
   const [mode, setMode] = useState<"oauth" | "token">("oauth");
   const [token, setToken] = useState("");
   const [browserError, setBrowserError] = useState<string | null>(null);
+  const [openingBrowser, setOpeningBrowser] = useState(false);
   const [copyStatus, setCopyStatus] = useState<
     "idle" | "copying" | "copied" | "error"
   >("idle");
@@ -77,6 +78,8 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
   };
 
   const openBrowser = async () => {
+    if (openingBrowser) return;
+    setOpeningBrowser(true);
     setBrowserError(null);
     try {
       await openGitHubAuthorization();
@@ -86,6 +89,8 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
           ? error.message
           : t("无法打开浏览器，请手动访问 https://github.com/login/device"),
       );
+    } finally {
+      if (mounted.current) setOpeningBrowser(false);
     }
   };
 
@@ -148,7 +153,7 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
                 )}
               />
             )}
-            {authorization && isLoading ? (
+            {authorization ? (
               <div className="gp-authorization">
                 <p>{t("在 GitHub 授权页面输入以下验证码")}</p>
                 <div className="gp-device-code-row">
@@ -185,7 +190,13 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
                       ? t("复制失败，请选中授权码后手动复制。")
                       : ""}
                 </p>
-                <Button type="primary" size="large" long onClick={openBrowser}>
+                <Button
+                  type="primary"
+                  size="large"
+                  long
+                  onClick={openBrowser}
+                  loading={openingBrowser}
+                >
                   {t("打开 GitHub 授权页面")}
                   <ArrowUpRight size={17} />
                 </Button>
@@ -198,9 +209,16 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
                   })}
                 </p>
                 <div className="gp-authorization-status" role="status">
-                  <Spin size={16} />
-                  {t("等待授权，完成后会自动登录…")}
+                  {isLoading && <Spin size={16} />}
+                  {isLoading
+                    ? t("等待授权，完成后会自动登录…")
+                    : t("授权进度已保存，将自动继续登录。")}
                 </div>
+                {!isLoading && (
+                  <Button long onClick={() => void loginWithGitHub()}>
+                    {t("重试")}
+                  </Button>
+                )}
                 <Button
                   type="text"
                   long

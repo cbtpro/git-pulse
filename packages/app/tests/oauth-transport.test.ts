@@ -121,3 +121,24 @@ it("does not invoke native OAuth for an already cancelled login", async () => {
   ).rejects.toBe(controller.signal.reason);
   expect(invoke).not.toHaveBeenCalled();
 });
+
+it("finishes the encrypted exchange checkpoint before opening the external browser", async () => {
+  const { checkpointAuthorizationExchange, authorizationBrowserFailed } =
+    await import("../src/services/auth/AuthorizationLifecycle");
+  vi.mocked(isTauri).mockReturnValue(true);
+  let persist!: () => void;
+  const exchange = checkpointAuthorizationExchange(
+    () =>
+      new Promise<void>((resolve) => {
+        persist = resolve;
+      }),
+  );
+  const opening = openGitHubAuthorization();
+  await Promise.resolve();
+  expect(invoke).not.toHaveBeenCalled();
+  persist();
+  await exchange;
+  await opening;
+  expect(invoke).toHaveBeenCalledWith("open_github_authorization");
+  authorizationBrowserFailed();
+});

@@ -347,3 +347,34 @@ it("explicit cancellation removes pending OAuth from the encrypted vault", async
   await TokenManager.loadSession();
   expect(TokenManager.getPendingAuthorization()).toBeNull();
 });
+
+it("keeps the displayed authorization after a transient profile failure on return", async () => {
+  vi.stubEnv("VITE_GITHUB_CLIENT_ID", "resume-client");
+  const session = {
+    id: "returning-attempt",
+    clientId: "resume-client",
+    deviceCode: "private-code",
+    userCode: "KEEP-CODE",
+    interval: 5,
+    nextPollAt: Date.now(),
+    expiresAt: Date.now() + 900000,
+    accessToken: "checkpoint-token",
+  };
+  await TokenManager.savePendingAuthorization(
+    session,
+    new AbortController().signal,
+  );
+  fetchMock.mockRejectedValueOnce(
+    new TypeError("network not ready after resume"),
+  );
+  expect(await useAuthStore.getState().loginWithGitHub()).toBe(false);
+  expect(useAuthStore.getState().authorization?.userCode).toBe("KEEP-CODE");
+  expect(TokenManager.getPendingAuthorization()?.accessToken).toBe(
+    "checkpoint-token",
+  );
+  fetchMock.mockResolvedValueOnce(response(profile));
+  expect(await useAuthStore.getState().loginWithGitHub()).toBe(true);
+  expect(useAuthStore.getState().token).toBe("checkpoint-token");
+  expect(useAuthStore.getState().authorization).toBeNull();
+  vi.unstubAllEnvs();
+});

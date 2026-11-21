@@ -628,5 +628,6 @@
   "通知按最近更新时间排列，点击后使用来源账号标为已读并打开讨论。": "Notifications are sorted by latest update. Opening one marks it read using its source account.",
   "仓库详情": "Repository details",
   "文件路径无效": "Invalid file path",
-  "GitHub 未接受此操作，请检查内容和权限。": "GitHub rejected this action. Check its content and your permissions."
+  "GitHub 未接受此操作，请检查内容和权限。": "GitHub rejected this action. Check its content and your permissions.",
+  "授权进度已保存，将自动继续登录。": "Your authorization is saved. Sign-in will resume automatically."
 }

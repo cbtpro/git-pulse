@@ -240,7 +240,7 @@ export class TokenManager {
       const next: AccountVault = { version: 2, activeId: id, accounts };
       await SecureStorage.write(JSON.stringify(next));
       if (signal?.aborted || revision !== this.revision) {
-        if (previous.accounts.length)
+        if (previous.accounts.length || previous.pendingAuthorization)
           await SecureStorage.write(JSON.stringify(previous));
         else await SecureStorage.clear();
         throw signal?.reason || new DOMException("Canceled", "AbortError");

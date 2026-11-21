@@ -1,5 +1,6 @@
 import { clearGitHubRequestState } from "../services/github/GitHubService";
 import { create } from "zustand";
+import { waitForAuthorizationForeground } from "../services/auth/AuthorizationLifecycle";
 import { GitHubAuthService } from "../services/auth/GitHubAuthService";
 import {
   authorizeWithGitHub,
@@ -71,6 +72,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     try {
       const token = await getToken(controller.signal);
       controller.signal.throwIfAborted();
+      if (mode === "oauth")
+        await waitForAuthorizationForeground(controller.signal);
       const result = await GitHubAuthService.loginWithToken(
         token,
         controller.signal,
@@ -139,7 +142,17 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     } finally {
       if (pending === controller) {
         pending = null;
-        set({ isLoading: false, authorization: null });
+        const saved = mode === "oauth" ? pendingGitHubAuthorization() : null;
+        set({
+          isLoading: false,
+          authorization: saved
+            ? {
+                userCode: saved.userCode,
+                verificationUri: "https://github.com/login/device",
+                expiresAt: saved.expiresAt,
+              }
+            : null,
+        });
       }
     }
   };
@@ -154,7 +167,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       return authenticate(async () => token, "token");
     },
     loginWithGitHub: (onCode) => {
-      if (pending && get().authorization) return Promise.resolve(false);
+      if (pending) return Promise.resolve(false);
       return authenticate(
         (signal) =>
           authorizeWithGitHub((code) => {

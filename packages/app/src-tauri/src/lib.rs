@@ -17,6 +17,24 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(contribution_widgets::init())
+        .on_window_event(|_window, _event| {
+            #[cfg(mobile)]
+            {
+                use tauri::Manager;
+                let active = match _event {
+                    tauri::WindowEvent::Suspended => false,
+                    tauri::WindowEvent::Resumed => true,
+                    _ => return,
+                };
+                if let Some(webview) = _window.app_handle().get_webview_window(_window.label()) {
+                    // Keep the flag and event in the same evaluation, including
+                    // when WebView callbacks are queued until the app resumes.
+                    let _ = webview.eval(format!(
+                        "window.__GITPULSE_APP_ACTIVE__={active};window.dispatchEvent(new Event('gitpulse:app-state'));"
+                    ));
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             greet,
             contribution_widgets::contribution_widget_status,

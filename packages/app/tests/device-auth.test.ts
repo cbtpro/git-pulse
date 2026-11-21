@@ -256,3 +256,43 @@ it("restores an exchanged token without exchanging the device code twice", async
   ).resolves.toBe("checkpoint-token");
   expect(request).not.toHaveBeenCalled();
 });
+
+it("retains an exchanged token after the user code expires while the app is suspended", async () => {
+  persisted.value = {
+    id: "attempt",
+    clientId: "id",
+    deviceCode: "saved-code",
+    userCode: "ABCD-EFGH",
+    expiresAt: Date.now() - 1000,
+    interval: 5,
+    nextPollAt: Date.now(),
+    accessToken: "already-approved-token",
+  };
+  request.mockRejectedValue(new Error("must not request another code"));
+  await expect(
+    authorizeWithGitHub(vi.fn(), new AbortController().signal, "id"),
+  ).resolves.toBe("already-approved-token");
+  expect(request).not.toHaveBeenCalled();
+});
+
+it("uses native suspend/resume even if the WebView reports itself visible", async () => {
+  const appWindow = window as Window & { __GITPULSE_APP_ACTIVE__?: boolean };
+  appWindow.__GITPULSE_APP_ACTIVE__ = false;
+  request
+    .mockResolvedValueOnce(code)
+    .mockResolvedValueOnce({ access_token: "native-resumed" });
+  const promise = authorizeWithGitHub(
+    vi.fn(),
+    new AbortController().signal,
+    "id",
+  );
+  await vi.advanceTimersByTimeAsync(20000);
+  expect(request).toHaveBeenCalledTimes(1);
+  appWindow.__GITPULSE_APP_ACTIVE__ = true;
+  // Some WebViews publish visibility after the native foreground callback.
+  vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+  window.dispatchEvent(new Event("gitpulse:app-state"));
+  await expect(promise).resolves.toBe("native-resumed");
+  expect(request).toHaveBeenCalledTimes(2);
+  delete appWindow.__GITPULSE_APP_ACTIVE__;
+});

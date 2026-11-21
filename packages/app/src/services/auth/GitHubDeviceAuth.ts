@@ -1,4 +1,9 @@
 import { TokenManager } from "./TokenManager";
+import {
+  authorizationIsForeground,
+  checkpointAuthorizationExchange,
+  onAuthorizationActivity,
+} from "./AuthorizationLifecycle";
 import type { PendingAuthorization } from "../../types/auth";
 import {
   requestGitHubOAuth,
@@ -35,9 +40,7 @@ function waitForPoll(
     let timer: ReturnType<typeof setTimeout>;
     const cleanup = () => {
       clearTimeout(timer);
-      document.removeEventListener("visibilitychange", check);
-      window.removeEventListener("pageshow", check);
-      window.removeEventListener("online", check);
+      unsubscribe();
       signal.removeEventListener("abort", onAbort);
     };
     const onAbort = () => {
@@ -49,21 +52,18 @@ function waitForPoll(
       const now = Date.now();
       if (
         now >= session.expiresAt ||
-        (document.visibilityState !== "hidden" && now >= session.nextPollAt)
+        (authorizationIsForeground() && now >= session.nextPollAt)
       ) {
         cleanup();
         resolve();
       } else {
-        const deadline =
-          document.visibilityState === "hidden"
-            ? session.expiresAt
-            : Math.min(session.nextPollAt, session.expiresAt);
+        const deadline = !authorizationIsForeground()
+          ? session.expiresAt
+          : Math.min(session.nextPollAt, session.expiresAt);
         timer = setTimeout(check, Math.max(1, deadline - now));
       }
     };
-    document.addEventListener("visibilitychange", check);
-    window.addEventListener("pageshow", check);
-    window.addEventListener("online", check);
+    const unsubscribe = onAuthorizationActivity(check);
     signal.addEventListener("abort", onAbort, { once: true });
     check();
   });
@@ -73,7 +73,7 @@ export function pendingGitHubAuthorization(clientId = getGitHubClientId()) {
   const session = TokenManager.getPendingAuthorization();
   return session &&
     session.clientId === clientId &&
-    session.expiresAt > Date.now()
+    (session.expiresAt > Date.now() || Boolean(session.accessToken?.trim()))
     ? session
     : null;
 }
@@ -147,19 +147,34 @@ export async function authorizeWithGitHub(
     if (Date.now() >= session.expiresAt) break;
     session.nextPollAt = Date.now() + session.interval * 1000;
     await TokenManager.savePendingAuthorization(session, signal);
+    if (!authorizationIsForeground()) continue;
     let result: Record<string, unknown>;
+    let receivedResponse = false;
     try {
-      result = await requestGitHubOAuth(
-        "oauth/access_token",
-        {
-          client_id: clientId,
-          device_code: session.deviceCode,
-          grant_type: "urn:ietf:params:oauth:grant-type:device_code",
-        },
-        signal,
-      );
-    } catch {
+      result = await checkpointAuthorizationExchange(async () => {
+        const response = await requestGitHubOAuth(
+          "oauth/access_token",
+          {
+            client_id: clientId,
+            device_code: session.deviceCode,
+            grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+          },
+          signal,
+        );
+        signal.throwIfAborted();
+        receivedResponse = true;
+        if (
+          typeof response.access_token === "string" &&
+          response.access_token.trim()
+        ) {
+          session.accessToken = response.access_token;
+          await TokenManager.savePendingAuthorization(session, signal);
+        }
+        return response;
+      });
+    } catch (error) {
       signal.throwIfAborted();
+      if (receivedResponse) throw error;
       // RFC 8628: back off after transport timeouts, retaining the same authorization.
       session.interval = Math.min(
         session.interval * 2,
@@ -171,8 +186,6 @@ export async function authorizeWithGitHub(
     }
     signal.throwIfAborted();
     if (typeof result.access_token === "string" && result.access_token.trim()) {
-      session.accessToken = result.access_token;
-      await TokenManager.savePendingAuthorization(session, signal);
       return result.access_token;
     }
     if (

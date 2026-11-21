@@ -1,4 +1,8 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
+import {
+  prepareAuthorizationBrowser,
+  authorizationBrowserFailed,
+} from "./AuthorizationLifecycle";
 
 export const GITHUB_VERIFICATION_URL = "https://github.com/login/device";
 type OAuthEndpoint = "device/code" | "oauth/access_token";
@@ -81,7 +85,13 @@ export async function requestGitHubOAuth(
 
 export async function openGitHubAuthorization(): Promise<void> {
   if (isTauri()) {
-    await invoke("open_github_authorization");
+    try {
+      await prepareAuthorizationBrowser();
+      await invoke("open_github_authorization");
+    } catch (error) {
+      authorizationBrowserFailed();
+      throw error;
+    }
   } else {
     // 用户点击时同步打开，避免异步弹窗被浏览器拦截。
     window.open(GITHUB_VERIFICATION_URL, "_blank", "noopener,noreferrer");
