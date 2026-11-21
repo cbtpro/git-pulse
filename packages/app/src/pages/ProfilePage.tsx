@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../components/common/ResourceState";
 import { useTranslation } from "../i18n";
 import { lazy, Suspense, useCallback, useState } from "react";
 import { Avatar, Button, Card, Tag } from "@arco-design/web-react";
@@ -66,6 +67,7 @@ function MyRepositories({
           loading={resource.loading}
         />
       </div>
+      <ResourceRefreshNotice resource={resource} />
       {resource.loading ? (
         <LoadingCards />
       ) : resource.error ? (

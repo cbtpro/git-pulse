@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../common/ResourceState";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -129,6 +130,7 @@ function IssueList({ kind }: { kind: WorkKind }) {
           {t("刷新")}
         </Button>
       </div>
+      <ResourceRefreshNotice resource={list} />
       {list.loading ? (
         <Spin />
       ) : list.error ? (
@@ -267,6 +269,7 @@ function IssueDetail({
           {t("刷新")}
         </Button>
       </div>
+      <ResourceRefreshNotice resource={detail} />
       {detail.loading ? (
         <Spin />
       ) : detail.error ? (
@@ -446,7 +449,7 @@ function IssueBody({
       >
         <Tabs.TabPane key="comments" title={t("讨论")}>
           <DiscussionList
-            key={`comments/${revision}`}
+            revision={revision}
             number={item.number}
             section="comments"
             onLoaded={setCachedComments}
@@ -455,7 +458,7 @@ function IssueBody({
         {kind === "pulls" && (
           <Tabs.TabPane key="reviews" title={t("评审记录")}>
             <DiscussionList
-              key={`reviews/${revision}`}
+              revision={revision}
               number={item.number}
               section="reviews"
             />
@@ -504,10 +507,12 @@ function DiscussionList({
   number,
   section,
   onLoaded,
+  revision = 0,
 }: {
   number: number;
   section: "comments" | "reviews" | "review-comments";
   onLoaded?: (comments: Discussion[]) => void;
+  revision?: number;
 }) {
   const c = useRepository(),
     { t } = useTranslation();
@@ -528,6 +533,9 @@ function DiscussionList({
     ),
   );
   useEffect(() => {
+    if (revision) resource.reload();
+  }, [revision, resource.reload]);
+  useEffect(() => {
     if (page === 1 && resource.data) onLoaded?.(resource.data.data);
   }, [resource.data, page, onLoaded]);
   return resource.loading ? (
@@ -536,6 +544,7 @@ function DiscussionList({
     <RequestError error={resource.error} retry={resource.reload} />
   ) : (
     <>
+      <ResourceRefreshNotice resource={resource} />
       {!resource.data?.data.length && <p>{t("暂无讨论")}</p>}
       {resource.data?.data.map((comment) => (
         <Card

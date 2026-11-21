@@ -134,3 +134,19 @@ export function SignInState({
     </Card>
   );
 }
+
+/** A refresh failure must not replace retained content or destroy its scroll. */
+export function ResourceRefreshNotice({
+  resource,
+}: {
+  resource: { refreshError: Error | null; reload: () => void };
+}) {
+  const { t } = useTranslation();
+  return resource.refreshError ? (
+    <Alert
+      type="warning"
+      content={t(resource.refreshError.message)}
+      action={<Button onClick={resource.reload}>{t("刷新")}</Button>}
+    />
+  ) : null;
+}

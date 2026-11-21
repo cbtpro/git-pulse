@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../common/ResourceState";
 import { useCallback, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
@@ -122,6 +123,7 @@ function RunList() {
           {t("刷新")}
         </Button>
       </div>
+      <ResourceRefreshNotice resource={resource} />
       {resource.loading ? (
         <Spin />
       ) : resource.error ? (
@@ -192,6 +194,7 @@ function RunDetail({ id, back }: { id: number; back: () => void }) {
           {t("刷新")}
         </Button>
       </div>
+      <ResourceRefreshNotice resource={run} />
       {run.loading ? (
         <Spin />
       ) : run.error ? (
@@ -287,6 +290,7 @@ function RunBody({ run, reload }: { run: WorkflowRun; reload: () => void }) {
         </div>
       )}
       <Card className="gp-work-content" title={t("任务与步骤")}>
+        <ResourceRefreshNotice resource={jobs} />
         {jobs.loading ? (
           <Spin />
         ) : jobs.error ? (
@@ -340,6 +344,7 @@ function RunBody({ run, reload }: { run: WorkflowRun; reload: () => void }) {
         />
       </Card>
       <Card className="gp-work-content" title={t("构建产物")}>
+        <ResourceRefreshNotice resource={artifacts} />
         {artifacts.loading ? (
           <Spin />
         ) : artifacts.error ? (

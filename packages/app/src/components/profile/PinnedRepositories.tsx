@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../common/ResourceState";
 import { useCallback, useId, useState } from "react";
 import { Button, Card, Tag } from "@arco-design/web-react";
 import { Code2, Pin, RefreshCw, Settings2 } from "lucide-react";
@@ -76,6 +77,7 @@ export function PinnedRepositories({
       <span className="gp-sr-only" role="status">
         {saved ? t("置顶已保存") : ""}
       </span>
+      <ResourceRefreshNotice resource={resource} />
       {resource.loading ? (
         <LoadingCards />
       ) : resource.error ? (

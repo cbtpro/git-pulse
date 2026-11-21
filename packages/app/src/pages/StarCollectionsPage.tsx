@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../components/common/ResourceState";
 import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -192,6 +193,7 @@ function Collections({
           count: items.length,
         })}
       </p>
+      <ResourceRefreshNotice resource={resource} />
       {resource.error && (
         <RequestError error={resource.error} retry={resource.reload} />
       )}

@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../components/common/ResourceState";
 import { useTranslation, i18n } from "../i18n";
 import { useCallback, useState } from "react";
 import {
@@ -242,6 +243,7 @@ export function HomePage({ onShowLogin }: { onShowLogin: () => void }) {
               ? t("按累计 Star 排序的新建仓库，每次探索都有新发现。")
               : t("按关注者数量排序，发现活跃的开源创作者。")}
           </p>
+          <ResourceRefreshNotice resource={resource} />
           {tab === "developers" ? (
             <Developers onShowLogin={onShowLogin} />
           ) : resource.loading ? (

@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../components/common/ResourceState";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import {
@@ -307,7 +308,11 @@ function RepositoryWorkspace({
                   />
                 }
                 loading={action.busy}
-                disabled={starred.loading || Boolean(starred.error)}
+                disabled={
+                  starred.loading ||
+                  starred.refreshing ||
+                  Boolean(starred.error)
+                }
                 onClick={() => {
                   if (!account.token) return onShowLogin();
                   void action.run(async () => {
@@ -340,6 +345,7 @@ function RepositoryWorkspace({
           <Tag>{repo.stargazers_count} Stars</Tag>
           {repo.archived && <Tag>{t("已归档")}</Tag>}
         </div>
+        <ResourceRefreshNotice resource={starred} />
         {starred.error && (
           <RequestError
             error={starred.error}
@@ -417,10 +423,13 @@ export function RepositoryPage({ onShowLogin }: { onShowLogin: () => void }) {
       </div>
     );
   return resource.data ? (
-    <RepositoryWorkspace
-      key={`${owner}/${name}/${account.id}`}
-      repo={resource.data}
-      {...{ owner, name, onShowLogin }}
-    />
+    <>
+      <ResourceRefreshNotice resource={resource} />
+      <RepositoryWorkspace
+        key={`${owner}/${name}/${account.id}`}
+        repo={resource.data}
+        {...{ owner, name, onShowLogin }}
+      />
+    </>
   ) : null;
 }

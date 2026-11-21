@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../components/common/ResourceState";
 import { useTranslation } from "../i18n";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import {
@@ -401,6 +402,7 @@ export function ExplorePage({ onShowLogin }: { onShowLogin: () => void }) {
           content={t("GitHub 本次返回了部分结果，可缩小搜索范围后重试。")}
         />
       )}
+      <ResourceRefreshNotice resource={resource} />
       {resource.loading ? (
         <LoadingCards />
       ) : resource.error ? (

@@ -1,3 +1,7 @@
+import {
+  recordResourceRead,
+  invalidateResourceWrite,
+} from "./ResourceInvalidation";
 import type { Repository, User } from "../../types/github";
 import type { ContributionCalendar } from "../../types/contributions";
 import { TokenManager } from "../auth/TokenManager";
@@ -37,7 +41,9 @@ const queryCache = new Map<
   { expires: number; data: unknown; hasNext: boolean }
 >();
 let cacheToken: string | null = null;
+let queryRevision = 0;
 export function clearGitHubRequestState() {
+  queryRevision++;
   cooldowns.clear();
   queryCache.clear();
   cacheToken = null;
@@ -92,6 +98,10 @@ export async function requestGitHub<T>(
   // A caller that omits credentials still uses the active encrypted account.
   token = token?.trim() || TokenManager.getToken();
   signal.throwIfAborted();
+  const read =
+    !options.method || options.method === "GET" || path === "/graphql";
+  const requestRevision = queryRevision;
+  if (read) recordResourceRead(signal, path, token, options.body);
   if (
     !token &&
     (/^\/user(?:[/?]|$)/.test(path) ||
@@ -200,13 +210,29 @@ export async function requestGitHub<T>(
       data: data as T,
       hasNext: /rel="next"/.test(response.headers.get("link") || ""),
     };
-    if (cacheable && cacheToken === token && !controller.signal.aborted) {
+    if (
+      cacheable &&
+      cacheToken === token &&
+      requestRevision === queryRevision &&
+      !controller.signal.aborted
+    ) {
       if (queryCache.size >= 80)
         queryCache.delete(queryCache.keys().next().value!);
       queryCache.set(path, { ...result, expires: Date.now() + 60_000 });
     }
-    if (options.method && options.method !== "GET" && cacheToken === token)
-      queryCache.clear();
+    if (
+      !read &&
+      !(
+        data &&
+        typeof data === "object" &&
+        "merged" in data &&
+        data.merged === false
+      )
+    ) {
+      queryRevision++;
+      if (cacheToken === token) queryCache.clear();
+      invalidateResourceWrite(path, token);
+    }
     return result;
   } catch (error) {
     if (controller.signal.aborted) throw controller.signal.reason;

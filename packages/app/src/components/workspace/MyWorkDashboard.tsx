@@ -1,3 +1,4 @@
+import { ResourceRefreshNotice } from "../common/ResourceState";
 import { useCallback, useState } from "react";
 import {
   Alert,
@@ -118,6 +119,7 @@ export function MyWorkDashboard({ onShowLogin }: { onShowLogin: () => void }) {
           </button>
         ))}
       </div>
+      <ResourceRefreshNotice resource={data} />
       {data.loading ? (
         <Spin />
       ) : data.error ? (
