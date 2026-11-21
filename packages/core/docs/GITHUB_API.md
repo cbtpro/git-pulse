@@ -1,3 +1,5 @@
+> 历史文档：core 已停用，本文不再作为开发依据。请查看 [当前开发文档](../../../docs/DEVELOPMENT.md) 与 [工作区指南](../../../MONOREPO_GUIDE.md)。
+
 # GitHub API 文档
 
 本文档列举了 GitPulse 项目中使用的 GitHub 公开 API 端点和功能。

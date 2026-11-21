@@ -32,7 +32,6 @@
   },
   "dependencies": {
     "@arco-design/web-react": "^2.66.18",
-    "@gitpulse/core": "workspace:*",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-opener": "^2.7.3",
     "@tauri-apps/plugin-shell": "^2.0.0",
@@ -56,6 +55,8 @@
     "@types/node": "^20.10.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.73.0",
+    "@typescript-eslint/parser": "^8.73.0",
     "@vitejs/plugin-react": "^4.2.0",
     "esbuild": "^0.28.2",
     "eslint": "^8.56.0",

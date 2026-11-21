@@ -5,14 +5,12 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/app"
   ],
   "scripts": {
     "dev": "pnpm dev:desktop",
-    "dev:core": "pnpm -F @gitpulse/core dev",
     "dev:app": "pnpm dev:desktop",
     "build": "pnpm build:desktop",
-    "build:core": "pnpm -F @gitpulse/core build",
     "build:app": "pnpm build:desktop",
     "type-check": "pnpm -r type-check",
     "lint": "pnpm -r lint",
@@ -27,7 +25,7 @@
     "test:scripts": "node --test scripts/ci/scripts.test.mjs scripts/dev/*.test.mjs",
     "icons:generate": "node scripts/dev/icons.mjs",
     "icons:sync": "node scripts/dev/sync-icons.mjs",
-    "check": "pnpm -F @gitpulse/app type-check && pnpm -F @gitpulse/app test && pnpm test:scripts",
+    "check": "pnpm type-check && pnpm lint && pnpm test && pnpm test:scripts",
     "preview:web": "pnpm -F @gitpulse/app preview",
     "dev:macos": "node scripts/dev/platform.mjs dev macos",
     "build:macos": "node scripts/dev/platform.mjs build macos",

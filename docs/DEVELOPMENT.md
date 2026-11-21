@@ -91,11 +91,12 @@ pnpm check
 pnpm build:web
 ```
 
-`check` 执行应用类型检查、Vitest 测试及本地/CI 脚本测试，与 Actions 的主要检查一致。单独运行：
+`check` 执行全部有效工作区的严格 TypeScript 检查、ESLint、Vitest 测试及本地/CI 脚本测试，与 Actions 的主要检查一致。当前唯一有效包为 `@gitpulse/app`；停用的 core 不参与构建，也不再公开旧鉴权入口。单独运行：
 
 ```bash
-pnpm -F @gitpulse/app type-check
-pnpm -F @gitpulse/app test
+pnpm type-check
+pnpm lint
+pnpm test
 pnpm test:scripts
 ```
 

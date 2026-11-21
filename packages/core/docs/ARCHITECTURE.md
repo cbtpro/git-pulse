@@ -1,3 +1,5 @@
+> 历史文档：core 已停用，本文不再作为开发依据。请查看 [当前开发文档](../../../docs/DEVELOPMENT.md) 与 [工作区指南](../../../MONOREPO_GUIDE.md)。
+
 # GitPulse 架构设计文档
 
 ## 概述

@@ -4,6 +4,10 @@
 
 本地对应的检查、初始化、开发和打包入口见 [本地开发](DEVELOPMENT.md) 与 [平台矩阵](PLATFORM_GUIDE.md)。本地和 CI 的 Android Gradle 配置共用 `scripts/lib/android.mjs`，脚本测试也包含在工作流检查中。
 
+## 日常质量检查
+
+独立工作流 `.github/workflows/check.yml` 在 pull request 和分支 push 时执行，不需要签名或 GitHub Token。它运行全部有效包的类型、ESLint、单测与脚本检查，以及 Chromium 页面状态、面包屑、滑动返回和工作区回归；独立 Linux job 执行 `cargo test --lib --locked`。浏览器通过 Playwright 安装，`CHROME_PATH` 指向 runner 上实际浏览器，`GITPULSE_TEST_URL` 指向显式启动的本地 Vite 服务。失败时保留测试日志和截图。此流程不发布产物，也不替代移动端真机验证。
+
 ## 触发
 
 - 在 GitHub 仓库的 Actions → Build all platforms → Run workflow 中选择 `all`、`desktop`、`android`、`ios` 或 `web`。
@@ -60,7 +64,7 @@
 
 ## 发布版本
 
-统一根目录、两个工作区包、Tauri 和 Cargo 的版本，更新 Cargo 锁文件与 iOS `project.yml` / `Info.plist`，并在 `docs/releases/v版本号.md` 写入发行说明。执行 `pnpm check` 和 `pnpm build:web` 后提交、推送 `main`，再推送同名 `v版本号` 标签。自动发布只针对标签指向的提交；任一平台失败都不会发布缺失平台的正式版本。
+统一根目录、应用工作区、Tauri 和 Cargo 的版本，更新 Cargo 锁文件与 iOS `project.yml` / `Info.plist`，并在 `docs/releases/v版本号.md` 写入发行说明。执行 `pnpm check` 和 `pnpm build:web` 后提交、推送 `main`，再推送同名 `v版本号` 标签。自动发布只针对标签指向的提交；任一平台失败都不会发布缺失平台的正式版本。
 
 首次版本为 `v0.0.1`。GitHub OAuth 的公开 Client ID 通过仓库 Actions Variable 配置，本机 `.env.ios.local` 和所有证书私钥不提交。
 

@@ -1,21 +1,2 @@
-# pnpm workspace configuration for GitPulse monorepo
-
 packages:
-  # 核心库包
-  - 'packages/core'
-  
-  # Tauri 应用包
-  - 'packages/app'
-
-# 排除的目录 (不会被视为包)
-ignore:
-  - '**/.git'
-  - '**/node_modules'
-  - '**/dist'
-  - '**/.next'
-  - '**/build'
-  - '**/.turbo'
-  - '**/.vscode'
-
-# pnpm 配置
-# 文档: https://pnpm.io/pnpmfile
+  - packages/app

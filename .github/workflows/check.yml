@@ -1,0 +1,94 @@
+name: Quality checks
+
+on:
+  pull_request:
+  push:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CI: "true"
+  VITE_GITHUB_CLIENT_ID: fixture-client-id
+
+jobs:
+  app:
+    name: Types, lint, unit and browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm build:web
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Browser regression
+        env:
+          GITPULSE_TEST_URL: http://127.0.0.1:1420
+        shell: bash
+        run: |
+          CHROME_PATH="$(node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log(chromium.executablePath())')"
+          export CHROME_PATH
+          pnpm -F @gitpulse/app exec vite --host 127.0.0.1 --port 1420 > /tmp/gitpulse-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for _ in $(seq 1 40); do
+            if curl -fsS "$GITPULSE_TEST_URL/__gitpulse_dev__" > /dev/null; then ready=true; break; fi
+            sleep 0.5
+          done
+          if [ "$ready" != true ]; then cat /tmp/gitpulse-vite.log; exit 1; fi
+          pnpm test:page-state
+          pnpm test:navigation
+          pnpm test:interactive-back
+          pnpm test:workspace:browser
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-diagnostics
+          path: |
+            review-artifacts/
+            /tmp/gitpulse-vite.log
+          retention-days: 7
+          if-no-files-found: ignore
+
+  native:
+    name: Rust unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CARGO_BUILD_JOBS: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/app/src-tauri -> target
+          key: linux-unit-tests
+      - name: Install native dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev libdbus-1-dev libxdo-dev
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build:web
+      - run: cargo test --lib --locked
+        working-directory: packages/app/src-tauri

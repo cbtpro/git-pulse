@@ -1,3 +1,5 @@
+> 历史迁移记录：core 包已于 2026-11-21 停用，本文中的 core API、导入与命令不再适用。当前结构和命令请查阅 [工作区指南](MONOREPO_GUIDE.md)。
+
 # ✅ GitPulse Monorepo 转换完成报告
 
 ## 📋 总体概况
