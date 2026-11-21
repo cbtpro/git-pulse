@@ -48,6 +48,7 @@ pub fn run() {
             safe_area::configure_safe_area,
             mobile_navigation::set_navigation_gestures,
             secure_storage::read_auth_vault,
+            secure_storage::compare_auth_vault,
             secure_storage::write_auth_vault,
             secure_storage::clear_auth_vault,
         ])

@@ -53,7 +53,7 @@ it("preserves notes during reauthorization and restores encrypted workspace data
   expect(await SecureStorage.read()).toContain("private workspace note");
 });
 it("does not update memory after a failed encrypted write and rejects removed accounts", async () => {
-  vi.spyOn(SecureStorage, "write").mockRejectedValueOnce(
+  vi.spyOn(SecureStorage, "update").mockRejectedValueOnce(
     new Error("Disk unavailable"),
   );
   await expect(

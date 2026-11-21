@@ -26,14 +26,22 @@ try {
       window.isTauri = true;
       window.qaCommands = [];
       window.__TAURI_INTERNALS__ = {
-        invoke: async (command) => {
+        invoke: async (command, args) => {
           window.qaCommands.push(command);
           switch (command) {
             case "read_auth_vault":
-              return null;
-            case "set_navigation_gestures":
+              return window.qaVault || null;
+            case "compare_auth_vault":
+              if ((window.qaVault || null) !== args.expected) return false;
+              window.qaVault = args.value;
+              return true;
             case "write_auth_vault":
+              window.qaVault = args.value;
+              return;
             case "clear_auth_vault":
+              window.qaVault = null;
+              return;
+            case "set_navigation_gestures":
               return;
             case "configure_safe_area":
               return { top: 0, left: 0, right: 0, bottom: 0 };

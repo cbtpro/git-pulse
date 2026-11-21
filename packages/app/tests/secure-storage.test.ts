@@ -71,11 +71,12 @@ describe("encrypted storage", () => {
   });
 
   it("migrates old credentials only after encryption succeeds", async () => {
+    await SecureStorage.clear();
     localStorage.setItem("github_token", "legacy-fixture");
     localStorage.setItem("github_username", "octocat");
     localStorage.setItem("github_password", "obsolete-password");
     const write = vi
-      .spyOn(SecureStorage, "write")
+      .spyOn(SecureStorage, "update")
       .mockRejectedValueOnce(new Error("storage unavailable"));
     await expect(TokenManager.loadSession()).rejects.toThrow(
       "storage unavailable",
@@ -93,7 +94,7 @@ describe("encrypted storage", () => {
 
   it("rolls back a canceled encrypted write without losing existing accounts", async () => {
     await TokenManager.saveSession("first-fixture", "first", "token");
-    const original = SecureStorage.write.bind(SecureStorage);
+    const original = SecureStorage.update.bind(SecureStorage);
     let release!: () => void;
     let started!: () => void;
     const entered = new Promise<void>((resolve) => {
@@ -102,10 +103,11 @@ describe("encrypted storage", () => {
     const gate = new Promise<void>((resolve) => {
       release = resolve;
     });
-    vi.spyOn(SecureStorage, "write").mockImplementationOnce(async (value) => {
-      await original(value);
+    vi.spyOn(SecureStorage, "update").mockImplementationOnce(async (value) => {
+      const result = await original(value);
       started();
       await gate;
+      return result;
     });
     const controller = new AbortController();
     const saving = TokenManager.saveSession(
@@ -130,7 +132,7 @@ it("keeps pins and recent searches encrypted, separate per account, and across r
   await TokenManager.saveSession("first-token", "first", "token");
   const first = TokenManager.getActiveAccount()!.id;
   await TokenManager.saveCustomPins(first, ["R_first", "G_first"]);
-  await TokenManager.saveRecentSearches(first, ['repo:secret/project']);
+  await TokenManager.saveRecentSearches(first, ["repo:secret/project"]);
   await TokenManager.saveSession("second-token", "second", "token");
   const second = TokenManager.getActiveAccount()!.id;
   expect(TokenManager.getCustomPins(second)).toBeUndefined();
@@ -140,7 +142,9 @@ it("keeps pins and recent searches encrypted, separate per account, and across r
   await TokenManager.saveSession("new-first-token", "first", "oauth");
   await TokenManager.loadSession();
   expect(TokenManager.getCustomPins(first)).toEqual(["R_first", "G_first"]);
-  expect(TokenManager.getRecentSearches(first)).toEqual(['repo:secret/project']);
+  expect(TokenManager.getRecentSearches(first)).toEqual([
+    "repo:secret/project",
+  ]);
   const stored = await vaultEntries();
   const bytes = new TextDecoder().decode(stored.session.ciphertext);
   expect(bytes).not.toContain("secret/project");

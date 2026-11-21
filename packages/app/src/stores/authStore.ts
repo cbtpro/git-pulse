@@ -113,7 +113,15 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     pending = controller;
     set({ isLoading: true, error: null });
     try {
+      await TokenManager.loadSession();
+      let generation = TokenManager.getGeneration();
+      controller.signal.throwIfAborted();
       const token = await getToken(controller.signal);
+      if (
+        mode === "oauth" &&
+        TokenManager.getPendingAuthorization()?.accessToken === token
+      )
+        generation = TokenManager.getGeneration();
       controller.signal.throwIfAborted();
       if (mode === "oauth")
         await waitForAuthorizationForeground(controller.signal);
@@ -162,6 +170,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         mode,
         result.profile,
         controller.signal,
+        generation,
       );
       controller.signal.throwIfAborted();
       if (get().token !== result.token) clearGitHubRequestState();
@@ -199,6 +208,26 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       }
     }
   };
+  TokenManager.observeExternalChanges(() => {
+    const current = get();
+    const saved = current.activeAccountId
+      ? TokenManager.getAccount(current.activeAccountId)
+      : null;
+    if (
+      (current.activeAccountId && (!saved || saved.token !== current.token)) ||
+      (pending &&
+        !TokenManager.getPendingAuthorization() &&
+        current.authorization)
+    ) {
+      ++operation;
+      pending?.abort();
+      refresh?.abort();
+      pending = null;
+      clearGitHubRequestState();
+      set({ ...signedOut, authorization: null, isLoading: false });
+    }
+    set({ accounts: TokenManager.getAccounts() });
+  });
   return {
     ...signedOut,
     authorization: null,

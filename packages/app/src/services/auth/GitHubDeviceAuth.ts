@@ -90,9 +90,11 @@ export async function authorizeWithGitHub(
 ): Promise<string> {
   if (!clientId)
     throw new Error("GitHub 登录尚未配置，请联系应用维护者，或使用 Token 登录");
+  let generation = TokenManager.getGeneration();
   let session = pendingGitHubAuthorization(clientId);
   if (!session) {
     await TokenManager.clearPendingAuthorization();
+    generation = TokenManager.getGeneration();
     signal.throwIfAborted();
     const startedAt = Date.now();
     const code = await requestGitHubOAuth(
@@ -132,7 +134,7 @@ export async function authorizeWithGitHub(
       nextPollAt: Date.now() + interval * 1000,
     };
     // Persist before showing the browser button: iOS may discard the WebView afterwards.
-    await TokenManager.savePendingAuthorization(session, signal);
+    await TokenManager.savePendingAuthorization(session, signal, generation);
   }
   signal.throwIfAborted();
   onCode({
@@ -146,7 +148,7 @@ export async function authorizeWithGitHub(
     await waitForPoll(session, signal);
     if (Date.now() >= session.expiresAt) break;
     session.nextPollAt = Date.now() + session.interval * 1000;
-    await TokenManager.savePendingAuthorization(session, signal);
+    await TokenManager.savePendingAuthorization(session, signal, generation);
     if (!authorizationIsForeground()) continue;
     let result: Record<string, unknown>;
     let receivedResponse = false;
@@ -168,7 +170,11 @@ export async function authorizeWithGitHub(
           response.access_token.trim()
         ) {
           session.accessToken = response.access_token;
-          await TokenManager.savePendingAuthorization(session, signal);
+          await TokenManager.savePendingAuthorization(
+            session,
+            signal,
+            generation,
+          );
         }
         return response;
       });
@@ -181,7 +187,7 @@ export async function authorizeWithGitHub(
         Math.max(60, session.interval),
       );
       session.nextPollAt = Date.now() + session.interval * 1000;
-      await TokenManager.savePendingAuthorization(session, signal);
+      await TokenManager.savePendingAuthorization(session, signal, generation);
       continue;
     }
     signal.throwIfAborted();
@@ -204,7 +210,7 @@ export async function authorizeWithGitHub(
       );
     }
     session.nextPollAt = Date.now() + session.interval * 1000;
-    await TokenManager.savePendingAuthorization(session, signal);
+    await TokenManager.savePendingAuthorization(session, signal, generation);
   }
   await TokenManager.clearPendingAuthorization(session.id);
   throw oauthError("expired_token");

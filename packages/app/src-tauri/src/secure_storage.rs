@@ -52,6 +52,9 @@ fn unseal(key: &[u8], data: &[u8]) -> Result<String, String> {
 
 fn read_vault(path: &Path) -> Result<Option<String>, String> {
     let _guard = VAULT_LOCK.lock().map_err(|_| "安全存储暂不可用")?;
+    read_vault_unlocked(path)
+}
+fn read_vault_unlocked(path: &Path) -> Result<Option<String>, String> {
     if !path.exists() { return Ok(None); }
     if fs::metadata(path).map_err(|_| "无法读取加密账号数据")?.len() > (MAX_SIZE + 32) as u64 {
         return Err("加密账号数据大小异常".into());
@@ -62,6 +65,9 @@ fn read_vault(path: &Path) -> Result<Option<String>, String> {
 
 fn write_vault(path: &Path, value: &str) -> Result<(), String> {
     let _guard = VAULT_LOCK.lock().map_err(|_| "安全存储暂不可用")?;
+    write_vault_unlocked(path, value)
+}
+fn write_vault_unlocked(path: &Path, value: &str) -> Result<(), String> {
     if value.len() > MAX_SIZE || serde_json::from_str::<serde_json::Value>(value).is_err() {
         return Err("账号数据格式无效".into());
     }
@@ -87,6 +93,9 @@ fn write_vault(path: &Path, value: &str) -> Result<(), String> {
 
 fn clear_vault(path: &Path) -> Result<(), String> {
     let _guard = VAULT_LOCK.lock().map_err(|_| "安全存储暂不可用")?;
+    clear_vault_unlocked(path)
+}
+fn clear_vault_unlocked(path: &Path) -> Result<(), String> {
     match fs::remove_file(path) {
         Ok(()) => (),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => (),
@@ -136,4 +145,16 @@ mod tests {
         assert!(unseal(&key, &second).is_err());
         assert!(unseal(&[0u8; 32], &first).is_err());
     }
+}
+
+/// Atomic compare-and-swap for read/modify/write across WebView callers.
+#[tauri::command]
+pub async fn compare_auth_vault(app: tauri::AppHandle, expected: Option<String>, value: Option<String>) -> Result<bool, String> {
+    let path = vault_path(&app)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = VAULT_LOCK.lock().map_err(|_| "安全存储暂不可用")?;
+        if read_vault_unlocked(&path)? != expected { return Ok(false); }
+        match value { Some(value) => write_vault_unlocked(&path, &value)?, None => clear_vault_unlocked(&path)? }
+        Ok(true)
+    }).await.map_err(|_| "安全存储暂不可用")?
 }

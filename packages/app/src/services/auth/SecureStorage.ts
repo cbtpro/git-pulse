@@ -40,93 +40,129 @@ function transactionDone(transaction: IDBTransaction) {
       reject(new Error("无法保存加密账号数据，请重试。"));
   });
 }
-async function readEntries(db: IDBDatabase) {
-  const tx = db.transaction(STORE, "readonly");
-  const done = transactionDone(tx);
-  const key = tx.objectStore(STORE).get("key");
-  const session = tx.objectStore(STORE).get("session");
+// A revision survives clear(), so an older encryption result cannot resurrect a
+// deleted vault. The transaction commits ciphertext and revision together.
+async function snapshot(db: IDBDatabase) {
+  const tx = db.transaction(STORE, "readonly"),
+    done = transactionDone(tx);
+  const key = tx.objectStore(STORE).get("key"),
+    session = tx.objectStore(STORE).get("session"),
+    revision = tx.objectStore(STORE).get("revision");
   await done;
   return {
     key: key.result as CryptoKey | undefined,
     session: session.result as Envelope | undefined,
+    revision: Number(revision.result) || 0,
   };
 }
-
+async function decrypt(
+  key: CryptoKey | undefined,
+  session: Envelope | undefined,
+): Promise<string | null> {
+  if (!session) return null;
+  if (!key || session.version !== 1 || session.iv.byteLength !== 12)
+    throw new Error("加密账号数据已损坏，无法读取");
+  try {
+    return new TextDecoder().decode(
+      await cryptoProvider().subtle.decrypt(
+        { name: "AES-GCM", iv: session.iv, additionalData: AAD },
+        key,
+        session.ciphertext,
+      ),
+    );
+  } catch {
+    throw new Error("加密账号数据校验失败，无法读取");
+  }
+}
 export const SecureStorage = {
   async read(): Promise<string | null> {
     if (usesSystemVault()) return invoke<string | null>("read_auth_vault");
     const db = await openDatabase();
     try {
-      const { key, session } = await readEntries(db);
-      if (!session) return null;
-      if (!key || session.version !== 1 || session.iv.byteLength !== 12)
-        throw new Error("加密账号数据已损坏，无法读取");
-      try {
-        const plaintext = await cryptoProvider().subtle.decrypt(
-          { name: "AES-GCM", iv: session.iv, additionalData: AAD },
-          key,
-          session.ciphertext,
-        );
-        return new TextDecoder().decode(plaintext);
-      } catch {
-        throw new Error("加密账号数据校验失败，无法读取");
+      const value = await snapshot(db);
+      return await decrypt(value.key, value.session);
+    } finally {
+      db.close();
+    }
+  },
+  /** transform is synchronous and may run again after a concurrent commit. */
+  async update(
+    transform: (current: string | null) => string | null,
+    replace = false,
+  ): Promise<string | null> {
+    if (usesSystemVault()) {
+      if (replace) {
+        const value = transform(null);
+        if (value === null) await invoke("clear_auth_vault");
+        else await invoke("write_auth_vault", { value });
+        return value;
       }
+      for (let attempt = 0; attempt < 32; attempt++) {
+        const expected = await SecureStorage.read();
+        const value = transform(expected);
+        if (value === expected) return value;
+        if (await invoke<boolean>("compare_auth_vault", { expected, value }))
+          return value;
+      }
+      throw new Error("账号数据正在其他窗口更新，请重试");
+    }
+    const db = await openDatabase();
+    try {
+      for (let attempt = 0; attempt < 32; attempt++) {
+        const stored = await snapshot(db);
+        const current = replace
+          ? null
+          : await decrypt(stored.key, stored.session);
+        const value = transform(current);
+        if (!replace && value === current) return value;
+        let key = stored.key,
+          session: Envelope | undefined;
+        if (value !== null) {
+          key ||= await cryptoProvider().subtle.generateKey(
+            { name: "AES-GCM", length: 256 },
+            false,
+            ["encrypt", "decrypt"],
+          );
+          const iv = cryptoProvider().getRandomValues(new Uint8Array(12));
+          const ciphertext = await cryptoProvider().subtle.encrypt(
+            { name: "AES-GCM", iv, additionalData: AAD },
+            key,
+            new TextEncoder().encode(value),
+          );
+          session = { version: 1, iv, ciphertext };
+        }
+        const tx = db.transaction(STORE, "readwrite"),
+          done = transactionDone(tx);
+        const store = tx.objectStore(STORE),
+          check = store.get("revision");
+        let committed = false;
+        check.onsuccess = () => {
+          if ((Number(check.result) || 0) !== stored.revision) return;
+          if (value === null) {
+            store.delete("key");
+            store.delete("session");
+          } else {
+            store.put(key, "key");
+            store.put(session, "session");
+          }
+          store.put(stored.revision + 1, "revision");
+          committed = true;
+        };
+        await done;
+        if (committed) return value;
+      }
+      throw new Error("账号数据正在其他窗口更新，请重试");
     } finally {
       db.close();
     }
   },
   async write(value: string): Promise<void> {
+    // Retain the low-level native API for migration/platform integrations.
     if (usesSystemVault()) return invoke("write_auth_vault", { value });
-    const crypto = cryptoProvider();
-    const db = await openDatabase();
-    try {
-      const stored = await readEntries(db);
-      let key = stored.key;
-      if (!key) {
-        const candidate = await crypto.subtle.generateKey(
-          { name: "AES-GCM", length: 256 },
-          false,
-          ["encrypt", "decrypt"],
-        );
-        // Recheck in a write transaction so simultaneous tabs cannot replace an existing key.
-        const tx = db.transaction(STORE, "readwrite");
-        const done = transactionDone(tx);
-        const request = tx.objectStore(STORE).get("key");
-        request.onsuccess = () => {
-          key = request.result || candidate;
-          if (!request.result) tx.objectStore(STORE).put(key, "key");
-        };
-        await done;
-      }
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const ciphertext = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv, additionalData: AAD },
-        key!,
-        new TextEncoder().encode(value),
-      );
-      const tx = db.transaction(STORE, "readwrite");
-      const done = transactionDone(tx);
-      // Store key and ciphertext atomically, including when another tab just signed out.
-      tx.objectStore(STORE).put(key, "key");
-      tx.objectStore(STORE).put(
-        { version: 1, iv, ciphertext } satisfies Envelope,
-        "session",
-      );
-      await done;
-    } finally {
-      db.close();
-    }
+    await SecureStorage.update(() => value, true);
   },
   async clear(): Promise<void> {
     if (usesSystemVault()) return invoke("clear_auth_vault");
-    const db = await openDatabase();
-    try {
-      const tx = db.transaction(STORE, "readwrite");
-      const done = transactionDone(tx);
-      tx.objectStore(STORE).clear();
-      await done;
-    } finally {
-      db.close();
-    }
+    await SecureStorage.update(() => null, true);
   },
 };

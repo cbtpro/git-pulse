@@ -13,6 +13,7 @@ const persisted = vi.hoisted(() => ({
 }));
 vi.mock("../src/services/auth/TokenManager", () => ({
   TokenManager: {
+    getGeneration: () => "fixture-generation",
     getPendingAuthorization: () =>
       persisted.value ? { ...persisted.value } : null,
     savePendingAuthorization: vi.fn(async (value, signal) => {

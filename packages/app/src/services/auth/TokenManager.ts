@@ -21,6 +21,7 @@ export interface SavedAccount {
 export type AccountSummary = Omit<SavedAccount, "token" | "workspace">;
 interface AccountVault {
   version: 2;
+  generation?: string;
   activeId: string | null;
   accounts: SavedAccount[];
   pendingAuthorization?: PendingAuthorization;
@@ -126,166 +127,236 @@ export class TokenManager {
     return { ...value };
   }
 
-  static savePendingAuthorization(
-    value: PendingAuthorization,
-    signal: AbortSignal,
+  static getGeneration() {
+    return this.vault.generation || "legacy";
+  }
+  private static listeners = new Set<() => void>();
+  private static channel: BroadcastChannel | undefined;
+  static observeExternalChanges(listener: () => void) {
+    this.listeners.add(listener);
+    this.ensureChannel();
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+  private static ensureChannel() {
+    if (!this.channel && typeof window.BroadcastChannel === "function") {
+      this.channel = new window.BroadcastChannel("gitpulse-vault-changed");
+      this.channel.onmessage = () => {
+        void this.serialize(async () => {
+          const value = await SecureStorage.read();
+          this.vault = value ? validateVault(JSON.parse(value)) : emptyVault();
+          this.listeners.forEach((notify) => notify());
+          window.dispatchEvent(
+            new CustomEvent("gitpulse:workspace", {
+              detail: this.vault.activeId,
+            }),
+          );
+        }).catch(() => undefined);
+      };
+    }
+  }
+  private static announce() {
+    this.ensureChannel();
+    this.channel?.postMessage("changed");
+  }
+  private static mutate(
+    change: (latest: AccountVault) => AccountVault,
+    signal?: AbortSignal,
+    generation?: string,
   ): Promise<void> {
     const revision = this.revision;
     return this.serialize(async () => {
-      signal.throwIfAborted();
-      if (revision !== this.revision)
-        throw new DOMException("Canceled", "AbortError");
-      const previous = this.vault;
-      const next = { ...previous, pendingAuthorization: { ...value } };
-      await SecureStorage.write(JSON.stringify(next));
-      if (signal.aborted || revision !== this.revision) {
-        await SecureStorage.write(JSON.stringify(previous));
-        throw signal.reason || new DOMException("Canceled", "AbortError");
+      let before: string | null = null,
+        written: string | null = null;
+      const result = await SecureStorage.update((raw) => {
+        signal?.throwIfAborted();
+        if (revision !== this.revision)
+          throw new DOMException("Canceled", "AbortError");
+        const latest = raw ? validateVault(JSON.parse(raw)) : emptyVault();
+        if (
+          generation !== undefined &&
+          (latest.generation || "legacy") !== generation
+        )
+          throw new DOMException("账号授权已失效，请重新登录", "AbortError");
+        before = raw;
+        const next = change(latest);
+        written = JSON.stringify(next);
+        return written;
+      });
+      if (signal?.aborted || revision !== this.revision) {
+        // Never roll a newer tab's changes back to our old snapshot.
+        await SecureStorage.update((current) => {
+          if (current === written) return before;
+          if (!current || !written) return current;
+          const latest = validateVault(JSON.parse(current));
+          const prior = before
+            ? validateVault(JSON.parse(before))
+            : emptyVault();
+          const ours = validateVault(JSON.parse(written));
+          const accounts = latest.accounts.flatMap((account) => {
+            const committed = ours.accounts.find(
+              (item) => item.id === account.id,
+            );
+            const old = prior.accounts.find((item) => item.id === account.id);
+            if (
+              !committed ||
+              committed.token !== account.token ||
+              old?.token === committed.token
+            )
+              return [account];
+            // Undo only credentials introduced by this canceled login. Never
+            // restore an identity invalidated by a newer logout generation.
+            return old && latest.generation === prior.generation
+              ? [
+                  {
+                    ...account,
+                    token: old.token,
+                    mode: old.mode,
+                    profile: old.profile,
+                    username: old.username,
+                  },
+                ]
+              : [];
+          });
+          const next = { ...latest, accounts };
+          if (
+            next.activeId &&
+            !accounts.some((account) => account.id === next.activeId)
+          )
+            next.activeId = null;
+          if (
+            ours.pendingAuthorization?.id !== prior.pendingAuthorization?.id &&
+            next.pendingAuthorization?.id === ours.pendingAuthorization?.id
+          )
+            delete next.pendingAuthorization;
+          return JSON.stringify(next);
+        });
+        this.announce();
+        throw signal?.reason || new DOMException("Canceled", "AbortError");
       }
-      this.vault = next;
+      this.vault = result ? validateVault(JSON.parse(result)) : emptyVault();
+      this.announce();
     });
   }
-
+  static savePendingAuthorization(
+    value: PendingAuthorization,
+    signal: AbortSignal,
+    generation = this.getGeneration(),
+  ): Promise<void> {
+    return this.mutate(
+      (latest) => ({ ...latest, pendingAuthorization: { ...value } }),
+      signal,
+      generation,
+    );
+  }
   static clearPendingAuthorization(id?: string): Promise<void> {
-    return this.serialize(async () => {
+    return this.mutate((latest) => {
       if (
-        !this.vault.pendingAuthorization ||
-        (id && this.vault.pendingAuthorization.id !== id)
+        !latest.pendingAuthorization ||
+        (id && latest.pendingAuthorization.id !== id)
       )
-        return;
-      const { pendingAuthorization: _pending, ...next } = this.vault;
-      await SecureStorage.write(JSON.stringify(next));
-      this.vault = next;
+        return latest;
+      const { pendingAuthorization: _pending, ...next } = latest;
+      return { ...next, generation: crypto.randomUUID() };
     });
   }
-
   static loadSession(): Promise<SavedAccount | null> {
     const revision = this.revision;
     this.clearPassword();
     return this.serialize(async () => {
-      const encrypted = await SecureStorage.read();
-      let vault = encrypted
-        ? validateVault(JSON.parse(encrypted))
-        : emptyVault();
-      if (!encrypted) {
-        const token = localStorage.getItem("github_token");
-        const username = localStorage.getItem("github_username");
-        if (token && username) {
-          let profile: UserProfile | undefined;
-          try {
-            profile = JSON.parse(localStorage.getItem("auth-store") || "{}")
-              .state?.userProfile;
-          } catch {
-            /* Older optional profile cache may be malformed. */
-          }
-          const id = profile?.id
-            ? String(profile.id)
-            : `legacy:${username.toLowerCase()}`;
-          const account: SavedAccount = {
-            id,
-            token,
-            username,
-            profile,
-            mode:
-              localStorage.getItem("github_login_mode") === "oauth"
-                ? "oauth"
-                : "token",
-          };
-          vault = { version: 2, activeId: id, accounts: [account] };
-          await SecureStorage.write(JSON.stringify(vault));
+      const value = await SecureStorage.update((raw) => {
+        if (raw) {
+          validateVault(JSON.parse(raw));
+          return raw;
         }
-      }
-      // Never remove the old credentials if encryption failed above.
+        const token = localStorage.getItem("github_token"),
+          username = localStorage.getItem("github_username");
+        if (!token || !username) return null;
+        let profile: UserProfile | undefined;
+        try {
+          profile = JSON.parse(localStorage.getItem("auth-store") || "{}").state
+            ?.userProfile;
+        } catch {
+          /* optional legacy profile */
+        }
+        const id = profile?.id
+          ? String(profile.id)
+          : `legacy:${username.toLowerCase()}`;
+        return JSON.stringify({
+          version: 2,
+          activeId: id,
+          accounts: [
+            {
+              id,
+              token,
+              username,
+              profile,
+              mode:
+                localStorage.getItem("github_login_mode") === "oauth"
+                  ? "oauth"
+                  : "token",
+            },
+          ],
+        });
+      });
       this.deleteLegacy();
       if (revision !== this.revision) return null;
-      this.vault = vault;
+      this.vault = value ? validateVault(JSON.parse(value)) : emptyVault();
       return this.getActiveAccount();
     });
   }
-
   static saveSession(
     token: string,
     username: string,
     mode: LoginMode,
     profile?: UserProfile,
     signal?: AbortSignal,
+    generation = this.getGeneration(),
   ): Promise<void> {
-    const revision = this.revision;
-    return this.serialize(async () => {
-      signal?.throwIfAborted();
-      if (revision !== this.revision)
-        throw new DOMException("Canceled", "AbortError");
-      const previous = this.vault;
-      const id = profile?.id
-        ? String(profile.id)
-        : `legacy:${username.toLowerCase()}`;
-      const index = previous.accounts.findIndex(
-        (item) =>
-          item.id === id ||
-          item.username.toLowerCase() === username.toLowerCase(),
-      );
-      const account = {
-        id,
-        token,
-        username,
-        mode,
-        profile,
-        recentSearches: previous.accounts[index]?.recentSearches,
-        customPins: previous.accounts[index]?.customPins,
-        workspace: previous.accounts[index]?.workspace,
-      };
-      const accounts = [...previous.accounts];
-      if (index >= 0) accounts[index] = account;
-      else accounts.push(account);
-      const next: AccountVault = { version: 2, activeId: id, accounts };
-      await SecureStorage.write(JSON.stringify(next));
-      if (signal?.aborted || revision !== this.revision) {
-        if (previous.accounts.length || previous.pendingAuthorization)
-          await SecureStorage.write(JSON.stringify(previous));
-        else await SecureStorage.clear();
-        throw signal?.reason || new DOMException("Canceled", "AbortError");
-      }
-      this.vault = next;
-      this.deleteLegacy();
-    });
+    return this.mutate(
+      (latest) => {
+        const id = profile?.id
+          ? String(profile.id)
+          : `legacy:${username.toLowerCase()}`;
+        const existing = latest.accounts.find(
+          (item) =>
+            item.id === id ||
+            item.username.toLowerCase() === username.toLowerCase(),
+        );
+        const account = { ...existing, id, token, username, mode, profile };
+        const { pendingAuthorization: _pending, ...rest } = latest;
+        return {
+          ...rest,
+          activeId: id,
+          accounts: [
+            ...latest.accounts.filter((item) => item !== existing),
+            account,
+          ],
+        };
+      },
+      signal,
+      generation,
+    ).then(() => this.deleteLegacy());
   }
-
   static removeAccount(id: string): Promise<void> {
-    const revision = ++this.revision;
-    const previous = this.vault;
-    const next: AccountVault = {
+    ++this.revision;
+    return this.mutate((latest) => ({
       version: 2,
-      accounts: previous.accounts.filter((account) => account.id !== id),
-      activeId: previous.activeId === id ? null : previous.activeId,
-    };
-    this.vault = next;
-    return this.serialize(async () => {
-      try {
-        if (next.accounts.length)
-          await SecureStorage.write(JSON.stringify(next));
-        else await SecureStorage.clear();
-        this.deleteLegacy();
-      } catch (error) {
-        if (revision === this.revision) this.vault = previous;
-        throw error;
-      }
-    });
+      generation: crypto.randomUUID(),
+      accounts: latest.accounts.filter((account) => account.id !== id),
+      activeId: latest.activeId === id ? null : latest.activeId,
+    })).then(() => this.deleteLegacy());
   }
   static updateProfile(id: string, profile: UserProfile): Promise<void> {
-    const revision = this.revision;
-    return this.serialize(async () => {
-      if (revision !== this.revision || !this.getAccount(id)) return;
-      const next = {
-        ...this.vault,
-        accounts: this.vault.accounts.map((account) =>
-          account.id === id
-            ? { ...account, profile, username: profile.login }
-            : account,
-        ),
-      };
-      await SecureStorage.write(JSON.stringify(next));
-      if (revision === this.revision) this.vault = next;
-    });
+    return this.mutate((latest) => ({
+      ...latest,
+      accounts: latest.accounts.map((account) =>
+        account.id === id
+          ? { ...account, profile, username: profile.login }
+          : account,
+      ),
+    }));
   }
   static getRecentSearches(id: string): string[] {
     return this.getSearchHistory(id).map((entry) => entry.query);
@@ -311,20 +382,14 @@ export class TokenManager {
     id: string,
     queries: (string | SearchHistoryEntry)[],
   ): Promise<void> {
-    const revision = this.revision;
-    return this.serialize(async () => {
-      if (revision !== this.revision || !this.getAccount(id)) return;
-      const next = {
-        ...this.vault,
-        accounts: this.vault.accounts.map((account) =>
-          account.id === id
-            ? { ...account, recentSearches: queries.slice(0, 10) }
-            : account,
-        ),
-      };
-      await SecureStorage.write(JSON.stringify(next));
-      if (revision === this.revision) this.vault = next;
-    });
+    return this.mutate((latest) => ({
+      ...latest,
+      accounts: latest.accounts.map((account) =>
+        account.id === id
+          ? { ...account, recentSearches: queries.slice(0, 10) }
+          : account,
+      ),
+    }));
   }
   static getCustomPins(id: string): string[] | undefined {
     const pins = this.getAccount(id)?.customPins;
@@ -333,21 +398,16 @@ export class TokenManager {
       : undefined;
   }
   static saveCustomPins(id: string, pins: string[] | undefined): Promise<void> {
-    const revision = this.revision;
-    return this.serialize(async () => {
-      if (revision !== this.revision || !this.getAccount(id))
+    return this.mutate((latest) => {
+      if (!latest.accounts.some((account) => account.id === id))
         throw new Error("账号已变更，请重新打开置顶设置。");
       const customPins = pins ? [...new Set(pins)].slice(0, 6) : undefined;
-      const next = {
-        ...this.vault,
-        accounts: this.vault.accounts.map((account) =>
+      return {
+        ...latest,
+        accounts: latest.accounts.map((account) =>
           account.id === id ? { ...account, customPins } : account,
         ),
       };
-      await SecureStorage.write(JSON.stringify(next));
-      if (revision !== this.revision)
-        throw new Error("账号已变更，请重新打开置顶设置。");
-      this.vault = next;
     });
   }
   static getWorkspace(id: string | null): AccountWorkspace {
@@ -357,36 +417,41 @@ export class TokenManager {
     id: string,
     update: (current: AccountWorkspace) => AccountWorkspace,
   ): Promise<void> {
-    const revision = this.revision;
-    return this.serialize(async () => {
-      if (revision !== this.revision || !this.getAccount(id))
-        throw new Error("来源账号已移除，请重新添加账号。");
-      const workspace = normalizeWorkspace(update(this.getWorkspace(id)));
+    return this.mutate((latest) => {
+      const account = latest.accounts.find((item) => item.id === id);
+      if (!account) throw new Error("来源账号已移除，请重新添加账号。");
+      const workspace = normalizeWorkspace(
+        update(normalizeWorkspace(account.workspace)),
+      );
       const next = {
-        ...this.vault,
-        accounts: this.vault.accounts.map((account) =>
-          account.id === id ? { ...account, workspace } : account,
+        ...latest,
+        accounts: latest.accounts.map((item) =>
+          item.id === id ? { ...item, workspace } : item,
         ),
       };
-      const serialized = JSON.stringify(next);
-      if (new TextEncoder().encode(serialized).byteLength > 12 * 1024 * 1024)
+      if (
+        new TextEncoder().encode(JSON.stringify(next)).byteLength >
+        12 * 1024 * 1024
+      )
         throw new Error("本地工作区已满，请清理部分缓存或笔记。");
-      await SecureStorage.write(serialized);
-      if (revision !== this.revision)
-        throw new Error("来源账号已移除，请重新添加账号。");
-      this.vault = next;
-      window.dispatchEvent(
-        new CustomEvent("gitpulse:workspace", { detail: id }),
-      );
-    });
+      return next;
+    })
+      .then(() =>
+        window.dispatchEvent(
+          new CustomEvent("gitpulse:workspace", { detail: id }),
+        ),
+      )
+      .then(() => undefined);
   }
   static clearAll(): Promise<void> {
     ++this.revision;
-    this.vault = emptyVault();
     this.clearPassword();
     return this.serialize(async () => {
-      await SecureStorage.clear();
+      const next = { ...emptyVault(), generation: crypto.randomUUID() };
+      await SecureStorage.update(() => JSON.stringify(next), true);
+      this.vault = next;
       this.deleteLegacy();
+      this.announce();
     });
   }
 }

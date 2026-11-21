@@ -137,7 +137,7 @@ describe("login sessions", () => {
         }),
     );
     const pending = useAuthStore.getState().loginWithToken("ghp_late");
-    await Promise.resolve();
+    await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
     useAuthStore.getState().cancelLogin();
     finish(response(profile));
     expect(await pending).toBe(false);
@@ -255,9 +255,7 @@ describe("multiple accounts", () => {
 
   it("leaves the current identity active when encrypted persistence fails", async () => {
     await addBoth();
-    const { SecureStorage } =
-      await import("../src/services/auth/SecureStorage");
-    vi.spyOn(SecureStorage, "write").mockRejectedValueOnce(
+    vi.spyOn(crypto.subtle, "encrypt").mockRejectedValueOnce(
       new Error("storage full"),
     );
     fetchMock.mockResolvedValueOnce(response(profile));

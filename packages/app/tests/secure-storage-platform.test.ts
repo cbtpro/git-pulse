@@ -33,3 +33,25 @@ it("uses the native encrypted vault on iOS and desktop", async () => {
     expect(invoke).toHaveBeenLastCalledWith("read_auth_vault");
   }
 });
+it("recomputes native changes from the newest vault after a CAS conflict", async () => {
+  vi.spyOn(navigator, "userAgent", "get").mockReturnValue(
+    "Mozilla/5.0 (iPhone; CPU iPhone OS 17_4)",
+  );
+  let reads = 0,
+    commits = 0;
+  vi.mocked(invoke).mockImplementation(async (command) => {
+    if (command === "read_auth_vault")
+      return JSON.stringify({ count: reads++ ? 4 : 0 });
+    if (command === "compare_auth_vault") return commits++ > 0;
+    throw new Error("unexpected command");
+  });
+  expect(
+    await SecureStorage.update((raw) =>
+      JSON.stringify({ count: JSON.parse(raw!).count + 1 }),
+    ),
+  ).toBe('{"count":5}');
+  expect(invoke).toHaveBeenLastCalledWith("compare_auth_vault", {
+    expected: '{"count":4}',
+    value: '{"count":5}',
+  });
+});
