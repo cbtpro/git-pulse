@@ -6,6 +6,7 @@ interface DownloadResult {
   url?: string | null;
   text?: string | null;
   truncated: boolean;
+  delivered?: boolean;
 }
 export async function githubDownload(
   owner: string,
@@ -20,6 +21,7 @@ export async function githubDownload(
   if (!Number.isSafeInteger(id) || id <= 0) throw new Error("下载地址无效");
   if (isTauri()) {
     const result = await invoke<DownloadResult>("github_download", {
+      name,
       owner,
       repo,
       kind,
@@ -28,6 +30,7 @@ export async function githubDownload(
     });
     if (kind === "job")
       return { text: result.text || "", truncated: result.truncated };
+    if (result.delivered) return null;
     if (!result.url || !result.url.startsWith("https://"))
       throw new Error("下载链接不可用");
     await openUrl(result.url);
@@ -55,6 +58,7 @@ export async function githubDownload(
   const url = URL.createObjectURL(data),
     link = document.createElement("a");
   link.href = url;
+  // eslint-disable-next-line no-control-regex -- Strip unsafe filename control characters.
   link.download = name.replace(/[\\/\x00-\x1f]/g, "_");
   link.click();
   window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
