@@ -1,19 +1,9 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { exit, onBackButtonPress } from "@tauri-apps/api/app";
-import { isTauri, type PluginListener } from "@tauri-apps/api/core";
+import { invoke, isTauri, type PluginListener } from "@tauri-apps/api/core";
 import { getPlatformInfo } from "../utils/PlatformDetector";
 
 const overlays: { dismiss: () => void }[] = [];
-const subscribers = new Set<() => void>();
-const notify = () => subscribers.forEach((subscriber) => subscriber());
-
-export const hasBackOverlay = () => overlays.length > 0;
-export function observeBackOverlays(callback: () => void) {
-  subscribers.add(callback);
-  return () => {
-    subscribers.delete(callback);
-  };
-}
 
 /** A retained, hidden page must not consume Back. */
 export function useBackDismiss(visible: boolean, dismiss: () => void) {
@@ -21,14 +11,12 @@ export function useBackDismiss(visible: boolean, dismiss: () => void) {
   latest.current = dismiss;
   useLayoutEffect(() => {
     const { os } = getPlatformInfo();
-    if (!visible || !isTauri() || (os !== "ios" && os !== "android")) return;
+    if (!visible || !isTauri() || os !== "android") return;
     const overlay = { dismiss: () => latest.current() };
     overlays.push(overlay);
-    notify();
     return () => {
       const index = overlays.indexOf(overlay);
       if (index >= 0) overlays.splice(index, 1);
-      notify();
     };
   }, [visible]);
 }
@@ -38,6 +26,14 @@ export function useMobileNavigation() {
   useEffect(() => {
     if (!isTauri()) return;
     const { os } = getPlatformInfo();
+    if (os === "ios") {
+      // Also disable whole-WebView gestures in previously installed dev shells.
+      void invoke("set_navigation_gestures", { enabled: false }).catch(
+        (error) =>
+          console.warn("Unable to disable native navigation gestures", error),
+      );
+      return;
+    }
     if (os !== "android") return;
     let active = true;
     let listener: PluginListener | undefined;

@@ -7,7 +7,6 @@ import { getPlatformInfo } from "../src/utils/PlatformDetector";
 import {
   useBackDismiss,
   useMobileNavigation,
-  hasBackOverlay,
 } from "../src/hooks/useMobileNavigation";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn(), isTauri: vi.fn() }));
@@ -114,18 +113,19 @@ it("registers just one surviving listener under StrictMode", async () => {
   expect(unregister).toHaveBeenCalledTimes(2);
 });
 
-it("tracks nested iOS overlays without re-enabling whole-WebView gestures", async () => {
+it("keeps iOS swipe navigation disabled when overlays open and close", async () => {
   platform("ios");
   renderHook(useMobileNavigation);
-  expect(hasBackOverlay()).toBe(false);
+  await waitFor(() =>
+    expect(invoke).toHaveBeenCalledWith("set_navigation_gestures", {
+      enabled: false,
+    }),
+  );
   const first = renderHook(() => useBackDismiss(true, vi.fn()));
   const second = renderHook(() => useBackDismiss(true, vi.fn()));
-  expect(hasBackOverlay()).toBe(true);
   second.unmount();
-  expect(hasBackOverlay()).toBe(true);
   first.unmount();
-  expect(hasBackOverlay()).toBe(false);
-  expect(invoke).not.toHaveBeenCalled();
+  expect(invoke).toHaveBeenCalledOnce();
   expect(onBackButtonPress).not.toHaveBeenCalled();
 });
 

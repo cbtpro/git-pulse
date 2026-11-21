@@ -1,5 +1,4 @@
-/// Whole-WebView gestures also move fixed navigation bars. The frontend handles
-/// content-only edge gestures and still navigates using the existing history.
+/// Keep iOS swipe navigation disabled; navigation uses explicit page controls.
 #[cfg(target_os = "ios")]
 fn set_gestures<R: tauri::Runtime>(webview: &tauri::Webview<R>, enabled: bool) -> tauri::Result<()> {
     webview.with_webview(move |native| unsafe {
