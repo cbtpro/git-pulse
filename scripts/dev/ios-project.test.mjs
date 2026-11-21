@@ -9,14 +9,27 @@ test("iOS widget mode respects shell overrides and rejects invalid local values"
   assert.throws(() => iosEnvironment({}, "GITPULSE_IOS_WIDGETS=oops"), /GITPULSE_IOS_WIDGETS/);
 });
 
-test("Personal Team device builds omit App Groups while simulator and unsigned builds retain widgets", () => {
+test("auto mode requires a confirmed paid team for signed device widgets", () => {
   assert.equal(iosWidgetsEnabled({ simulator: false, personalTeam: true }), false);
   assert.equal(iosWidgetsEnabled({ simulator: true, personalTeam: true }), true);
   assert.equal(iosWidgetsEnabled({ simulator: false, unsigned: true, personalTeam: true }), true);
   assert.equal(iosWidgetsEnabled({ simulator: false, personalTeam: false }), true);
-  assert.equal(iosWidgetsEnabled({ simulator: false, personalTeam: null }), true);
+  assert.equal(iosWidgetsEnabled({ simulator: false, personalTeam: null }), false);
+  assert.equal(iosWidgetsEnabled({ simulator: false }), false);
+  assert.equal(iosWidgetsEnabled({ simulator: true, personalTeam: null }), true);
+  assert.equal(iosWidgetsEnabled({ simulator: false, unsigned: true, personalTeam: null }), true);
   assert.equal(iosWidgetsEnabled({ simulator: true, preference: "disabled", personalTeam: false }), false);
   assert.throws(() => iosWidgetsEnabled({ simulator: false, preference: "enabled", personalTeam: true }), /App Groups/);
+});
+
+test("explicit widget choices work without a cached Xcode team", () => {
+  assert.equal(iosWidgetsEnabled({ simulator: false, preference: "enabled", personalTeam: null }), true);
+  assert.equal(iosWidgetsEnabled({ simulator: false, preference: "enabled", personalTeam: false }), true);
+  for (const simulator of [true, false]) {
+    for (const unsigned of [true, false]) {
+      assert.equal(iosWidgetsEnabled({ simulator, unsigned, preference: "disabled", personalTeam: null }), false);
+    }
+  }
 });
 
 test("simulator detection distinguishes explicit build targets and simulator names from physical devices", () => {

@@ -54,7 +54,7 @@ Team ID 可在 Xcode → Settings → Apple Accounts 中查看。已有个人团
 
 配置后，`pnpm -F @gitpulse/app tauri:ios` 会选择该真机，并为主应用和小组件统一配置开发团队；终端中显式设置的环境变量优先于本地文件。指定设备参数时会覆盖本机首选设备，例如 `pnpm dev:ios "其他设备名称"`。Xcode 会自动管理开发描述文件；手机首次运行可能需要解锁、信任开发者或确认开发者模式。
 
-启动脚本从共享 `project.yml` 生成忽略提交的 `project.local.json`，每次根据目标与团队恢复完整配置。`GITPULSE_IOS_WIDGETS=auto` 会读取 Xcode 中该团队的 Personal Team 标识：Personal Team 真机运行仅编译主应用，移除小组件依赖及 App Groups 权限；显式指定的模拟器和未签名构建保留小组件。应用在无小组件版本中关闭同步入口，不影响登录、Keychain 或普通页面。可设 `disabled` 手动关闭，或在付费团队及 App Groups 配置齐全时设 `enabled`。Xcode 团队信息不可读取时不会擅自删减功能，可显式选择 `disabled`。
+启动脚本从共享 `project.yml` 生成忽略提交的 `project.local.json`，每次根据目标与团队恢复完整配置。`GITPULSE_IOS_WIDGETS=auto` 会读取 Xcode 中该团队的 Personal Team 标识：Personal Team 或团队信息未知时，真机签名构建仅编译主应用，移除小组件依赖及 App Groups 权限；确认是付费团队、显式指定的模拟器和未签名构建保留小组件。应用在无小组件版本中关闭同步入口，不影响登录、Keychain 或普通页面。可设 `disabled` 手动关闭，或在团队及 App Groups 配置齐全时设 `enabled`。团队信息未知时会提示先检查 Xcode 账号；关闭小组件仍需要完成主应用的真机签名。
 
 ```bash
 # 模拟器构建，Apple Silicon 自动选择 aarch64-sim
@@ -195,6 +195,7 @@ xcrun devicectl device info processes \
 - **找不到运行目标**：检查 `xcrun simctl list devices available`，在 Xcode 安装该 runtime；已打开模拟器不代表选中了同一个设备。
 - **缺少 Rust 目标**：根据 Apple Silicon / Intel 安装正确的模拟器目标，真机目标固定 `aarch64-apple-ios`。
 - **requires a development team**：已选中真机但没有开发团队。填写 `.env.ios.local` 中的 `APPLE_DEVELOPMENT_TEAM`，确认 Xcode 已登录该团队的 Apple 账号并存在有效开发证书，再运行同一命令。配置只在本机生效，重新生成 Xcode 工程后启动脚本仍会传入团队。真机运行必须签名；纯编译验证才使用未签名构建。
+- **No Accounts / No profiles for 'com.chenbitao.gitpulse' were found**：打开 Xcode → Settings → Apple Accounts 添加或重新登录 Apple 账号，确认 `.env.ios.local` 的 Team ID 属于该账号；随后重跑真机命令，由自动签名为新应用标识生成开发描述文件。Mac 已登录 iCloud、填写 Team ID 或拥有旧标识的描述文件，都不等于 Xcode 已登录且能为新标识签名。不要改回旧标识、删除账号数据或使用 `--no-sign` 绕过真机签名。离线使用已有证书和匹配描述文件的流程不要求重新登录。
 - **GitPulseWidgetsExtension requires a development team**：重新运行 `pnpm -F @gitpulse/app tauri:ios`，脚本会为全部 target 生成本机签名设置。Personal Team 保持 `GITPULSE_IOS_WIDGETS=auto`；不要只在 Xcode 给扩展填 Team 后继续申请该团队不支持的 App Groups。
 - **设备不可用、锁屏或安装超时**：重新运行 `xcrun devicectl list devices`，确认所选 Identifier 对应当前真机；解锁并检查信任与 Developer Mode，必要时改用 USB 连接后重试。
 - **安装提示签名或描述文件不匹配**：检查包内描述文件的设备 UDID、应用标识、证书和到期时间。更新团队配置后重新导出 IPA；不要用模拟器产物或未签名构建替换，也不要先卸载已有应用来绕过签名问题。

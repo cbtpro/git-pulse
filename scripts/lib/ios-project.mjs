@@ -45,9 +45,12 @@ except (OSError, ValueError, TypeError):
 
 export function iosWidgetsEnabled({ preference = "auto", simulator, unsigned = false, personalTeam }) {
   if (preference === "disabled") return false;
-  if (preference === "enabled" && personalTeam === true && !simulator && !unsigned)
+  if (simulator || unsigned) return true;
+  if (preference === "enabled" && personalTeam === true)
     throw new Error("Personal Team 无法签署小组件所需的 App Groups。请设 GITPULSE_IOS_WIDGETS=auto，或改用支持 App Groups 的付费团队。");
-  return simulator || unsigned || personalTeam !== true;
+  // A missing Xcode account/cache is not proof of a paid team. Auto mode must
+  // not add App Groups signing requirements when the membership is unknown.
+  return preference === "enabled" || personalTeam === false;
 }
 
 export function localIOSProjectSpec(source, { team, widgets }) {
@@ -88,7 +91,11 @@ export async function prepareLocalIOSProject(args, env, mode) {
     simulator = iosSimulatorRequest(args, list);
   }
   const personalTeam = personalIOSTeam(env.APPLE_DEVELOPMENT_TEAM);
-  const widgets = iosWidgetsEnabled({ preference: env.GITPULSE_IOS_WIDGETS, simulator, unsigned: args.includes("--no-sign"), personalTeam });
+  const unsigned = args.includes("--no-sign");
+  const widgets = iosWidgetsEnabled({ preference: env.GITPULSE_IOS_WIDGETS, simulator, unsigned, personalTeam });
+  if (!simulator && !unsigned && personalTeam === null) {
+    console.warn("iOS：无法确认当前开发团队类型。请在 Xcode → Settings → Apple Accounts 登录并确认团队；更改应用标识后需生成匹配新标识的开发描述文件。关闭小组件不能替代主应用签名。");
+  }
   const dump = probe("xcodegen", ["dump", "--no-env", "--type", "json", "--spec", original], env);
   if (!dump.ok) throw new Error(`无法读取 iOS 工程配置：${dump.text}`);
   const spec = localIOSProjectSpec(JSON.parse(dump.text), { team: env.APPLE_DEVELOPMENT_TEAM, widgets });
@@ -108,6 +115,8 @@ export async function prepareLocalIOSProject(args, env, mode) {
   console.log(widgets
     ? "iOS：保留贡献小组件，主应用与扩展使用同一开发团队。"
     : personalTeam ? "iOS：Personal Team 真机模式，仅构建主应用；模拟器仍支持贡献小组件。"
+      : personalTeam === null && env.GITPULSE_IOS_WIDGETS !== "disabled"
+        ? "iOS：团队类型未知，auto 模式仅构建主应用。确认团队支持 App Groups 后可设 GITPULSE_IOS_WIDGETS=enabled。"
       : "iOS：当前构建已关闭贡献小组件。");
   return { widgets, simulator, personalTeam };
 }
