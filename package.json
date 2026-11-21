@@ -47,7 +47,9 @@
     "test:navigation": "node scripts/qa/navigation.mjs",
     "test:interactive-back": "node scripts/qa/interactive-back.mjs",
     "test:ios:navigation": "node scripts/qa/ios-navigation.mjs",
-    "test:startup": "node scripts/qa/startup-profile.mjs"
+    "test:startup": "node scripts/qa/startup-profile.mjs",
+    "test:vault-concurrency": "node scripts/qa/vault-concurrency.mjs",
+    "test:resource-consistency": "node scripts/qa/resource-consistency.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",

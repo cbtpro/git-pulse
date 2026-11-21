@@ -1,6 +1,6 @@
 import { chromium, expect } from "@playwright/test";
 // Isolated browser context and mocked GitHub responses. No real account or writes.
-const origin = process.env.GITPULSE_TEST_URL || "http://127.0.0.1:1430";
+const origin = process.env.GITPULSE_TEST_URL || "http://localhost:1420";
 const b = await chromium.launch({
   executablePath:
     process.env.CHROME_PATH ||

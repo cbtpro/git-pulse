@@ -6,7 +6,7 @@
 
 ## 日常质量检查
 
-独立工作流 `.github/workflows/check.yml` 在 pull request 和分支 push 时执行，不需要签名或 GitHub Token。它运行全部有效包的类型、ESLint、单测与脚本检查，以及 Chromium 页面状态、面包屑、滑动返回和工作区回归；独立 Linux job 执行 `cargo test --lib --locked`。浏览器通过 Playwright 安装，`CHROME_PATH` 指向 runner 上实际浏览器，`GITPULSE_TEST_URL` 指向显式启动的本地 Vite 服务。失败时保留测试日志和截图。此流程不发布产物，也不替代移动端真机验证。
+独立工作流 `.github/workflows/check.yml` 在 pull request 和分支 push 时执行，不需要签名或 GitHub Token。它运行全部有效包的类型、ESLint、单测与脚本检查，以及 Chromium 页面状态、面包屑、滑动返回、工作区、多标签凭证并发与资源一致性回归；独立 Linux job 执行 `cargo test --lib --locked`。浏览器通过 Playwright 安装，`CHROME_PATH` 指向 runner 上实际浏览器，`GITPULSE_TEST_URL` 指向显式启动的本地 Vite 服务。失败时保留测试日志和截图。此流程不发布产物，也不替代移动端真机验证。
 
 ## 触发
 

@@ -110,7 +110,11 @@ pnpm test:page-state
 pnpm test:navigation
 pnpm test:interactive-back
 pnpm test:mobile:viewport
+pnpm test:vault-concurrency
+pnpm test:resource-consistency
 ```
+
+`test:vault-concurrency` 使用隔离的两个浏览器标签页验证凭证并发合并、退出撤销与迟到回调；`test:resource-consistency` 使用模拟 GitHub 响应验证详情修改后返回缓存列表的状态同步。它们不使用真实账号。
 
 默认使用 macOS 的 Chrome；其他环境可通过 `CHROME_PATH` 指定可执行文件，通过 `GITPULSE_TEST_URL` 指定前端地址。授权测试使用模拟响应，覆盖加密进度恢复、页面重建与返回前台时的临时网络失败；设备模拟不代表真实 GitHub 账号授权已通过。
 
