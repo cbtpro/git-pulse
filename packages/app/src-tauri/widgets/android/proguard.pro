@@ -1,3 +1,3 @@
--keep class com.pe7er.gitpulse.widgets.ContributionWidgetPlugin { *; }
--keep class com.pe7er.gitpulse.widgets.WidgetUpdateArgs { *; }
--keep class com.pe7er.gitpulse.widgets.WidgetPinArgs { *; }
+-keep class com.chenbitao.gitpulse.widgets.ContributionWidgetPlugin { *; }
+-keep class com.chenbitao.gitpulse.widgets.WidgetUpdateArgs { *; }
+-keep class com.chenbitao.gitpulse.widgets.WidgetPinArgs { *; }

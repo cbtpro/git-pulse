@@ -137,7 +137,9 @@ codesign -d --extract-certificates="$GITPULSE_TEST_DIR/signer" "$GITPULSE_TEST_A
 openssl x509 -inform DER -in "$GITPULSE_TEST_DIR/signer0" -noout -enddate
 ```
 
-当前应用标识为 `com.pe7er.gitpulse`，描述文件中的 `application-identifier` 应匹配签名团队前缀及该标识。`ProvisionedDevices` 需包含目标手机的 **UDID**，可在 Xcode 的 Devices and Simulators 中核对；它与上面 `devicectl` 列表中的 CoreDevice `Identifier` 不是同一个值。有效期以本次证书和描述文件为准，任一到期或被撤销都可能使应用无法继续使用。
+当前应用标识为 `com.chenbitao.gitpulse`，描述文件中的 `application-identifier` 应匹配签名团队前缀及该标识。`ProvisionedDevices` 需包含目标手机的 **UDID**，可在 Xcode 的 Devices and Simulators 中核对；它与上面 `devicectl` 列表中的 CoreDevice `Identifier` 不是同一个值。有效期以本次证书和描述文件为准，任一到期或被撤销都可能使应用无法继续使用。
+
+应用标识变更后，新包不会覆盖旧标识的安装或自动迁移登录信息，需使用新标识的描述文件重新签名。迁移范围见[应用标识](DEVELOPMENT.md#应用标识)。
 
 同时记录是否包含 `Payload/GitPulse.app/PlugIns/GitPulseWidgetsExtension.appex`。`GITPULSE_IOS_WIDGETS=auto` 在本机识别为 Personal Team 的真机构建中会关闭小组件；交付说明必须写明该包的小组件状态。需要验证小组件时，按前文配置支持 App Groups 的团队和描述文件后重新构建。
 
@@ -151,11 +153,11 @@ xcrun devicectl device install app \
   --timeout 120 --json-output "$GITPULSE_TEST_DIR/install.json"
 
 xcrun devicectl device process launch \
-  --device "$GITPULSE_TEST_DEVICE" --terminate-existing com.pe7er.gitpulse \
+  --device "$GITPULSE_TEST_DEVICE" --terminate-existing com.chenbitao.gitpulse \
   --timeout 30 --json-output "$GITPULSE_TEST_DIR/launch.json"
 
 xcrun devicectl device info apps \
-  --device "$GITPULSE_TEST_DEVICE" --bundle-id com.pe7er.gitpulse \
+  --device "$GITPULSE_TEST_DEVICE" --bundle-id com.chenbitao.gitpulse \
   --timeout 20 --json-output "$GITPULSE_TEST_DIR/installed-app.json"
 
 xcrun devicectl device info processes \

@@ -1,4 +1,4 @@
-package com.pe7er.gitpulse.widgets
+package com.chenbitao.gitpulse.widgets
 
 import android.app.Activity
 import android.appwidget.AppWidgetManager

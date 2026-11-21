@@ -4,6 +4,7 @@ mod github_oauth;
 mod github_downloads;
 mod contribution_widgets;
 mod safe_area;
+mod mobile_navigation;
 mod secure_storage;
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
@@ -17,6 +18,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(contribution_widgets::init())
+        .plugin(mobile_navigation::init())
         .on_window_event(|_window, _event| {
             #[cfg(mobile)]
             {
@@ -44,6 +46,7 @@ pub fn run() {
             github_downloads::github_download,
             github_oauth::open_github_authorization,
             safe_area::configure_safe_area,
+            mobile_navigation::set_navigation_gestures,
             secure_storage::read_auth_vault,
             secure_storage::write_auth_vault,
             secure_storage::clear_auth_vault,

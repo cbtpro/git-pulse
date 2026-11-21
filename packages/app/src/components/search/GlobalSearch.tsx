@@ -8,6 +8,7 @@ import {
   useState,
 } from "react";
 import { Button, Spin } from "@arco-design/web-react";
+import { useBackDismiss } from "../../hooks/useMobileNavigation";
 import {
   ArrowUpRight,
   BookOpen,
@@ -700,6 +701,7 @@ export function GlobalSearch({ onShowLogin }: { onShowLogin: () => void }) {
     restoreFocus.current = restore;
     setOpen(false);
   }, []);
+  useBackDismiss(open, () => close(true));
   useLayoutEffect(() => {
     // Restore only after React makes the trigger visible again. A frame callback
     // can run before that commit and silently leave keyboard focus on the body.

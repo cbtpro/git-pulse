@@ -8,7 +8,7 @@ export function androidWidgetManifest(source) {
     .map(
       (
         mode,
-      ) => `        <receiver android:name="com.pe7er.gitpulse.widgets.ContributionWidget${mode}"
+      ) => `        <receiver android:name="com.chenbitao.gitpulse.widgets.ContributionWidget${mode}"
             android:label="@string/widget_${mode.toLowerCase()}_name" android:exported="false">
             <intent-filter><action android:name="android.appwidget.action.APPWIDGET_UPDATE" /></intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/contribution_widget_${mode.toLowerCase()}" />

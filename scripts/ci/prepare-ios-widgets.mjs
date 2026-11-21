@@ -53,8 +53,8 @@ export function prepareIOSWidgets(env = process.env) {
   try {
     let widgetUUID;
     for (const [bundleID, value] of [
-      ["com.pe7er.gitpulse", env.IOS_MOBILE_PROVISION],
-      ["com.pe7er.gitpulse.widgets", env.IOS_WIDGET_MOBILE_PROVISION],
+      ["com.chenbitao.gitpulse", env.IOS_MOBILE_PROVISION],
+      ["com.chenbitao.gitpulse.widgets", env.IOS_WIDGET_MOBILE_PROVISION],
     ]) {
       const bytes = Buffer.from(value, "base64");
       const file = join(temporary, "profile.mobileprovision");
@@ -126,7 +126,7 @@ print(json.dumps(result))`,
       "plutil",
       ["-convert", "xml1", "-o", join(apple, "ExportOptions.plist"), "-"],
       JSON.stringify({
-        provisioningProfiles: { "com.pe7er.gitpulse.widgets": widgetUUID },
+        provisioningProfiles: { "com.chenbitao.gitpulse.widgets": widgetUUID },
       }),
     );
   } finally {

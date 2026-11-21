@@ -1,0 +1,8 @@
+{
+  "$schema": "../gen/schemas/mobile-schema.json",
+  "identifier": "android-navigation",
+  "description": "Allow Android system Back to finish the activity at the root of navigation.",
+  "platforms": ["android"],
+  "windows": ["main"],
+  "permissions": ["core:app:allow-exit"]
+}

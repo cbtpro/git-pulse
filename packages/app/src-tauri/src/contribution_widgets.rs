@@ -59,7 +59,7 @@ pub fn init() -> tauri::plugin::TauriPlugin<tauri::Wry> {
         .setup(|_app, _api| {
             #[cfg(target_os = "android")]
             _app.manage(AndroidWidgets(_api.register_android_plugin(
-                "com.pe7er.gitpulse.widgets", "ContributionWidgetPlugin",
+                "com.chenbitao.gitpulse.widgets", "ContributionWidgetPlugin",
             )?));
             Ok(())
         }).build()

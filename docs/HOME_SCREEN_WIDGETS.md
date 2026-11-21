@@ -22,12 +22,12 @@ iOS 和 Android 各提供两个系统小组件：**贡献活动 · 2D** 和 **�
 pnpm init:ios
 pnpm build:ios:simulator --debug
 xcrun simctl install booted packages/app/src-tauri/gen/apple/build/arm64-sim/GitPulse.app
-xcrun simctl launch booted com.pe7er.gitpulse
+xcrun simctl launch booted com.chenbitao.gitpulse
 ```
 
 模拟器构建保留 Xcode 的本地签名，不需要发行证书。不要添加 `--no-sign`：完全禁用签名会丢失模拟器 App Groups / Keychain 权限。主应用、小组件扩展和 Podfile 的最低部署版本都为 `17.4`。
 
-真机需要为主应用 `com.pe7er.gitpulse` 和扩展 `com.pe7er.gitpulse.widgets` 配置同一开发团队，并在两个描述文件中启用 `group.com.pe7er.gitpulse`。在 Xcode 的两个 target 中分别检查 Signing & Capabilities。若更换 Bundle ID，也要同步更改 App Group、两个 target 和打包脚本的标识。
+真机需要为主应用 `com.chenbitao.gitpulse` 和扩展 `com.chenbitao.gitpulse.widgets` 配置同一开发团队，并在两个描述文件中启用 `group.com.chenbitao.gitpulse`。在 Xcode 的两个 target 中分别检查 Signing & Capabilities。若更换 Bundle ID，也要同步更改 App Group、两个 target 和打包脚本的标识。
 
 本地脚本会为两个 target 统一注入团队。使用 Personal Team 时，默认 `GITPULSE_IOS_WIDGETS=auto` 自动在真机运行中排除小组件及 App Groups，只运行主应用；模拟器继续包含小组件。该变体仅写入忽略提交的本机工程配置，不修改共享 `project.yml`，CI 的完整小组件构建保持不变。付费团队可显式设 `GITPULSE_IOS_WIDGETS=enabled`，详见 [iOS 开发](iOS_DEVELOPMENT.md)。
 

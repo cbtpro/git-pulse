@@ -54,7 +54,7 @@
 | Variable | `APPLE_DEVELOPMENT_TEAM` | Apple 开发团队 ID |
 | Variable | `IOS_EXPORT_METHOD` | `debugging`（默认）、`release-testing` 或 `app-store-connect` |
 
-两个描述文件分别匹配 `com.pe7er.gitpulse` 与 `com.pe7er.gitpulse.widgets`，团队、证书及导出方式保持一致，且均启用 `group.com.pe7er.gitpulse`。`debugging` 使用开发证书和开发描述文件；App Store 分发使用对应发行证书和描述文件。证书配置不完整会失败，不会自动降级成未签名包。模拟器任务不接收签名证书。小组件签名配置由 `scripts/ci/prepare-ios-widgets.mjs` 校验并生成；真机签名流程尚未用小组件描述文件完成实机验证，见 [桌面小组件](HOME_SCREEN_WIDGETS.md)。
+两个描述文件分别匹配 `com.chenbitao.gitpulse` 与 `com.chenbitao.gitpulse.widgets`，团队、证书及导出方式保持一致，且均启用 `group.com.chenbitao.gitpulse`。`debugging` 使用开发证书和开发描述文件；App Store 分发使用对应发行证书和描述文件。证书配置不完整会失败，不会自动降级成未签名包。模拟器任务不接收签名证书。小组件签名配置由 `scripts/ci/prepare-ios-widgets.mjs` 校验并生成；真机签名流程尚未用小组件描述文件完成实机验证，见 [桌面小组件](HOME_SCREEN_WIDGETS.md)。
 
 参考：[Tauri GitHub 构建流程](https://v2.tauri.app/distribute/pipelines/github/)、[Android 签名](https://v2.tauri.app/distribute/sign/android/)、[iOS 签名](https://v2.tauri.app/distribute/sign/ios/)。
 

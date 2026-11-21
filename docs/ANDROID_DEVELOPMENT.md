@@ -101,10 +101,10 @@ adb devices -l
 adb -s 替换为设备序列号 shell getprop ro.product.cpu.abilist
 pnpm build:android --apk --target aarch64 --debug
 adb -s 替换为设备序列号 install -r packages/app/src-tauri/gen/android/app/build/outputs/apk/universal/debug/app-universal-debug.apk
-adb -s 替换为设备序列号 shell am force-stop com.pe7er.gitpulse
-adb -s 替换为设备序列号 shell am start -W -n com.pe7er.gitpulse/.MainActivity
-adb -s 替换为设备序列号 shell pidof com.pe7er.gitpulse
-adb -s 替换为设备序列号 shell dumpsys package com.pe7er.gitpulse
+adb -s 替换为设备序列号 shell am force-stop com.chenbitao.gitpulse
+adb -s 替换为设备序列号 shell am start -W -n com.chenbitao.gitpulse/.MainActivity
+adb -s 替换为设备序列号 shell pidof com.chenbitao.gitpulse
+adb -s 替换为设备序列号 shell dumpsys package com.chenbitao.gitpulse
 ```
 
 上例适用于 `abilist` 包含 `arm64-v8a` 的设备；其他架构按实际设备调整 `--target`，APK 路径以本次构建成功输出为准。`install -r` 覆盖安装同一签名的应用，保留已有数据。`am force-stop` 会结束旧进程，先保存正在编辑的内容；`am start -W` 确认启动成功，随后检查 PID 仍存在，并从 `dumpsys package` 核对 `versionName` / `versionCode`。

@@ -14,11 +14,13 @@ import { Brand } from "./components/common/Brand";
 import { useAuthStore } from "./stores/authStore";
 import { useAuthorizationRecovery } from "./hooks/useAuthorizationRecovery";
 import { useMobileViewport } from "./hooks/useMobileViewport";
+import { useMobileNavigation } from "./hooks/useMobileNavigation";
 import { useAppearance } from "./hooks/useAppearance";
 import "./App.css";
 
 export function App() {
   useMobileViewport();
+  useMobileNavigation();
   const { t } = useTranslation();
   const language = usePreferencesStore((state) => state.language);
   const checkAuth = useAuthStore((state) => state.checkAuth);

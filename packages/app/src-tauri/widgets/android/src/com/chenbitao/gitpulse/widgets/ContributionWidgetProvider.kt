@@ -1,4 +1,4 @@
-package com.pe7er.gitpulse.widgets
+package com.chenbitao.gitpulse.widgets
 
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
@@ -9,7 +9,7 @@ import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.widget.RemoteViews
-import com.pe7er.gitpulse.R
+import com.chenbitao.gitpulse.R
 import java.text.NumberFormat
 import kotlin.math.roundToInt
 

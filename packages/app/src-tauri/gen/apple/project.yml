@@ -1,13 +1,13 @@
 name: gitpulse
 options:
-  bundleIdPrefix: com.pe7er.gitpulse
+  bundleIdPrefix: com.chenbitao.gitpulse
   deploymentTarget:
     iOS: "17.4"
 fileGroups: [../../src, ../../widgets]
 settings:
   base:
     SWIFT_VERSION: "5.9"
-    GITPULSE_APP_GROUP: group.com.pe7er.gitpulse
+    GITPULSE_APP_GROUP: group.com.chenbitao.gitpulse
     MARKETING_VERSION: "0.0.1"
     CURRENT_PROJECT_VERSION: "0.0.1"
 configs:
@@ -17,7 +17,7 @@ settingGroups:
   app:
     base:
       PRODUCT_NAME: gitpulse
-      PRODUCT_BUNDLE_IDENTIFIER: com.pe7er.gitpulse
+      PRODUCT_BUNDLE_IDENTIFIER: com.chenbitao.gitpulse
       CODE_SIGN_STYLE: Automatic
 targetTemplates:
   app:
@@ -133,7 +133,7 @@ targets:
         com.apple.security.application-groups: ["$(GITPULSE_APP_GROUP)"]
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pe7er.gitpulse.widgets
+        PRODUCT_BUNDLE_IDENTIFIER: com.chenbitao.gitpulse.widgets
         CODE_SIGN_STYLE: Automatic
         APPLICATION_EXTENSION_API_ONLY: true
         SKIP_INSTALL: true

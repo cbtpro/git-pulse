@@ -6,9 +6,9 @@ import { androidConfiguration } from "../lib/android.mjs";
 import { validateWidgetProfile } from "../ci/prepare-ios-widgets.mjs";
 
 test("iOS widget signing rejects another app, team, missing group or expired profile", () => {
-  const id = "com.pe7er.gitpulse.widgets",
+  const id = "com.chenbitao.gitpulse.widgets",
     team = "ABCDE12345",
-    group = "group.com.pe7er.gitpulse";
+    group = "group.com.chenbitao.gitpulse";
   const profile = {
     UUID: "11111111-2222-3333-4444-555555555555",
     ApplicationIdentifierPrefix: [team],
@@ -22,7 +22,7 @@ test("iOS widget signing rejects another app, team, missing group or expired pro
   const validate = (p = profile, b = id, t = team, g = group) =>
     validateWidgetProfile(p, b, t, g, new Date("2026-01-01"));
   assert.doesNotThrow(() => validate());
-  assert.throws(() => validate(profile, "com.pe7er.gitpulse"));
+  assert.throws(() => validate(profile, "com.chenbitao.gitpulse"));
   assert.throws(() => validate(profile, id, "OTHER12345"));
   assert.throws(() => validate(profile, id, team, "group.other"));
   assert.throws(() => validate({ ...profile, ExpirationDate: "2025-01-01" }));

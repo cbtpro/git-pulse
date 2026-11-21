@@ -84,7 +84,7 @@ struct ContributionSnapshot: Codable {
 enum WidgetShared {
   static var groupID: String {
     Bundle.main.object(forInfoDictionaryKey: "GitPulseAppGroup") as? String
-      ?? "group.com.pe7er.gitpulse"
+      ?? "group.com.chenbitao.gitpulse"
   }
   static var fileURL: URL? {
     FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: groupID)?

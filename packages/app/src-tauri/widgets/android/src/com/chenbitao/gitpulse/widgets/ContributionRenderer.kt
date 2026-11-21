@@ -1,4 +1,4 @@
-package com.pe7er.gitpulse.widgets
+package com.chenbitao.gitpulse.widgets
 
 import android.graphics.Bitmap
 import android.graphics.Canvas

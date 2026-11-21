@@ -1,4 +1,4 @@
-package com.pe7er.gitpulse
+package com.chenbitao.gitpulse
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge

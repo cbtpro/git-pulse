@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { GitHubLoginForm } from "./GitHubLoginForm";
 import { Brand } from "./common/Brand";
 import { useAuthStore } from "../stores/authStore";
+import { useBackDismiss } from "../hooks/useMobileNavigation";
 import "../styles/auth.css";
 
 export function LoginModal({
@@ -19,6 +20,7 @@ export function LoginModal({
     useAuthStore.getState().clearError();
     onClose();
   };
+  useBackDismiss(isOpen, close);
   return (
     <Modal
       visible={isOpen}

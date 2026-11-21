@@ -13,7 +13,7 @@ fn entry() -> Result<keyring::Entry, String> {
     if !cfg!(any(target_os = "ios", target_os = "macos", target_os = "windows", target_os = "linux")) {
         return Err("当前平台不支持安全存储".into());
     }
-    keyring::Entry::new("com.pe7er.gitpulse", "auth-vault-master-key")
+    keyring::Entry::new("com.chenbitao.gitpulse", "auth-vault-master-key")
         .map_err(|_| "无法访问系统安全存储，请稍后重试".into())
 }
 
