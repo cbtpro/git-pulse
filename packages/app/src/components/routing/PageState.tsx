@@ -10,7 +10,13 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Routes, useLocation, type Location } from "react-router-dom";
+import {
+  Routes,
+  useLocation,
+  useNavigationType,
+  type Location,
+} from "react-router-dom";
+import { isMainPagePath, isRepositoryPath } from "../../types/navigation";
 
 import { LoadingCards } from "../common/ResourceState";
 
@@ -20,13 +26,36 @@ const urlKey = (location: Location) =>
 const Destinations = createContext<(path: string) => Location | undefined>(
   () => undefined,
 );
+const Sources = createContext<(key: string) => Location | undefined>(
+  () => undefined,
+);
 const PageActivity = createContext(true);
 export const usePageActive = () => useContext(PageActivity);
 
 /** Remounted at the account boundary; no page data is shared between identities. */
 export function PageStateProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const action = useNavigationType();
   const destinations = useRef(new Map<string, Location>());
+  const sources = useRef(new Map<string, Location | undefined>());
+  const previous = useRef<Location>();
+  // Associate each history entry with its source list, including query changes
+  // inside a repository. POP restores the association instead of inventing one.
+  if (!sources.current.has(location.key)) {
+    const from = previous.current;
+    const source =
+      action !== "POP" && from && isRepositoryPath(location.pathname)
+        ? isRepositoryPath(from.pathname)
+          ? sources.current.get(from.key)
+          : isMainPagePath(from.pathname)
+            ? from
+            : undefined
+        : undefined;
+    sources.current.set(location.key, source);
+    if (sources.current.size > MAX_PAGES * 8)
+      sources.current.delete(sources.current.keys().next().value!);
+  }
+  previous.current = location;
   // Navigation links restore the latest URL, including search filters and pagination.
   destinations.current.set(location.pathname, location);
   if (destinations.current.size > MAX_PAGES * 2)
@@ -35,25 +64,39 @@ export function PageStateProvider({ children }: { children: ReactNode }) {
     (path: string) => destinations.current.get(path),
     [],
   );
+  const source = useCallback((key: string) => sources.current.get(key), []);
   return (
     <Destinations.Provider value={destination}>
-      {children}
+      <Sources.Provider value={source}>{children}</Sources.Provider>
     </Destinations.Provider>
   );
+}
+
+export function usePageSource() {
+  const source = useContext(Sources);
+  return source(useLocation().key);
+}
+
+export function restoredDestination(location: Location) {
+  return {
+    to: {
+      pathname: location.pathname,
+      search: location.search,
+      hash: location.hash,
+    },
+    state: location.state?.aggregateSearch
+      ? { ...location.state, aggregateSearch: false }
+      : location.state,
+  };
 }
 
 export function usePageDestination() {
   const remembered = useContext(Destinations);
   return (path: string) => {
     const location = remembered(path);
-    return {
-      to: location
-        ? { pathname: path, search: location.search, hash: location.hash }
-        : path,
-      state: location?.state?.aggregateSearch
-        ? { ...location.state, aggregateSearch: false }
-        : location?.state,
-    };
+    return location
+      ? restoredDestination(location)
+      : { to: path, state: undefined };
   };
 }
 

@@ -1,10 +1,9 @@
 import { WidgetSettingsCard } from "../components/contributions/WidgetSettingsCard";
 import { APP_VERSION } from "../version";
 import { useTranslation } from "../i18n";
-import { Button, Card, Radio, Select, Switch } from "@arco-design/web-react";
+import { Card, Radio, Select, Switch } from "@arco-design/web-react";
 import { LANGUAGES, type Language } from "../i18n/languages";
 import {
-  ArrowLeft,
   Check,
   Laptop,
   Monitor,
@@ -23,7 +22,6 @@ import {
   type Theme,
 } from "../stores/preferencesStore";
 import { AccountSettingsCard } from "../components/AccountSettingsCard";
-import { useNavigate } from "react-router-dom";
 
 const themes: { value: Theme; label: string; icon: typeof Sun }[] = [
   { value: "light", label: "浅色", icon: Sun },
@@ -33,7 +31,6 @@ const themes: { value: Theme; label: string; icon: typeof Sun }[] = [
 
 export function SettingsPage({ onShowLogin }: { onShowLogin: () => void }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const {
     theme,
     density,
@@ -58,14 +55,6 @@ export function SettingsPage({ onShowLogin }: { onShowLogin: () => void }) {
         eyebrow={t("ACCOUNT & APPEARANCE")}
         title={t("账号与外观")}
         description={t("管理你的 GitHub 账号，调整主题与内容密度。")}
-        actions={
-          <Button
-            icon={<ArrowLeft size={16} />}
-            onClick={() => navigate("/profile")}
-          >
-            {t("返回我的空间")}
-          </Button>
-        }
       />
       <div className="gp-settings-layout">
         <div className="gp-settings-main">

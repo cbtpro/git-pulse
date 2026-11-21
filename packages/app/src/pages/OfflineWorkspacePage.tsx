@@ -8,8 +8,7 @@ import {
   Switch,
   Tag,
 } from "@arco-design/web-react";
-import { ArrowLeft, BookOpen, FilePenLine, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { BookOpen, FilePenLine, Trash2 } from "lucide-react";
 import { useTranslation } from "../i18n";
 import { useWorkspaceAccount } from "../hooks/useWorkspaceAccount";
 import { useAccountWorkspace } from "../hooks/useAccountWorkspace";
@@ -36,12 +35,6 @@ export function OfflineWorkspacePage({
         eyebrow="OFFLINE"
         title={t("离线阅读与草稿")}
         description={t("离线副本和草稿仅在本机加密保存，按账号隔离。")}
-        actions={
-          <Link className="gp-quiet-link" to="/profile">
-            <ArrowLeft size={16} />
-            {t("我的")}
-          </Link>
-        }
       />
       {account.missing ? (
         <Alert type="error" content={t("来源账号已移除，请重新添加账号。")} />

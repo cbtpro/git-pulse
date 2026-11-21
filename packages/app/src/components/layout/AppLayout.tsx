@@ -1,22 +1,17 @@
 import { useTranslation } from "../../i18n";
 import { Avatar, Button } from "@arco-design/web-react";
 import { ArrowUpRight, UserRound } from "lucide-react";
-import {
-  Navigate,
-  Link,
-  Route,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Navigate, Route, useNavigate } from "react-router-dom";
 import { lazy, useEffect } from "react";
 import { useAuthStore } from "../../stores/authStore";
-import {
-  NAVIGATION_ITEMS,
-  pagePath,
-  PROFILE_SETTINGS_PATH,
-} from "../../types/navigation";
+import { PROFILE_SETTINGS_PATH } from "../../types/navigation";
 import { DesktopSidebar } from "../navigation/DesktopSidebar";
 import { MobileBottomNav } from "../navigation/MobileBottomNav";
+import { AppBreadcrumbs } from "../navigation/AppBreadcrumbs";
+import {
+  useAppLinkNavigation,
+  useNavigationTrail,
+} from "../routing/useAppNavigation";
 import { GlobalSearch } from "../search/GlobalSearch";
 import {
   PageStateProvider,
@@ -90,32 +85,17 @@ export function AppLayout({ onShowLogin }: { onShowLogin: () => void }) {
 function AppLayoutContent({ onShowLogin }: { onShowLogin: () => void }) {
   const { t } = useTranslation();
   const { isLoggedIn, userProfile, activeAccountId } = useAuthStore();
-  const location = useLocation();
   const navigate = useNavigate();
   const destination = usePageDestination();
-  const page =
-    NAVIGATION_ITEMS.find(
-      (item) =>
-        location.pathname === pagePath(item.id) ||
-        (item.id !== "home" &&
-          location.pathname.startsWith(`${pagePath(item.id)}/`)),
-    ) || NAVIGATION_ITEMS[0];
-  const isProfileSettings = location.pathname === PROFILE_SETTINGS_PATH;
-  const workspaceTitles: Record<string, string> = {
-    "/profile/collections": "Star 收藏管理",
-    "/profile/releases": "版本更新中心",
-    "/profile/offline": "离线阅读与草稿",
-  };
-  const pageTitle = isProfileSettings
-    ? t("账号与外观")
-    : location.pathname.startsWith("/repo/")
-      ? t("仓库详情")
-      : t(workspaceTitles[location.pathname] || page.label);
+  const onNavigateLink = useAppLinkNavigation();
+  const { trail, section } = useNavigationTrail();
+  const current = trail.at(-1)!;
+  const pageTitle = current.literal ? current.label : t(current.label);
   useEffect(() => {
     document.title = `${pageTitle} · GitPulse`;
   }, [pageTitle]);
   return (
-    <div className="gp-app">
+    <div className="gp-app" onClick={onNavigateLink}>
       <a
         className="gp-skip-link"
         href="#main-content"
@@ -127,21 +107,13 @@ function AppLayoutContent({ onShowLogin }: { onShowLogin: () => void }) {
         {t("跳到主要内容")}
       </a>
       <DesktopSidebar
-        currentPage={page.id}
+        currentPage={section}
         isLoggedIn={isLoggedIn}
         onShowLogin={onShowLogin}
       />
       <div className="gp-workspace">
         <header className="gp-topbar">
-          <div className="gp-breadcrumb">
-            {isProfileSettings ? (
-              <Link to="/profile">{t("我的空间")}</Link>
-            ) : (
-              <span>{t("工作台")}</span>
-            )}
-            <span>/</span>
-            <strong>{pageTitle}</strong>
-          </div>
+          <AppBreadcrumbs trail={trail} />
           <div className="gp-topbar-actions">
             <GlobalSearch
               key={activeAccountId || "guest"}
@@ -223,7 +195,7 @@ function AppLayoutContent({ onShowLogin }: { onShowLogin: () => void }) {
           </footer>
         </main>
       </div>
-      <MobileBottomNav />
+      <MobileBottomNav currentPage={section} />
     </div>
   );
 }

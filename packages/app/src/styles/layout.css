@@ -128,14 +128,6 @@
   top: 0;
   z-index: 40;
 }
-.gp-breadcrumb {
-  min-width: 0;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  font-size: 12px;
-  color: var(--gp-subtle);
-}
 /* Blur only the background: filtering the header itself would re-anchor
    the search panel's fixed positioning on mobile Safari/Chromium. */
 @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
@@ -190,24 +182,11 @@
     display: none;
   }
 }
-.gp-breadcrumb strong {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 500;
-  color: var(--gp-text);
-}
 .gp-topbar-actions {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 18px;
-}
-.gp-breadcrumb > a,
-.gp-breadcrumb > span {
-  flex-shrink: 0;
-  white-space: nowrap;
 }
 .gp-search-shortcut.arco-btn {
   color: var(--gp-secondary);
@@ -328,6 +307,7 @@
   }
   .gp-topbar {
     height: calc(58px + var(--gp-safe-top));
+    gap: 8px;
     padding: var(--gp-safe-top) calc(20px + var(--gp-safe-right)) 0
       calc(20px + var(--gp-safe-left));
   }
@@ -338,10 +318,6 @@
   .gp-search-shortcut > span,
   .gp-account-button > span:last-child {
     display: none;
-  }
-  .gp-breadcrumb {
-    gap: 9px;
-    font-size: 11px;
   }
   .gp-main {
     padding: 26px calc(20px + var(--gp-safe-right))

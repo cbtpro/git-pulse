@@ -653,5 +653,8 @@
   "当前授权无法读取非公开的组织成员身份，仅显示公开结果。": "This authorization cannot read private organization memberships. Only public results are shown.",
   "仅显示当前账号授权可见的组织。": "Showing organizations accessible to the current account’s authorization.",
   "更新授权": "Update authorization",
-  "使用同一账号重新登录可更新授权，无需移除账号。": "Sign in with the same account to update its authorization without removing it."
+  "使用同一账号重新登录可更新授权，无需移除账号。": "Sign in with the same account to update its authorization without removing it.",
+  "面包屑导航": "Breadcrumb navigation",
+  "展开导航路径": "Show navigation path",
+  "返回{{page}}": "Back to {{page}}"
 }
