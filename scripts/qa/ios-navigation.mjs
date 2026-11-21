@@ -14,6 +14,34 @@ if (
   );
   process.exit(1);
 }
+// Simulator stores keyboard connectivity per device. Fail before compiling a
+// test runner rather than silently accepting only the keyboard accessory bar.
+const preferences = spawnSync(
+  "defaults",
+  ["export", "com.apple.iphonesimulator", "-"],
+  {
+    encoding: "utf8",
+  },
+);
+const converted = spawnSync("plutil", ["-convert", "json", "-o", "-", "-"], {
+  input: preferences.stdout || "",
+  encoding: "utf8",
+});
+let hardwareKeyboard;
+try {
+  const values = JSON.parse(converted.stdout);
+  hardwareKeyboard =
+    values.DevicePreferences?.[simulator.toUpperCase()]
+      ?.ConnectHardwareKeyboard ?? values.ConnectHardwareKeyboard;
+} catch {
+  // A missing preference cannot prove that the software keyboard is enabled.
+}
+if (hardwareKeyboard !== false && hardwareKeyboard !== 0) {
+  console.error(
+    `模拟器 ${simulator} 尚未关闭硬件键盘连接。请选中该模拟器，在 Simulator → I/O → Keyboard 取消 Connect Hardware Keyboard，再重跑相同命令；测试需要完整软键盘，不接受仅 Done 附件栏。脚本不会修改模拟器偏好。`,
+  );
+  process.exit(1);
+}
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const directory = mkdtempSync(join(tmpdir(), "gitpulse-navigation-"));
 cpSync(join(scriptDir, "ios-navigation"), directory, { recursive: true });
