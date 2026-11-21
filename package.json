@@ -42,7 +42,8 @@
     "init:ios": "node scripts/dev/platform.mjs init ios",
     "init:android": "node scripts/dev/platform.mjs init android",
     "build:ios:simulator": "node scripts/dev/platform.mjs build ios:simulator",
-    "test:workspace:browser": "node scripts/qa/workspace.mjs"
+    "test:workspace:browser": "node scripts/qa/workspace.mjs",
+    "test:mobile:viewport": "node scripts/qa/mobile-viewport.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",

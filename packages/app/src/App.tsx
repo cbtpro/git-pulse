@@ -13,10 +13,12 @@ import { LoginModal } from "./components/LoginModal";
 import { Brand } from "./components/common/Brand";
 import { useAuthStore } from "./stores/authStore";
 import { pendingGitHubAuthorization } from "./services/auth/GitHubDeviceAuth";
+import { useMobileViewport } from "./hooks/useMobileViewport";
 import { useAppearance } from "./hooks/useAppearance";
 import "./App.css";
 
 export function App() {
+  useMobileViewport();
   const { t } = useTranslation();
   const language = usePreferencesStore((state) => state.language);
   const checkAuth = useAuthStore((state) => state.checkAuth);

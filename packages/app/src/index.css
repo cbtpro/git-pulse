@@ -12,6 +12,10 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+/* Allow one-finger panning while excluding viewport pinch zoom on mobile. */
+html[data-mobile-viewport="fixed"] {
+  touch-action: pan-x pan-y;
+}
 * {
   box-sizing: border-box;
 }
