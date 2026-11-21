@@ -77,7 +77,18 @@ try {
       if (path === "/graphql") {
         const query = route.request().postDataJSON().query;
         if (query.includes("GitPulseProfileBadges"))
-          return route.fulfill({ json: { data: { viewer: flags } } });
+          return route.fulfill({
+            json: {
+              data: {
+                viewer:
+                  mode === "restricted"
+                    ? Object.fromEntries(
+                        Object.keys(flags).map((key) => [key, false]),
+                      )
+                    : flags,
+              },
+            },
+          });
         return route.fulfill({
           json: {
             data: {
@@ -95,12 +106,20 @@ try {
         expect(route.request().headers().authorization).toBe(
           "Bearer startup-fixture-token",
         );
+        if (mode === "restricted")
+          return route.fulfill({
+            status: path === "/user/memberships/orgs" ? 403 : 200,
+            json: path === "/user/memberships/orgs" ? {} : [],
+          });
         return route.fulfill({
           json: ["OpenSource", "a-long-organization-name-that-must-wrap"].map(
             (login, index) => ({
-              id: index,
-              login,
-              avatar_url: "https://fixture.invalid/avatar.svg",
+              state: "active",
+              organization: {
+                id: index,
+                login,
+                avatar_url: "https://fixture.invalid/avatar.svg",
+              },
             }),
           ),
         });
@@ -157,11 +176,45 @@ try {
       .locator(".gp-profile-main > .arco-avatar")
       .boundingBox();
     expect(Math.abs(avatar.width - avatar.height)).toBeLessThan(1);
-    await page
-      .locator(".gp-profile-card")
-      .screenshot({
-        path: `review-artifacts/startup/profile-${device.name}.png`,
-      });
+    const geometry = await page.evaluate(() => {
+      const rect = (selector) => {
+        const { x, y, width, height } = document
+          .querySelector(selector)
+          .getBoundingClientRect();
+        return { x, y, width, height };
+      };
+      return {
+        main: rect(".gp-profile-main"),
+        stats: rect(".gp-profile-stats"),
+        identity: rect(".gp-profile-identity"),
+        badgeHeading: rect(
+          ".gp-profile-identity > section:first-child .gp-profile-identity-heading",
+        ),
+        orgHeading: rect(
+          ".gp-profile-identity > section:last-child .gp-profile-identity-heading",
+        ),
+        badges: rect(".gp-profile-badges"),
+        orgs: rect(".gp-profile-organizations"),
+      };
+    });
+    expect(Math.abs(geometry.main.x - geometry.stats.x)).toBeLessThan(1);
+    expect(Math.abs(geometry.main.x - geometry.identity.x)).toBeLessThan(1);
+    expect(Math.abs(geometry.main.width - geometry.stats.width)).toBeLessThan(
+      1,
+    );
+    if (device.width > 768) {
+      expect(
+        Math.abs(geometry.badgeHeading.y - geometry.orgHeading.y),
+      ).toBeLessThan(1);
+      expect(Math.abs(geometry.badges.y - geometry.orgs.y)).toBeLessThan(1);
+    } else {
+      expect(
+        Math.abs(geometry.badgeHeading.x - geometry.orgHeading.x),
+      ).toBeLessThan(1);
+    }
+    await page.locator(".gp-profile-card").screenshot({
+      path: `review-artifacts/startup/profile-${device.name}.png`,
+    });
     await pendingProfile.fulfill({
       json: { ...profile, name: "Updated in background" },
     });
@@ -175,6 +228,41 @@ try {
       "Updated in background",
     );
     await expect(page.getByRole("dialog")).toHaveCount(0);
+    // An old grant must show a useful authorization action, including with long
+    // localized empty-state text and dark mode on narrow screens.
+    mode = "restricted";
+    for (const language of device.name === "Android"
+      ? ["zh-CN", "en", "ja", "zh-TW"]
+      : ["zh-CN"]) {
+      await page.evaluate((language) => {
+        const preferences = JSON.parse(
+          localStorage.getItem("gitpulse-preferences") || '{"state":{}}',
+        );
+        preferences.state.language = language;
+        preferences.state.theme = language === "en" ? "dark" : "light";
+        localStorage.setItem(
+          "gitpulse-preferences",
+          JSON.stringify(preferences),
+        );
+      }, language);
+      await page.reload({ waitUntil: "domcontentloaded" });
+      await expect(
+        page.locator(
+          ".gp-profile-identity > section:last-child .gp-profile-identity-footer button",
+        ),
+      ).toBeVisible();
+      await expect(page.locator(".gp-profile-badges")).toHaveCount(0);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page
+        .locator(".gp-profile-card")
+        .screenshot({
+          path: `review-artifacts/startup/profile-${device.name}-${language}-restricted.png`,
+        });
+    }
     expect(errors).toEqual([]);
     console.log(
       `${device.name}: cached profile visible in ${duration}ms at 4x CPU slowdown with /user still pending; offline restore, badges, organizations and layout passed`,

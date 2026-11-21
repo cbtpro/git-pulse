@@ -421,23 +421,26 @@
 .gp-profile-card {
   margin-bottom: 28px;
 }
+.gp-profile-card > .arco-card-body {
+  padding: 24px;
+}
 .gp-profile-main {
   display: grid;
-  grid-template-columns: 80px minmax(0, 1fr) auto;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
   grid-template-areas:
     "avatar info external"
-    "avatar bio bio"
-    "avatar details details";
-  gap: 12px 24px;
-  align-items: start;
-  padding: 8px 8px 28px;
+    "bio bio bio"
+    "details details details";
+  gap: 16px 18px;
+  align-items: center;
+  margin-bottom: 24px;
 }
 .gp-profile-main > .arco-avatar {
   grid-area: avatar;
+  flex-shrink: 0;
 }
 .gp-profile-info {
   grid-area: info;
-  align-self: center;
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -445,24 +448,30 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px 12px;
 }
 .gp-profile-name h2 {
+  margin: 0;
   font-size: 22px;
+  line-height: 1.35;
   font-weight: 600;
 }
 .gp-profile-name .arco-tag {
-  font-size: 10px;
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 11px;
 }
 .gp-profile-handle {
   color: var(--gp-subtle);
   font-size: 12px;
-  margin-top: 3px;
+  margin: 5px 0 0;
 }
 .gp-profile-bio {
   grid-area: bio;
   min-width: 0;
+  margin: 0;
   font-size: 13px;
+  line-height: 1.7;
   color: var(--gp-secondary);
   overflow-wrap: anywhere;
 }
@@ -472,28 +481,38 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 10px 20px;
   color: var(--gp-secondary);
-  font-size: 11px;
+  font-size: 12px;
 }
 .gp-profile-details > span {
   min-width: 0;
   overflow-wrap: anywhere;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+}
+.gp-profile-details svg {
+  flex-shrink: 0;
 }
 .gp-profile-external {
   grid-area: external;
-  justify-self: start;
+  justify-self: end;
   font-size: 12px;
+  min-height: 36px;
 }
 .gp-profile-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding-top: 22px;
-  border-top: 1px solid var(--gp-line);
+  padding: 16px 0;
+  border: 1px solid var(--gp-line);
+  border-radius: 10px;
+  background: var(--color-fill-1);
   text-align: center;
+}
+.gp-profile-stats > div {
+  min-width: 0;
+  padding: 0 8px;
 }
 .gp-profile-stats > div + div {
   border-left: 1px solid var(--gp-line);
@@ -501,11 +520,17 @@
 .gp-profile-stats strong {
   display: block;
   font-size: 24px;
+  line-height: 1.3;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .gp-profile-stats span {
+  display: block;
+  margin-top: 5px;
   color: var(--gp-secondary);
   font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 .gp-profile-section-label {
   display: flex;
@@ -818,14 +843,6 @@ body[data-density="compact"] .gp-repo-topics {
   .gp-stat-icon {
     display: none;
   }
-  .gp-profile-main {
-    grid-template-columns: 80px minmax(0, 1fr);
-    grid-template-areas:
-      "avatar info"
-      "bio bio"
-      "details details"
-      "external external";
-  }
 }
 @media (max-width: 768px) {
   .gp-hero {
@@ -915,10 +932,24 @@ body[data-density="compact"] .gp-repo-topics {
     width: 28px;
     height: 28px;
   }
+  .gp-profile-card > .arco-card-body {
+    padding: 20px;
+  }
   .gp-profile-main {
     grid-template-columns: 56px minmax(0, 1fr);
+    grid-template-areas:
+      "avatar info"
+      "bio bio"
+      "details details"
+      "external external";
     gap: 16px;
-    padding: 0 0 24px;
+    margin-bottom: 20px;
+  }
+  .gp-profile-external {
+    justify-self: stretch;
+  }
+  .gp-profile-stats {
+    padding: 14px 0;
   }
   .gp-profile-main > .arco-avatar {
     width: 56px !important;
@@ -1092,5 +1123,24 @@ body[data-density="compact"] .gp-repo-topics {
   .gp-saved-account-actions {
     grid-column: 1 / -1;
     justify-content: flex-end;
+  }
+}
+
+@media (max-width: 360px) {
+  .gp-profile-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0;
+  }
+  .gp-profile-stats > div {
+    padding: 14px 8px;
+  }
+  .gp-profile-stats > div + div {
+    border-left: 0;
+  }
+  .gp-profile-stats > div:nth-child(even) {
+    border-left: 1px solid var(--gp-line);
+  }
+  .gp-profile-stats > div:nth-child(n + 3) {
+    border-top: 1px solid var(--gp-line);
   }
 }

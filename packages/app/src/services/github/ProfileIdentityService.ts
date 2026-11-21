@@ -1,4 +1,4 @@
-import { requestGitHub } from "./GitHubService";
+import { GitHubRequestError, requestGitHub } from "./GitHubService";
 
 export const PROFILE_BADGES = [
   { field: "isGitHubStar", label: "GitHub Star", icon: "star" },
@@ -14,6 +14,14 @@ export interface ProfileOrganization {
   login: string;
   avatar_url: string;
   description: string | null;
+}
+export interface ProfileOrganizations {
+  organizations: ProfileOrganization[];
+  access: "authorized" | "public-only";
+}
+interface OrganizationMembership {
+  state: "active" | "pending";
+  organization: ProfileOrganization;
 }
 
 /** Official account flags, not inferred or fabricated GitHub achievements. */
@@ -42,32 +50,78 @@ export async function profileBadges(
   return PROFILE_BADGES.filter(({ field }) => viewer[field]);
 }
 
-/** Public memberships match the GitHub profile, without requiring read:org. */
+/** Include non-public memberships when the account has granted organization access. */
 export async function profileOrganizations(
   login: string,
   token: string,
   signal: AbortSignal,
+): Promise<ProfileOrganizations> {
+  try {
+    return {
+      organizations: await organizationPages(
+        "/user/memberships/orgs?state=active",
+        token,
+        signal,
+        true,
+      ),
+      access: "authorized",
+    };
+  } catch (error) {
+    // Older OAuth grants lack read:org. Retain public results while making the
+    // restricted scope explicit; never conceal invalid credentials/rate limits.
+    if (
+      !(error instanceof GitHubRequestError) ||
+      error.status !== 403 ||
+      error.rateLimited
+    )
+      throw error;
+    return {
+      organizations: await organizationPages(
+        `/users/${encodeURIComponent(login)}/orgs?`,
+        token,
+        signal,
+        false,
+      ),
+      access: "public-only",
+    };
+  }
+}
+
+async function organizationPages(
+  path: string,
+  token: string,
+  signal: AbortSignal,
+  memberships: boolean,
 ): Promise<ProfileOrganization[]> {
   const organizations = new Map<number, ProfileOrganization>();
   for (let page = 1; page <= 100; page++) {
-    const result = await requestGitHub<ProfileOrganization[]>(
-      `/users/${encodeURIComponent(login)}/orgs?per_page=100&page=${page}`,
+    const result = await requestGitHub<
+      (ProfileOrganization | OrganizationMembership)[]
+    >(
+      `${path}${path.endsWith("?") ? "" : "&"}per_page=100&page=${page}`,
       token,
       signal,
     );
-    if (
-      !Array.isArray(result.data) ||
-      result.data.some(
-        (org) =>
-          !org ||
-          typeof org.id !== "number" ||
-          typeof org.login !== "string" ||
-          !org.login,
+    if (!Array.isArray(result.data)) throw new Error("暂时无法加载组织");
+    for (const entry of result.data) {
+      if (memberships) {
+        const state = (entry as OrganizationMembership)?.state;
+        if (state === "pending") continue;
+        if (state !== "active") throw new Error("暂时无法加载组织");
+      }
+      const org = memberships
+        ? (entry as OrganizationMembership).organization
+        : (entry as ProfileOrganization);
+      if (
+        !org ||
+        typeof org.id !== "number" ||
+        typeof org.login !== "string" ||
+        !org.login
       )
-    )
-      throw new Error("暂时无法加载公开组织");
-    for (const org of result.data) organizations.set(org.id, org);
+        throw new Error("暂时无法加载组织");
+      organizations.set(org.id, org);
+    }
     if (!result.hasNext) return [...organizations.values()];
   }
-  throw new Error("暂时无法加载公开组织");
+  throw new Error("暂时无法加载组织");
 }

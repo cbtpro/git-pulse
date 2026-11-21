@@ -1,40 +1,56 @@
 .gp-profile-identity {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 20px 28px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
   margin-top: 24px;
-  padding-top: 20px;
+  padding-top: 24px;
   border-top: 1px solid var(--gp-line);
 }
 .gp-profile-identity > section {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .gp-profile-identity-heading,
 .gp-profile-identity-heading h3,
-.gp-profile-identity-heading a {
+.gp-profile-achievements {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .gp-profile-identity-heading {
+  min-height: 28px;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 10px;
 }
 .gp-profile-identity-heading h3 {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  line-height: 1.5;
 }
-.gp-profile-identity-heading a {
-  font-size: 11px;
-  color: var(--gp-secondary);
-  min-height: 28px;
+.gp-profile-identity-heading svg {
+  flex-shrink: 0;
+}
+.gp-profile-achievements {
+  width: fit-content;
+  min-height: 36px;
+  font-size: 12px;
+  color: rgb(var(--primary-6));
+  border-radius: 6px;
+}
+.gp-profile-achievements svg {
+  flex-shrink: 0;
 }
 .gp-profile-identity-count {
-  color: var(--gp-subtle);
-  font-weight: 400;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--color-fill-2);
+  color: var(--gp-secondary);
+  font-size: 11px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 .gp-profile-badges,
 .gp-profile-organizations {
@@ -45,38 +61,35 @@
   margin: 0;
   list-style: none;
 }
-.gp-profile-badges li {
+.gp-profile-badges li,
+.gp-profile-organizations a {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  border: 1px solid var(--gp-line);
-  background: var(--color-fill-1);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 12px;
+  gap: 8px;
+  min-height: 44px;
   max-width: 100%;
+  border: 1px solid var(--gp-line);
+  border-radius: 8px;
+  padding: 7px 10px;
+  color: var(--gp-secondary);
+  font-size: 12px;
+  line-height: 1.5;
 }
 .gp-profile-badges svg {
+  width: 28px;
+  height: 28px;
+  padding: 5px;
   color: rgb(var(--primary-6));
+  background: var(--color-primary-light-1);
+  border-radius: 6px;
   flex-shrink: 0;
 }
 .gp-profile-organizations li {
   min-width: 0;
   max-width: 100%;
 }
-.gp-profile-organizations a {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 8px;
-  padding: 6px 8px;
-  min-height: 44px;
-  color: var(--gp-secondary);
-  border: 1px solid var(--gp-line);
-  font-size: 12px;
-}
 .gp-profile-organizations a:hover,
-.gp-profile-identity-heading a:hover {
+.gp-profile-achievements:hover {
   color: rgb(var(--primary-6));
   background: var(--color-fill-1);
 }
@@ -101,9 +114,10 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  min-height: 40px;
+  min-height: 44px;
   margin: 0;
   font-size: 12px;
+  line-height: 1.7;
   color: var(--gp-subtle);
 }
 .gp-profile-identity-explanation {
@@ -113,12 +127,22 @@
   line-height: 1.7;
   overflow-wrap: anywhere;
 }
+.gp-profile-identity-footer {
+  margin-top: auto;
+  padding-top: 4px;
+}
 @media (max-width: 768px) {
   .gp-profile-identity {
     grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+    margin-top: 20px;
+    padding-top: 20px;
+    gap: 20px;
   }
-  .gp-profile-identity-heading a {
-    min-height: 36px;
+  .gp-profile-identity > section + section {
+    padding-top: 20px;
+    border-top: 1px solid var(--gp-line);
+  }
+  .gp-profile-achievements {
+    min-height: 44px;
   }
 }

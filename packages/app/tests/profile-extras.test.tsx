@@ -164,8 +164,8 @@ it("keeps optional profile sections off by default and avoids their requests", a
       <ProfilePage onShowLogin={vi.fn()} />
     </MemoryRouter>,
   );
-  // Contributions, repositories, identity badges and public organizations.
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(4));
+  // Contributions, repositories, badges, memberships and the public fallback.
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(5));
   expect(
     fetchMock.mock.calls.some(
       ([url, options]) =>

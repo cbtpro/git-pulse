@@ -99,7 +99,7 @@ export async function authorizeWithGitHub(
       "device/code",
       {
         client_id: clientId,
-        scope: "repo read:user notifications",
+        scope: "repo read:user read:org notifications",
       },
       signal,
     );

@@ -53,6 +53,12 @@ describe("GitHub device authorization", () => {
       "public-client-id",
     );
     await vi.advanceTimersByTimeAsync(0);
+    expect(request).toHaveBeenNthCalledWith(
+      1,
+      "device/code",
+      expect.objectContaining({ scope: expect.stringContaining("read:org") }),
+      expect.any(AbortSignal),
+    );
     expect(onCode).toHaveBeenCalledWith(
       expect.objectContaining({ userCode: "ABCD-EFGH" }),
     );

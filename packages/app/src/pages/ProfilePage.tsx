@@ -129,7 +129,7 @@ export function ProfilePage({ onShowLogin }: { onShowLogin: () => void }) {
         <>
           <Card className="gp-profile-card">
             <div className="gp-profile-main">
-              <Avatar size={80}>
+              <Avatar size={64}>
                 <img
                   src={profile.avatar_url}
                   alt={t("{{name}} 的头像", { name: profile.login })}
