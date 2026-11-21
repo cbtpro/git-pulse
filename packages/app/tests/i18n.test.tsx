@@ -1,11 +1,18 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, expect, it, vi } from "vitest";
 import { App } from "../src/App";
 import { resources, i18n } from "../src/i18n";
 import { usePreferencesStore } from "../src/stores/preferencesStore";
 import { formatDate, formatNumber } from "../src/utils/format";
 import { RequestError } from "../src/components/common/ResourceState";
+
+// This suite verifies live localization, not Vite's cold module transforms.
+// Prepare the real lazy route before RTL's short UI wait starts; keep the actual
+// App, auth startup, Suspense and language controls in the test path.
+beforeAll(async () => {
+  await import("../src/pages/SettingsPage");
+});
 
 beforeEach(() => {
   localStorage.clear();
@@ -39,7 +46,11 @@ afterEach(() => {
 
 it("switches the live app through four languages and restores the saved choice", async () => {
   const user = userEvent.setup();
-  render(<App />);
+  // Flush the real lazy import and Suspense commit before polling translated UI.
+  await act(async () => {
+    render(<App />);
+    await vi.dynamicImportSettled();
+  });
   await screen.findByRole("heading", { name: "账号与外观", level: 1 });
   for (const [option, language, heading, safeArea] of [
     ["English", "en", "Account & appearance", "Enable safe areas"],
