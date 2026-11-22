@@ -50,7 +50,10 @@
     "test:startup": "node scripts/qa/startup-profile.mjs",
     "test:vault-concurrency": "node scripts/qa/vault-concurrency.mjs",
     "test:resource-consistency": "node scripts/qa/resource-consistency.mjs",
-    "test:safe-area-layout": "node scripts/qa/safe-area-layout.mjs"
+    "test:safe-area-layout": "node scripts/qa/safe-area-layout.mjs",
+    "build:pages": "pnpm -F @gitpulse/app build:pages",
+    "preview:pages": "pnpm -F @gitpulse/app preview:pages",
+    "test:pages": "node scripts/qa/pages.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",

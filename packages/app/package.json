@@ -28,7 +28,9 @@
     "tauri:linux:build": "node ../../scripts/dev/platform.mjs build linux",
     "tauri:ios:init": "node ../../scripts/dev/platform.mjs init ios",
     "tauri:android:init": "node ../../scripts/dev/platform.mjs init android",
-    "tauri:ios:build:simulator": "node ../../scripts/dev/platform.mjs build ios:simulator"
+    "tauri:ios:build:simulator": "node ../../scripts/dev/platform.mjs build ios:simulator",
+    "build:pages": "vite build --mode pages",
+    "preview:pages": "vite preview --mode pages"
   },
   "dependencies": {
     "@arco-design/web-react": "^2.66.18",

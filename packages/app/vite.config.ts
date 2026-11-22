@@ -5,7 +5,8 @@ import { createHash } from "node:crypto";
 import { realpathSync } from "node:fs";
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
+  base: mode === "pages" ? process.env.GITPULSE_WEB_BASE || "/git-pulse/" : "/",
   envDir: path.resolve(__dirname, "../.."),
   plugins: [
     react(),
@@ -75,4 +76,4 @@ export default defineConfig({
       ignored: ["**/src-tauri/**"],
     },
   },
-});
+}));

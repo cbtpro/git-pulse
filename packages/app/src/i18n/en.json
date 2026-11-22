@@ -656,5 +656,6 @@
   "使用同一账号重新登录可更新授权，无需移除账号。": "Sign in with the same account to update its authorization without removing it.",
   "面包屑导航": "Breadcrumb navigation",
   "展开导航路径": "Show navigation path",
-  "返回{{page}}": "Back to {{page}}"
+  "返回{{page}}": "Back to {{page}}",
+  "此网页版使用 Token 登录，也可以使用原生应用完成 GitHub 授权。": "Sign in to this web version with a token, or use the native app for GitHub authorization."
 }

@@ -275,3 +275,20 @@ it("preserves the active authorization when the login view remounts", async () =
   expect(screen.getByLabelText("授权验证码").textContent).toBe("KEEP-CODE");
   expect(deviceAuth.authorizeWithGitHub).toHaveBeenCalledOnce();
 });
+
+it("uses token sign-in on Pages without offering an unavailable OAuth proxy", async () => {
+  vi.stubEnv("MODE", "pages");
+  const onLoginSuccess = vi.fn();
+  render(<GitHubLoginForm onLoginSuccess={onLoginSuccess} />);
+  expect(screen.queryByRole("button", { name: "使用 GitHub 登录" })).toBeNull();
+  expect(screen.queryByRole("radio", { name: "GitHub 登录" })).toBeNull();
+  const user = userEvent.setup();
+  await user.type(
+    screen.getByLabelText("Personal Access Token"),
+    "pages-fixture-token{Enter}",
+  );
+  await waitFor(() =>
+    expect(onLoginSuccess).toHaveBeenCalledWith("pages-fixture-token"),
+  );
+  expect(fetch).toHaveBeenCalledTimes(1);
+});

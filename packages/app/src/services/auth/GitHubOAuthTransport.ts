@@ -5,6 +5,11 @@ import {
 } from "./AuthorizationLifecycle";
 
 export const GITHUB_VERIFICATION_URL = "https://github.com/login/device";
+// GitHub Pages serves static assets; it cannot host our OAuth proxy.
+export function supportsGitHubOAuth() {
+  return isTauri() || import.meta.env.MODE !== "pages";
+}
+
 type OAuthEndpoint = "device/code" | "oauth/access_token";
 
 async function requestNativeOAuth(
@@ -45,6 +50,10 @@ export async function requestGitHubOAuth(
   signal: AbortSignal,
 ): Promise<Record<string, unknown>> {
   signal.throwIfAborted();
+  if (!supportsGitHubOAuth())
+    throw new Error(
+      "此网页版使用 Token 登录，也可以使用原生应用完成 GitHub 授权。",
+    );
   let data: Record<string, unknown>;
   if (isTauri()) {
     data = await requestNativeOAuth(endpoint, params, signal);

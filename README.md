@@ -2,6 +2,8 @@
 
 使用 Tauri 2、React 18、TypeScript 和 Arco Design 构建的 GitHub 客户端，采用 pnpm workspace 管理 Web、桌面与移动应用的共享源码。
 
+[打开网页版](https://blog.chenbitao.com/git-pulse/) · [GitHub Actions 部署说明](docs/WEB_DEVELOPMENT.md)
+
 ## 功能
 
 - GitHub 官网授权与 Token 登录，多账号切换，本地账号数据加密保存。
@@ -40,6 +42,7 @@ pnpm dev:web
 | Linux    | `pnpm dev:linux`   | `pnpm build:linux`   | [Linux](docs/LINUX_DEVELOPMENT.md)     |
 | iOS      | `pnpm dev:ios`     | `pnpm build:ios`     | [iOS](docs/iOS_DEVELOPMENT.md)         |
 | Android  | `pnpm dev:android` | `pnpm build:android` | [Android](docs/ANDROID_DEVELOPMENT.md) |
+| GitHub Pages | `pnpm preview:pages` | `pnpm build:pages` | [Actions 发布](docs/WEB_DEVELOPMENT.md) |
 | Web      | `pnpm dev:web`     | `pnpm build:web`     | [Web](docs/WEB_DEVELOPMENT.md)         |
 
 移动端首次运行需先 `pnpm init:ios` / `pnpm init:android`。iOS 模拟器构建使用 `pnpm build:ios:simulator`。原生启动会自动启动或复用本工作区的前端服务，保留原有包级命令，如 `pnpm -F @gitpulse/app tauri:ios`。

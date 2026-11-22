@@ -2,6 +2,8 @@
 
 所有命令默认在仓库根目录执行。脚本与 [GitHub Actions](GITHUB_ACTIONS.md) 使用相同的包管理器、平台目标及 Android 配置；本地原生构建仍受主机平台限制，具体见 [平台矩阵](PLATFORM_GUIDE.md)。
 
+Web 静态部署、Token 登录边界及 Actions 发布见 [Web 平台与 GitHub Pages](WEB_DEVELOPMENT.md)。
+
 ## 安装与检查
 
 使用 Node.js 22（根目录 `.nvmrc`）和 pnpm 10.34.9（`package.json#packageManager`）。已有 Node.js 后运行：

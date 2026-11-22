@@ -142,3 +142,22 @@ it("finishes the encrypted exchange checkpoint before opening the external brows
   expect(invoke).toHaveBeenCalledWith("open_github_authorization");
   authorizationBrowserFailed();
 });
+
+it("rejects unsupported Pages OAuth without a network request", async () => {
+  vi.stubEnv("MODE", "pages");
+  const fetchMock = vi.fn();
+  vi.stubGlobal("fetch", fetchMock);
+  try {
+    await expect(
+      requestGitHubOAuth("device/code", {}, new AbortController().signal),
+    ).rejects.toThrow("此网页版使用 Token 登录");
+    expect(fetchMock).not.toHaveBeenCalled();
+    vi.mocked(isTauri).mockReturnValue(true);
+    vi.mocked(invoke).mockResolvedValue({ user_code: "ABCD" });
+    await expect(
+      requestGitHubOAuth("device/code", {}, new AbortController().signal),
+    ).resolves.toEqual({ user_code: "ABCD" });
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});

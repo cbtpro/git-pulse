@@ -1,0 +1,75 @@
+name: Deploy web to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.34.9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+        env:
+          VITE_GITHUB_CLIENT_ID: fixture-client-id
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+      - name: Build static web app
+        run: pnpm build:pages
+        env:
+          GITPULSE_WEB_BASE: ${{ steps.pages.outputs.base_path }}/
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify the compiled Pages app
+        env:
+          GITPULSE_WEB_BASE: ${{ steps.pages.outputs.base_path }}/
+          GITPULSE_TEST_URL: http://127.0.0.1:4173${{ steps.pages.outputs.base_path }}/
+        shell: bash
+        run: |
+          CHROME_PATH="$(node --input-type=module -e 'import { chromium } from "@playwright/test"; console.log(chromium.executablePath())')"
+          export CHROME_PATH
+          pnpm preview:pages --host 127.0.0.1 --port 4173 --strictPort > /tmp/pages-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+          ready=false
+          for _ in $(seq 1 40); do
+            if curl -fsS "$GITPULSE_TEST_URL" > /dev/null; then ready=true; break; fi
+            sleep 0.5
+          done
+          if [ "$ready" != true ]; then cat /tmp/pages-preview.log; exit 1; fi
+          pnpm test:pages
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: packages/app/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

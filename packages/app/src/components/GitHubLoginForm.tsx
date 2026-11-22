@@ -2,7 +2,10 @@ import { useTranslation, i18n } from "../i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { useAuthStore } from "../stores/authStore";
 import { getGitHubClientId } from "../services/auth/GitHubDeviceAuth";
-import { openGitHubAuthorization } from "../services/auth/GitHubOAuthTransport";
+import {
+  openGitHubAuthorization,
+  supportsGitHubOAuth,
+} from "../services/auth/GitHubOAuthTransport";
 import { Alert, Button, Input, Radio, Spin } from "@arco-design/web-react";
 import {
   ArrowUpRight,
@@ -30,7 +33,10 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
     isLoading,
     authorization,
   } = useAuthStore();
-  const [mode, setMode] = useState<"oauth" | "token">("oauth");
+  const oauthAvailable = supportsGitHubOAuth();
+  const [mode, setMode] = useState<"oauth" | "token">(
+    oauthAvailable ? "oauth" : "token",
+  );
   const [token, setToken] = useState("");
   const [browserError, setBrowserError] = useState<string | null>(null);
   const [openingBrowser, setOpeningBrowser] = useState(false);
@@ -110,28 +116,34 @@ export function GitHubLoginForm({ onLoginSuccess }: GitHubLoginFormProps) {
 
   return (
     <div className="gp-login">
-      <Radio.Group
-        type="button"
-        className="gp-login-tabs"
-        value={mode}
-        disabled={isLoading}
-        aria-label={t("登录方式")}
-        onChange={(value) => {
-          setMode(value);
-          setToken("");
-          clearError();
-          setBrowserError(null);
-        }}
-      >
-        <Radio value="oauth">
-          <GitBranch size={16} />
-          {t("GitHub 登录")}
-        </Radio>
-        <Radio value="token">
-          <KeyRound size={16} />
-          {t("Token 登录")}
-        </Radio>
-      </Radio.Group>
+      {oauthAvailable ? (
+        <Radio.Group
+          type="button"
+          className="gp-login-tabs"
+          value={mode}
+          disabled={isLoading}
+          aria-label={t("登录方式")}
+          onChange={(value) => {
+            setMode(value);
+            setToken("");
+            clearError();
+            setBrowserError(null);
+          }}
+        >
+          <Radio value="oauth">
+            <GitBranch size={16} />
+            {t("GitHub 登录")}
+          </Radio>
+          <Radio value="token">
+            <KeyRound size={16} />
+            {t("Token 登录")}
+          </Radio>
+        </Radio.Group>
+      ) : (
+        <p className="gp-login-hint">
+          {t("此网页版使用 Token 登录，也可以使用原生应用完成 GitHub 授权。")}
+        </p>
+      )}
       {(error || browserError) && (
         <Alert
           type="error"

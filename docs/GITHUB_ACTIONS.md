@@ -1,5 +1,7 @@
 # GitHub Actions 全平台打包
 
+网页独立发布使用 `pages.yml`：推送 `main` 或手动运行后，完成检查、Pages 专用构建和浏览器验收，再部署到 GitHub Pages。详见 [Web 部署说明](WEB_DEVELOPMENT.md)。
+
 仓库提供 `.github/workflows/build.yml`，工作流名称为 **Build all platforms**。它先运行应用类型检查、测试和 Web 构建，成功后再打包所选平台。产物保存在该次运行的 Artifacts 中，保留 14 天。推送版本标签后，所有平台构建成功才会自动发布 GitHub Release，并上传按平台打包的 ZIP 与 SHA-256 校验文件；手动构建默认只上传 Artifacts；选择 `all` 并开启 `publish` 时，所有平台构建成功后才创建版本标签并发布 Release，已有标签不会被覆盖。不会上传应用商店。
 
 本地对应的检查、初始化、开发和打包入口见 [本地开发](DEVELOPMENT.md) 与 [平台矩阵](PLATFORM_GUIDE.md)。本地和 CI 的 Android Gradle 配置共用 `scripts/lib/android.mjs`，脚本测试也包含在工作流检查中。
