@@ -11,6 +11,10 @@ const browser = safari
         process.env.CHROME_PATH ||
         "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
       headless: true,
+      // The native bridge disables WKWebView history gestures. Mirror that in
+      // Chromium: Linux's own overscroll navigation otherwise bypasses the app
+      // when its controller correctly ignores a gesture during text editing.
+      args: ["--disable-features=OverscrollHistoryNavigation"],
     });
 const origin = process.env.GITPULSE_TEST_URL || "http://localhost:1420";
 try {
