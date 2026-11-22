@@ -283,9 +283,19 @@ try {
       expect(await active.evaluate((e) => e.scrollTop)).toBe(700);
     }
     await page.goForward();
+    await expect(active).toHaveAttribute("data-route-url", /q=vue(?:&|$)/);
     await expect(input).toHaveValue("unsent second query");
     // Text editing and overlays own the interaction; they cannot navigate away.
-    await input.focus();
+    // The retained input can already be visible while the forward navigation
+    // is finishing. Establish actual focus before sending the trusted gesture.
+    await expect
+      .poll(() =>
+        input.evaluate((element) => {
+          element.focus({ preventScroll: true });
+          return document.activeElement === element;
+        }),
+      )
+      .toBe(true);
     x = await start();
     await move(x, distance);
     await touch("touchEnd", x + 8 + distance);
